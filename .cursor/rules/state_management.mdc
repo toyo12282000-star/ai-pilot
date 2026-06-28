@@ -1,0 +1,55 @@
+---
+description: AI Pilot Riverpod 状態管理規約
+globs: apps/mobile/lib/**/*.dart
+alwaysApply: false
+---
+
+# State Management (Riverpod)
+
+## 基本方針
+
+- **手書き Provider のみ**（`@riverpod` / `riverpod_generator` は使わない）
+- Provider 定義は **使用 feature 内** に置く（グローバルは `shared/providers/` のみ）
+- `main.dart` で `ProviderScope` をルートに配置
+
+## Provider 種別の使い分け
+
+| 種別 | 用途 |
+|------|------|
+| `Provider` | 不変オブジェクト（Repository, GoRouter 等） |
+| `FutureProvider` / `AsyncNotifier` | 非同期データ取得 |
+| `StateNotifierProvider` | 複雑な同期状態 |
+| `NotifierProvider` | シンプルな mutable 状態 |
+
+## 命名
+
+- Provider 名: `<target>Provider`（例: `routerProvider`, `homeItemsProvider`）
+- Notifier クラス: `<Target>Notifier`
+
+## 依存注入
+
+Repository は Provider 経由で注入する:
+
+```dart
+final exampleRepositoryProvider = Provider<ExampleRepository>((ref) {
+  return ExampleRepositoryImpl(
+    remoteDataSource: ref.watch(exampleRemoteDataSourceProvider),
+  );
+});
+
+final exampleItemsProvider = FutureProvider<List<ExampleItem>>((ref) {
+  return ref.watch(exampleRepositoryProvider).fetchItems();
+});
+```
+
+## Presentation との接続
+
+- Page / Widget は `ConsumerWidget` または `ConsumerStatefulWidget`
+- `ref.watch` で UI 更新、`ref.read` でイベント処理
+- `ref.invalidate` / `ref.refresh` で再取得
+
+## 禁止事項
+
+- Presentation 内で DataSource を直接 `new` しない
+- グローバル mutable 変数で状態管理しない
+- Provider 内で BuildContext に依存しない

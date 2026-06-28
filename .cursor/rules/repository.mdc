@@ -1,0 +1,66 @@
+---
+description: AI Pilot Repository Pattern 規約
+globs: apps/mobile/lib/**/{data,domain}/**/*
+alwaysApply: false
+---
+
+# Repository Pattern
+
+## レイヤー責務
+
+```
+presentation → domain/repositories (abstract)
+                      ↑
+               data/repositories (impl)
+                      ↑
+               data/datasources
+```
+
+## Domain 層
+
+- `domain/entities/`: ビジネスエンティティ（pure Dart）
+- `domain/repositories/`: 抽象 Repository インターフェース
+
+```dart
+// domain/repositories/example_repository.dart
+abstract class ExampleRepository {
+  Future<List<ExampleItem>> fetchItems();
+}
+```
+
+- **Flutter / Riverpod / HTTP ライブラリに依存しない**
+- 戻り値は Entity または `Result` / Failure 型
+
+## Data 層
+
+- `data/datasources/`: API / Local 等のデータ取得
+- `data/repositories/`: Domain の Repository を実装
+- `data/models/`: JSON 等の DTO（必要な場合）
+
+```dart
+// data/repositories/example_repository_impl.dart
+class ExampleRepositoryImpl implements ExampleRepository {
+  ExampleRepositoryImpl({required ExampleRemoteDataSource remoteDataSource})
+      : _remoteDataSource = remoteDataSource;
+
+  final ExampleRemoteDataSource _remoteDataSource;
+
+  @override
+  Future<List<ExampleItem>> fetchItems() async {
+    final dtos = await _remoteDataSource.fetchItems();
+    return dtos.map((dto) => dto.toEntity()).toList();
+  }
+}
+```
+
+## エラー処理
+
+- DataSource: 通信・パース例外を catch し、Domain の Failure に変換
+- Repository: 変換ロジックとリトライ方針を担当
+- Presentation: Failure を日本語メッセージに変換
+
+## 禁止事項
+
+- Domain Entity に `@JsonSerializable` 等の Data 用アノテーションを付けない
+- Presentation から DataSource を直接呼ばない
+- Repository 実装を Domain 層に置かない

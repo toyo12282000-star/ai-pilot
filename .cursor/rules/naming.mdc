@@ -1,0 +1,58 @@
+---
+description: AI Pilot 命名規則
+globs: apps/mobile/**/*
+alwaysApply: false
+---
+
+# Naming Conventions
+
+## ファイル名（snake_case）
+
+| 種別 | パターン | 例 |
+|------|---------|-----|
+| Page | `<name>_page.dart` | `home_page.dart` |
+| Widget | `<name>_widget.dart` または `<name>.dart` | `error_view.dart` |
+| Provider | `<name>_provider.dart` | `home_items_provider.dart` |
+| Repository (abstract) | `<name>_repository.dart` | `chat_repository.dart` |
+| Repository (impl) | `<name>_repository_impl.dart` | `chat_repository_impl.dart` |
+| DataSource | `<name>_<type>_datasource.dart` | `chat_remote_datasource.dart` |
+| Entity | `<name>.dart` | `chat_message.dart` |
+| Model/DTO | `<name>_model.dart` | `chat_message_model.dart` |
+
+## クラス名（PascalCase）
+
+| 種別 | パターン | 例 |
+|------|---------|-----|
+| Page | `<Name>Page` | `HomePage` |
+| Widget | `<Name>Widget` / `<Name>View` | `ErrorView` |
+| Repository | `<Name>Repository` | `ChatRepository` |
+| Repository Impl | `<Name>RepositoryImpl` | `ChatRepositoryImpl` |
+| DataSource | `<Name><Type>DataSource` | `ChatRemoteDataSource` |
+| Entity | `<Name>` | `ChatMessage` |
+| Model | `<Name>Model` | `ChatMessageModel` |
+| Notifier | `<Name>Notifier` | `ChatNotifier` |
+
+## Feature 名
+
+- ディレクトリ: `snake_case`（例: `chat_history`, `user_settings`）
+- 1 feature = 1 ビジネス機能
+
+## Provider 名
+
+- `camelCase` + `Provider`  suffix
+- 例: `routerProvider`, `homeItemsProvider`, `chatRepositoryProvider`
+
+## ルートパス（GoRouter）
+
+- kebab-case または snake_case で統一（例: `/`, `/chat-history`, `/settings`）
+- feature 名と対応させる
+
+## 定数
+
+- `lib/core/constants/` に集約
+- 名前: `lowerCamelCase` または `SCREAMING_SNAKE_CASE`（ファイル内で統一）
+
+## ユーザー向け文言
+
+- 日本語、丁寧語（です・ます調）
+- 例: 「読み込みに失敗しました」「データがありません」「再試行」

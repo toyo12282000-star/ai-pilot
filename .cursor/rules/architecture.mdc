@@ -1,0 +1,46 @@
+---
+description: AI Pilot Flutter アーキテクチャ方針（Feature First / Clean Architecture）
+alwaysApply: true
+---
+
+# Architecture
+
+AI Pilot の Flutter コードは `apps/mobile/lib/` 配下で、Feature First + Clean Architecture を採用する。
+
+## ディレクトリ構成
+
+```
+lib/
+├── app/          # アプリ全体（App, Router, Theme）
+├── core/         # 横断的基盤（constants, errors, utils）
+├── features/     # 機能単位（data / domain / presentation）
+└── shared/       # feature 横断の共通部品
+```
+
+## 依存方向
+
+```
+presentation → domain ← data
+```
+
+- **Domain** は Data / Presentation / Flutter UI に依存しない
+- **Data** は Domain の抽象（Repository インターフェース）を実装する
+- **Presentation** は Domain 経由でデータを取得する（Data を直接 import しない）
+
+## Feature 追加手順
+
+1. `lib/features/<feature_name>/` を作成
+2. `data/`, `domain/`, `presentation/` を必ず用意
+3. ルートは `lib/app/router.dart` に追加
+4. feature 間の直接 import は避け、必要なら `shared/` または Domain 経由
+
+## ファイルサイズ
+
+- 1 ファイル **300 行以内** を目安に分割する
+- 300 行を超えそうなら Widget / Provider / Repository へ切り出す
+
+## 禁止事項
+
+- `lib/` 直下に feature コードを置かない（`main.dart` のみ例外）
+- Presentation から DataSource / API Client を直接呼ばない
+- Domain に `flutter`, `riverpod`, `go_router` 等の import を入れない

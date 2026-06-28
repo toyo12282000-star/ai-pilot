@@ -1,0 +1,44 @@
+---
+description: AI Pilot UI / Material3 デザイン規約
+globs: apps/mobile/lib/**/presentation/**/*
+alwaysApply: false
+---
+
+# UI Guidelines
+
+## 言語
+
+- ユーザー向け文言は **日本語**
+- ボタン・ラベル・エラー・空状態メッセージも日本語
+- コード（クラス名・変数名）は英語
+
+## Material3
+
+- テーマは `lib/app/theme.dart` で一元管理
+- `ColorScheme.fromSeed` ベースの配色を使う
+- 個別画面で `Theme.of(context)` から色・TextStyle を取得
+- ハードコード色は避け、意味のある Theme 値を使う
+
+## レイアウト
+
+- `Scaffold` + `AppBar` を基本構成とする
+- 余白は `EdgeInsets` / `SizedBox` で統一（8 の倍数を目安）
+- 長いリストは `ListView.builder` / `SliverList` を使う
+
+## Widget 分割
+
+- Page: 画面全体の組み立てのみ
+- Content Widget: 成功状態の UI
+- `LoadingView`, `EmptyView`, `ErrorView` は `shared/widgets/` に共通化
+
+## アクセシビリティ
+
+- タップ領域は最低 48x48
+- アイコンボタンには `tooltip` を付ける
+- 重要な操作は `Semantics` でラベルを付ける
+
+## 禁止事項
+
+- 英語のプレースホルダー文言（"Loading...", "No data" 等）
+- Page 内に 100 行超の `build` メソッド
+- feature 間で Widget を直接 import して再利用（共通化は `shared/` へ）

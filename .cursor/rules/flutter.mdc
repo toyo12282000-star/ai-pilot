@@ -1,0 +1,76 @@
+---
+description: AI Pilot Flutter 実装規約
+globs: apps/mobile/**/*.dart
+alwaysApply: false
+---
+
+# Flutter Conventions
+
+対象: `apps/mobile/`（パッケージ名 `ai_pilot`）
+
+## 基本方針
+
+- **Material3** を使用（`ThemeData(useMaterial3: true)`）
+- 画面遷移は **GoRouter**（`lib/app/router.dart` に集約）
+- 状態管理は **Riverpod 手書き Provider**（コード生成は使わない）
+- UI 文言は **日本語** を前提
+
+## import 順
+
+1. `dart:*`
+2. `package:flutter/*`
+3. 外部 package
+4. `package:ai_pilot/*`（同一 package）
+
+## Widget 設計
+
+- Widget は **小さく分割** する（1 Widget = 1 責務）
+- Page は `features/<name>/presentation/pages/`
+- 再利用 Widget は `presentation/widgets/` または `shared/widgets/`
+- `build` が長くなる前に private Widget または別ファイルへ抽出
+
+## 画面状態
+
+データ取得・更新を伴う画面では、必ず以下を考慮する:
+
+| 状態 | 対応 |
+|------|------|
+| Loading | ローディング表示 |
+| Empty | 空状態メッセージ |
+| Error | エラーメッセージ + 再試行 |
+| Success | 通常表示 |
+
+## 例外処理
+
+- 握りつぶさない（空 catch 禁止）
+- Domain 層: ドメイン例外 / Failure 型で表現
+- Presentation 層: ユーザー向け日本語メッセージに変換
+- 予期しない例外はログ出力し、汎用エラー表示
+
+## 例: Page の基本形
+
+```dart
+class ExamplePage extends ConsumerWidget {
+  const ExamplePage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(exampleProvider);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('タイトル')),
+      body: switch (state) {
+        AsyncLoading() => const Center(child: CircularProgressIndicator()),
+        AsyncError(:final error) => ErrorView(
+            message: '読み込みに失敗しました',
+            onRetry: () => ref.invalidate(exampleProvider),
+          ),
+        AsyncData(:final value) when value.isEmpty => const EmptyView(
+            message: 'データがありません',
+          ),
+        AsyncData(:final value) => ExampleContent(items: value),
+      },
+    );
+  }
+}
+```
