@@ -1,5 +1,8 @@
+import 'package:flutter/foundation.dart' show debugPrint;
+
 import 'package:ai_pilot/features/advisor/domain/entities/advisor_api_response.dart';
 import 'package:ai_pilot/features/advisor/domain/entities/advisor_suggestion.dart';
+import 'package:ai_pilot/features/advisor/domain/exceptions/advisor_api_exception.dart';
 import 'package:ai_pilot/features/advisor/domain/repositories/advisor_api_repository.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/category.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
@@ -9,9 +12,13 @@ import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
 /// [AdvisorApiRepository] 経由で Edge Function（将来 OpenAI Responses API）を呼び出し、
 /// 返却された Workflow ID を [AdvisorSuggestion] に変換する。
 class AdvisorService {
-  AdvisorService({required this._apiRepository});
+  AdvisorService({
+    required this._apiRepository,
+    this._fallbackApiRepository,
+  });
 
   final AdvisorApiRepository _apiRepository;
+  final AdvisorApiRepository? _fallbackApiRepository;
 
   /// 入力 [query] に近い Workflow を最大 [limit] 件返す。
   Future<List<AdvisorSuggestion>> suggest({
@@ -28,7 +35,7 @@ class AdvisorService {
     // TODO(Sprint 12+): Edge Function が OpenAI Responses API を呼ぶようになったら、
     // このメソッドの呼び出し先は SupabaseAdvisorApiRepository のまま。
     // Flutter 側の変更は DTO / 理由文のパース拡張のみで済む想定。
-    final AdvisorApiResponse apiResponse = await _apiRepository.suggest(
+    final AdvisorApiResponse apiResponse = await _requestSuggestions(
       query: trimmedQuery,
       workflows: workflows,
     );
@@ -59,6 +66,29 @@ class AdvisorService {
     }
 
     return suggestions;
+  }
+
+  Future<AdvisorApiResponse> _requestSuggestions({
+    required String query,
+    required List<Workflow> workflows,
+  }) async {
+    try {
+      return await _apiRepository.suggest(query: query, workflows: workflows);
+    } on AdvisorApiException catch (error) {
+      final fallback = _fallbackApiRepository;
+      if (fallback == null) {
+        rethrow;
+      }
+
+      // Edge Function 失敗時はルールベース Mock へフォールバック（UI は継続）。
+      debugPrint(
+        '[AdvisorService] Edge Function failed '
+        '(${error.code.name}): ${error.message}. '
+        'Falling back to local rule-based advisor.',
+      );
+
+      return fallback.suggest(query: query, workflows: workflows);
+    }
   }
 
   String _difficultyLabel(Workflow workflow) {

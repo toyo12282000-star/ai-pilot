@@ -1,7 +1,10 @@
 # OpenAI Integration Plan (Advisor)
 
 Sprint 11.4 で Advisor を **Supabase Edge Function 経由** で拡張できる土台を整備した。
-現時点では Mock レスポンスのみ。本ドキュメントは将来の OpenAI 連携方針をまとめる。
+Sprint 11.5 で Edge Function を Supabase へデプロイ可能にし、Flutter から `.env` 切替で呼び出せるようにした。
+
+**OpenAI Responses API はまだ有効化していない。** Edge Function 内は Mock のまま。  
+API コストを抑えるため、本番 OpenAI 連携までは `OPENAI_API_KEY` を設定しない。
 
 ## 概要
 
@@ -11,7 +14,9 @@ Sprint 11.4 で Advisor を **Supabase Edge Function 経由** で拡張できる
 | 呼び出し元 | Supabase Edge Function `advisor` のみ |
 | API Key 保管 | Edge Function Secret（`OPENAI_API_KEY`） |
 | Flutter | Key を **一切** 持たない |
-| 現状 | Mock `{ recommendationIds, reason }` を返却 |
+| 現状 | Mock Edge Function `{ recommendationIds, reason }` を返却 |
+| OpenAI | **未有効**（Sprint 11.5 時点） |
+| コスト | 本番 OpenAI 連携前まで **OFF**（Secret 未設定） |
 
 ## Responses API
 
@@ -117,7 +122,20 @@ supabase secrets set OPENAI_API_KEY=sk-...
    基本的に変更不要。難易度ラベル等は Flutter 側で Workflow メタデータから算出
 
 4. **`advisorApiRepositoryProvider`**  
-   Edge デプロイ後に `SupabaseAdvisorApiRepository()` へ切替
+   `.env` の `USE_ADVISOR_EDGE_FUNCTION=true` で `SupabaseAdvisorApiRepository` を使用（Sprint 11.5）
+
+## Sprint 11.5: 現行ステータス
+
+| 項目 | 状態 |
+|------|------|
+| Edge Function デプロイ | `supabase functions deploy advisor` |
+| Edge 内部 | Mock スコアリング（OpenAI 未使用） |
+| OpenAI API Key | **未設定**（意図的に OFF） |
+| Flutter 切替 | `USE_ADVISOR_EDGE_FUNCTION`（デフォルト `false`） |
+| 障害時 | ルールベース Mock へフォールバック |
+
+OpenAI を有効化するタイミングで Edge Function 内の `mockSuggest()` を Responses API に差し替え、  
+`supabase secrets set OPENAI_API_KEY=...` を実行する。**それまでは Secret を設定しない。**
 
 ## 将来: Embedding 検索
 

@@ -81,6 +81,7 @@ class _AdvisorPageState extends ConsumerState<AdvisorPage> {
       final resolvedCategories = ref.read(categoriesProvider).valueOrNull ?? [];
 
       final service = ref.read(advisorServiceProvider);
+      // Edge Function 失敗時のフォールバックは AdvisorService 内で処理する。
       final suggestions = await service.suggest(
         query: query,
         workflows: resolvedWorkflows,

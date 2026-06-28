@@ -82,17 +82,49 @@ curl -i --location --request POST \
 
 `<SUPABASE_ANON_KEY>` は `supabase status` の `anon key` を使用してください。
 
-### 4. デプロイ（本番 / ステージング）
+### 4. デプロイ（本番 / ステージング）— Sprint 11.5
+
+リポジトリルートで実行:
 
 ```bash
+supabase link --project-ref <your-project-ref>   # 初回のみ
 supabase functions deploy advisor
 ```
+
+**Sprint 11.5 時点で必要な secret / env: なし**
+
+- OpenAI API Key は **まだ設定しない**
+- Edge Function 内は Mock レスポンスのまま動作確認可能
+
+デプロイ後の URL:
+
+```
+https://<project-ref>.supabase.co/functions/v1/advisor
+```
+
+### 5. Flutter から呼び出す
+
+`apps/mobile/.env`:
+
+```env
+USE_ADVISOR_EDGE_FUNCTION=true
+SUPABASE_URL=https://<project-ref>.supabase.co
+SUPABASE_ANON_KEY=<anon-key>
+```
+
+`flutter run` 後、Advisor 画面で「提案する」を実行。
+
+Edge 未デプロイ・ネットワーク障害時は Flutter 側でルールベース Mock へフォールバックする。
+
+### 6. OpenAI 連携（将来）
 
 OpenAI 連携時は Edge Function の Secret に API Key を設定します（Flutter には置かない）。
 
 ```bash
 supabase secrets set OPENAI_API_KEY=sk-...
 ```
+
+**本番 OpenAI 連携が完了するまで Secret は設定しないこと**（コスト抑制）。
 
 ## 関連ドキュメント
 

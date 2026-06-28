@@ -1,9 +1,26 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:ai_pilot/features/advisor/data/repositories/mock_advisor_api_repository.dart';
+import 'package:ai_pilot/features/advisor/domain/entities/advisor_api_response.dart';
+import 'package:ai_pilot/features/advisor/domain/exceptions/advisor_api_exception.dart';
+import 'package:ai_pilot/features/advisor/domain/repositories/advisor_api_repository.dart';
 import 'package:ai_pilot/features/advisor/domain/services/advisor_service.dart';
 import 'package:ai_pilot/features/recommendation/data/repositories/mock_recommendation_seed_data.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_seed_data.dart';
+import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
+
+class _ThrowingAdvisorApiRepository implements AdvisorApiRepository {
+  @override
+  Future<AdvisorApiResponse> suggest({
+    required String query,
+    required List<Workflow> workflows,
+  }) async {
+    throw const AdvisorApiException(
+      code: AdvisorApiFailureCode.network,
+      message: 'network down',
+    );
+  }
+}
 
 void main() {
   late AdvisorService service;
@@ -73,5 +90,24 @@ void main() {
     );
 
     expect(suggestions.length, lessThanOrEqualTo(3));
+  });
+
+  test('falls back to local mock when edge repository fails', () async {
+    service = AdvisorService(
+      apiRepository: _ThrowingAdvisorApiRepository(),
+      fallbackApiRepository: MockAdvisorApiRepository(
+        recommendations: mockRecommendations,
+        categories: mockCategories,
+      ),
+    );
+
+    final suggestions = await service.suggest(
+      query: 'YouTubeを始めたい',
+      workflows: mockWorkflows,
+      categories: mockCategories,
+    );
+
+    expect(suggestions, isNotEmpty);
+    expect(suggestions.first.workflow.id, 'wf_youtube_short');
   });
 }

@@ -7,12 +7,10 @@ import 'package:ai_pilot/features/advisor/domain/services/advisor_service.dart';
 import 'package:ai_pilot/features/advisor/domain/services/workflow_advisor_service.dart';
 import 'package:ai_pilot/features/recommendation/presentation/providers/recommendation_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
+import 'package:ai_pilot/shared/config/advisor_config.dart';
 
-/// Advisor API（Edge Function）Repository。
-///
-/// Edge Function 未デプロイ時は Mock（ルールベース）を使用。
-/// デプロイ後は [SupabaseAdvisorApiRepository] に切り替える。
-final advisorApiRepositoryProvider = Provider<AdvisorApiRepository>((ref) {
+/// ルールベース Mock Repository（Edge 未使用時 / フォールバック用）。
+final mockAdvisorApiRepositoryProvider = Provider<MockAdvisorApiRepository>((ref) {
   final recommendations = ref.watch(recommendationsProvider).valueOrNull ?? [];
   final categories = ref.watch(categoriesProvider).valueOrNull ?? [];
 
@@ -20,16 +18,33 @@ final advisorApiRepositoryProvider = Provider<AdvisorApiRepository>((ref) {
     recommendations: recommendations,
     categories: categories,
   );
-  // 本番切替例:
-  // return SupabaseAdvisorApiRepository();
+});
+
+/// Advisor API（Edge Function）Repository。
+///
+/// `.env` の `USE_ADVISOR_EDGE_FUNCTION=true` で [SupabaseAdvisorApiRepository]。
+/// デフォルトは [MockAdvisorApiRepository]。
+final advisorApiRepositoryProvider = Provider<AdvisorApiRepository>((ref) {
+  if (AdvisorConfig.useEdgeFunction) {
+    return SupabaseAdvisorApiRepository();
+  }
+  return ref.watch(mockAdvisorApiRepositoryProvider);
 });
 
 /// Workflow 推薦ロジック（Repository 経由）。
-final advisorServiceProvider = Provider<AdvisorService>(
-  (ref) => AdvisorService(
-    apiRepository: ref.watch(advisorApiRepositoryProvider),
-  ),
-);
+final advisorServiceProvider = Provider<AdvisorService>((ref) {
+  final mockRepository = ref.watch(mockAdvisorApiRepositoryProvider);
+
+  if (AdvisorConfig.useEdgeFunction) {
+    return AdvisorService(
+      apiRepository: ref.watch(advisorApiRepositoryProvider),
+      // Edge Function 失敗時はルールベース Mock へフォールバック。
+      fallbackApiRepository: mockRepository,
+    );
+  }
+
+  return AdvisorService(apiRepository: mockRepository);
+});
 
 /// ルールベース推薦（Mock Repository 内部 / 単体テスト用）。
 final workflowAdvisorServiceProvider = Provider<WorkflowAdvisorService>(

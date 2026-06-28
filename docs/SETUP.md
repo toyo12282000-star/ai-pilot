@@ -77,6 +77,73 @@ flutter analyze
 flutter test
 ```
 
+## Advisor Edge Function（Sprint 11.5）
+
+Advisor の推薦 API は Supabase Edge Function `advisor` 経由で呼び出せます。  
+**現状は Mock レスポンスのみ**（OpenAI 未有効・Secret 不要）。
+
+### 1. Edge Function をデプロイ
+
+リポジトリルートで実行します。
+
+```bash
+# Supabase CLI でプロジェクトにリンク済みであること
+supabase functions deploy advisor
+```
+
+- 必要な env / secret: **なし**（OpenAI API Key はまだ設定しない）
+- 詳細: [supabase/functions/advisor/README.md](../supabase/functions/advisor/README.md)
+
+### 2. Flutter の `.env` 切替
+
+```bash
+cd apps/mobile
+cp .env.example .env
+```
+
+| 変数 | デフォルト | 説明 |
+|------|-----------|------|
+| `USE_ADVISOR_EDGE_FUNCTION` | `false` | `true` で Edge Function 呼び出し |
+
+```env
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+USE_ADVISOR_EDGE_FUNCTION=true
+```
+
+- デフォルト（`false`）: ルールベース `MockAdvisorApiRepository`
+- `true`: `SupabaseAdvisorApiRepository` → `functions/v1/advisor`
+- Edge Function 失敗時は **ルールベース Mock へ自動フォールバック**（`debugPrint` にログ）
+
+### 3. 確認手順
+
+**A. curl（デプロイ直後）**
+
+```bash
+curl -i --location --request POST \
+  "${SUPABASE_URL}/functions/v1/advisor" \
+  --header "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+  --header "Content-Type: application/json" \
+  --data '{
+    "query": "YouTubeを始めたい",
+    "workflows": [
+      {
+        "id": "wf_youtube_short",
+        "title": "YouTubeショートを作る",
+        "description": "企画から投稿まで",
+        "tags": ["YouTube", "ショート"]
+      }
+    ]
+  }'
+```
+
+**B. Flutter アプリ**
+
+1. `.env` に `USE_ADVISOR_EDGE_FUNCTION=true` を設定
+2. `flutter run -d chrome` で Advisor 画面を開く
+3. 相談を入力して「提案する」→ 結果が表示されれば OK
+4. Edge 未デプロイ時もフォールバックで結果表示（コンソールに `[AdvisorService] Edge Function failed` ログ）
+
 ## 正式ロゴへの差し替え
 
 1. `assets/app_icon/app_icon.svg` を正式デザインに差し替え
