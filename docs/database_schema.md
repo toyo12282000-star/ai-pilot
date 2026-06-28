@@ -1,24 +1,28 @@
 # AI Pilot Database Schema
 
 Sprint 8.2 で定義した Supabase PostgreSQL スキーマ。  
-Flutter 側の Repository 置き換えは後続スプリントで行う。
+Sprint 10.2 で admin 権限基盤（`role`, 監査カラム, admin RLS）を追加。
 
-マイグレーション: [`supabase/migrations/001_initial_schema.sql`](../supabase/migrations/001_initial_schema.sql)
+マイグレーション:
+
+- [`supabase/migrations/001_initial_schema.sql`](../supabase/migrations/001_initial_schema.sql)
+- [`supabase/migrations/002_seed_initial_data.sql`](../supabase/migrations/002_seed_initial_data.sql)
+- [`supabase/migrations/003_admin_foundation.sql`](../supabase/migrations/003_admin_foundation.sql)
 
 ## テーブル一覧
 
 | テーブル | 説明 | RLS |
 |---------|------|-----|
-| `profiles` | ユーザープロフィール（`auth.users` と 1:1） | 本人のみ SELECT / UPDATE |
-| `categories` | ワークフロー分類 | Public read |
-| `ai_tools` | 利用可能な AI ツール定義 | Public read |
-| `workflows` | ワークフロー本体 | Public read |
-| `workflow_steps` | ワークフロー内ステップ | Public read |
-| `prompt_templates` | プロンプトテンプレート | Public read |
+| `profiles` | ユーザープロフィール（`auth.users` と 1:1） | 本人のみ SELECT / UPDATE（`role` 自己変更不可） |
+| `categories` | ワークフロー分類 | Public read + admin CRUD |
+| `ai_tools` | 利用可能な AI ツール定義 | Public read + admin CRUD |
+| `workflows` | ワークフロー本体 | Public read + admin CRUD |
+| `workflow_steps` | ワークフロー内ステップ | Public read + admin CRUD |
+| `prompt_templates` | プロンプトテンプレート | Public read + admin CRUD |
 | `favorites` | ユーザーお気に入り | 本人のみ CRUD |
 | `workflow_run_histories` | 実行・再開履歴 | 本人のみ CRUD |
-| `recommendations` | ホーム「何をしたいですか？」カード | Public read |
-| `recommendation_workflows` | おすすめと Workflow の中間テーブル | Public read |
+| `recommendations` | ホーム「何をしたいですか？」カード | Public read + admin CRUD |
+| `recommendation_workflows` | おすすめと Workflow の中間テーブル | Public read + admin CRUD |
 
 ## ER 図（リレーション）
 
@@ -41,6 +45,7 @@ erDiagram
     uuid id PK
     text display_name
     text avatar_url
+    text role
     timestamptz created_at
     timestamptz updated_at
   }
@@ -62,6 +67,8 @@ erDiagram
     uuid category_id FK
     text title
     boolean is_published
+    uuid created_by FK
+    uuid updated_by FK
   }
 
   workflow_steps {
@@ -115,10 +122,12 @@ erDiagram
 | `id` | uuid PK | `auth.users(id)` を参照 |
 | `display_name` | text | |
 | `avatar_url` | text | |
+| `role` | text NOT NULL | デフォルト `'user'`。`'user'` \| `'admin'`（Sprint 10.2） |
 | `created_at` | timestamptz | デフォルト `now()` |
 | `updated_at` | timestamptz | 更新トリガーで自動更新 |
 
-メールアドレスは `auth.users.email` に保持し、`profiles` には持たない。
+メールアドレスは `auth.users.email` に保持し、`profiles` には持たない。  
+`role` の変更は JWT 経由では不可（`profiles_protect_role` トリガー）。初回 admin は SQL Editor（service role）で付与。
 
 ### categories
 
@@ -154,6 +163,8 @@ erDiagram
 | `estimated_minutes` | int | |
 | `tags` | text[] | デフォルト `'{}'` |
 | `is_published` | boolean | デフォルト `true` |
+| `created_by` | uuid FK → profiles | ON DELETE SET NULL。Seed 行は NULL（Sprint 10.2） |
+| `updated_by` | uuid FK → profiles | UPDATE 時にトリガーで `auth.uid()` を設定（Sprint 10.2） |
 | `created_at` / `updated_at` | timestamptz | |
 
 ### workflow_steps
@@ -233,6 +244,9 @@ erDiagram
 | インデックス | カラム |
 |-------------|--------|
 | `workflows_category_id_idx` | `workflows.category_id` |
+| `workflows_created_by_idx` | `workflows.created_by` |
+| `workflows_updated_by_idx` | `workflows.updated_by` |
+| `profiles_role_idx` | `profiles.role` |
 | `workflow_steps_workflow_id_idx` | `workflow_steps.workflow_id` |
 | `favorites_user_id_idx` | `favorites.user_id` |
 | `favorites_workflow_id_idx` | `favorites.workflow_id` |
@@ -249,6 +263,24 @@ erDiagram
 - 関数: `public.handle_new_user()`（`SECURITY DEFINER`）
 - トリガー: `on_auth_user_created`
 - `display_name` は OAuth メタデータ → メールのローカル部の順でフォールバック
+
+### profiles.role 保護（Sprint 10.2）
+
+- 関数: `public.protect_profiles_role()`
+- トリガー: `profiles_protect_role`（BEFORE UPDATE）
+- `auth.uid()` があるリクエストでは `role` 列の変更を拒否
+
+### workflows.updated_by 自動設定（Sprint 10.2）
+
+- 関数: `public.set_workflows_updated_by()`
+- トリガー: `workflows_set_updated_by`（BEFORE UPDATE）
+- `NEW.updated_by = auth.uid()`
+
+### public.is_admin()（Sprint 10.2）
+
+- `public.is_admin(user_id uuid) → boolean`
+- `SECURITY DEFINER`, `SET search_path = public`
+- `profiles.role = 'admin'` かどうかを返す（admin RLS ポリシーで使用）
 
 ### updated_at 自動更新
 
@@ -279,11 +311,32 @@ erDiagram
 
 | テーブル | SELECT | INSERT | UPDATE | DELETE |
 |---------|--------|--------|--------|--------|
-| `profiles` | 本人 | トリガーのみ | 本人 | — |
+| `profiles` | 本人 | トリガーのみ | 本人（`role` 変更不可） | — |
 | `favorites` | 本人 | 本人 | — | 本人 |
 | `workflow_run_histories` | 本人 | 本人 | 本人 | 本人 |
 
-コンテンツマスタ（categories, workflows 等）の INSERT / UPDATE / DELETE は今回ポリシーを定義していない。管理画面または service role / 将来の admin ロールで行う想定。
+### Admin CRUD（`authenticated` + `profiles.role = 'admin'`）
+
+Sprint 10.2 で追加。`public.is_admin(auth.uid())` が true のユーザーのみ INSERT / UPDATE / DELETE 可能。  
+Public read ポリシーと併存（一般ユーザー・ゲストは SELECT のみ）。
+
+| テーブル | ポリシー名 |
+|---------|-----------|
+| `categories` | `Admins can manage categories` |
+| `ai_tools` | `Admins can manage ai_tools` |
+| `prompt_templates` | `Admins can manage prompt_templates` |
+| `workflows` | `Admins can manage workflows` |
+| `workflow_steps` | `Admins can manage workflow_steps` |
+| `recommendations` | `Admins can manage recommendations` |
+| `recommendation_workflows` | `Admins can manage recommendation_workflows` |
+
+初回 admin 付与:
+
+```sql
+UPDATE public.profiles SET role = 'admin' WHERE id = 'YOUR_USER_ID';
+```
+
+（SQL Editor / service role で実行。Flutter に service_role key を入れないこと）
 
 ## 今回作らないテーブル
 
@@ -293,7 +346,6 @@ erDiagram
 | ゲストセッション | Flutter 側 `guestModeProvider` でローカル管理（Sprint 8.1） |
 | ステップ単位の完了メモ / 進捗詳細 | `workflow_run_histories.last_step_index` で十分。必要になれば拡張 |
 | ユーザー設定（通知・テーマ等） | 未実装機能 |
-| 管理者 / ロール | コンテンツ管理 UI 未着手 |
 | 監査ログ / Analytics | 別基盤で対応予定 |
 | 全文検索用 VIEW / マテリアライズド VIEW | 現行はアプリ側フィルタ。必要時に追加 |
 | `favorites` / `workflow_run_histories` の Seed | ユーザー依存のため別途（認証後にアプリ or 手動投入） |
@@ -374,4 +426,5 @@ supabase db push
 # または SQL Editor / psql で直接実行（順番に適用）
 psql "$DATABASE_URL" -f supabase/migrations/001_initial_schema.sql
 psql "$DATABASE_URL" -f supabase/migrations/002_seed_initial_data.sql
+psql "$DATABASE_URL" -f supabase/migrations/003_admin_foundation.sql
 ```
