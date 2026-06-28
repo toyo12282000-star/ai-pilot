@@ -3,13 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:ai_pilot/design_system/spacing.dart';
-import 'package:ai_pilot/features/favorite/presentation/providers/favorite_providers.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/home_section_header.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/recommended_workflow_card.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow_run_history.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_run_history_providers.dart';
+import 'package:ai_pilot/shared/providers/authenticated_user_provider.dart';
 
 /// 最近使った Workflow 横スクロールセクション。
 class RecentWorkflowSection extends ConsumerWidget {
@@ -32,8 +32,12 @@ class RecentWorkflowSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final historiesAsync =
-        ref.watch(recentWorkflowHistoriesProvider(mockCurrentUserId));
+    final isAuthenticated = ref.watch(isAuthenticatedProvider);
+    if (!isAuthenticated) {
+      return const SizedBox.shrink();
+    }
+
+    final historiesAsync = ref.watch(recentWorkflowHistoriesProvider);
     final allWorkflows =
         ref.watch(workflowsProvider).valueOrNull ?? const <Workflow>[];
 

@@ -8,10 +8,10 @@ import 'package:ai_pilot/design_system/icons.dart';
 class MainShell extends StatelessWidget {
   const MainShell({
     super.key,
-    required this.child,
+    required this.navigationShell,
   });
 
-  final Widget child;
+  final StatefulNavigationShell navigationShell;
 
   static const _destinations = [
     NavigationDestination(
@@ -26,30 +26,18 @@ class MainShell extends StatelessWidget {
     ),
   ];
 
-  int _selectedIndex(String location) {
-    if (location.startsWith('/favorites')) {
-      return 1;
-    }
-    return 0;
-  }
-
-  void _onDestinationSelected(BuildContext context, int index) {
-    switch (index) {
-      case 0:
-        context.go('/');
-      case 1:
-        context.go('/favorites');
-    }
+  void _onDestinationSelected(int index) {
+    navigationShell.goBranch(
+      index,
+      initialLocation: index == navigationShell.currentIndex,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final location = GoRouterState.of(context).uri.path;
-    final selectedIndex = _selectedIndex(location);
-
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: child,
+      body: navigationShell,
       bottomNavigationBar: DecoratedBox(
         decoration: const BoxDecoration(
           border: Border(
@@ -57,9 +45,8 @@ class MainShell extends StatelessWidget {
           ),
         ),
         child: NavigationBar(
-          selectedIndex: selectedIndex,
-          onDestinationSelected: (index) =>
-              _onDestinationSelected(context, index),
+          selectedIndex: navigationShell.currentIndex,
+          onDestinationSelected: _onDestinationSelected,
           destinations: _destinations,
         ),
       ),

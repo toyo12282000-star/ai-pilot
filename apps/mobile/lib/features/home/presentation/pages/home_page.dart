@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
-import 'package:ai_pilot/features/favorite/presentation/providers/favorite_providers.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/ai_recommendation_section.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/category_chip_list.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/home_hero_section.dart';
@@ -17,7 +16,6 @@ import 'package:ai_pilot/features/recommendation/presentation/providers/recommen
 import 'package:ai_pilot/features/workflow/domain/entities/category.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
-import 'package:ai_pilot/features/workflow/presentation/providers/workflow_run_history_providers.dart';
 import 'package:ai_pilot/shared/widgets/empty_view.dart';
 import 'package:ai_pilot/shared/widgets/error_view.dart';
 import 'package:ai_pilot/shared/widgets/fade_slide_in.dart';
@@ -118,7 +116,6 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(recentWorkflowHistoriesProvider(mockCurrentUserId));
     final workflowsAsync = _isSearching
         ? ref.watch(searchWorkflowsProvider(_trimmedSearchQuery))
         : ref.watch(workflowsProvider);

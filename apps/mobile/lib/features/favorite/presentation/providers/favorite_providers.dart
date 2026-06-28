@@ -1,54 +1,54 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:ai_pilot/features/favorite/data/repositories/mock_favorite_repository.dart';
+import 'package:ai_pilot/features/favorite/data/repositories/supabase_favorite_repository.dart';
 import 'package:ai_pilot/features/favorite/domain/entities/favorite.dart';
 import 'package:ai_pilot/features/favorite/domain/repositories/favorite_repository.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
-
-/// Mock 開発用の現在ユーザー ID。
-const String mockCurrentUserId = 'user-1';
+import 'package:ai_pilot/shared/providers/authenticated_user_provider.dart';
 
 // ---------------------------------------------------------------------------
 // Repository Provider
 // ---------------------------------------------------------------------------
 
-/// [FavoriteRepository] を提供する（Mock 実装）。
-///
-/// セッション中は同一インスタンスを保持し、お気に入りの追加・削除状態を維持する。
+/// [FavoriteRepository] を提供する（Supabase 実装）。
 final favoriteRepositoryProvider = Provider<FavoriteRepository>((ref) {
-  return MockFavoriteRepository();
+  return SupabaseFavoriteRepository();
 });
 
 // ---------------------------------------------------------------------------
 // AsyncValue Providers（UI 向け）
 // ---------------------------------------------------------------------------
 
-/// 指定ユーザーのお気に入り一覧。
-final favoritesProvider = FutureProvider.family<List<Favorite>, String>(
-  (ref, userId) {
-    return ref.watch(favoriteRepositoryProvider).fetchFavorites(userId);
+/// 認証済みユーザーのお気に入り一覧。ゲストは Supabase を呼ばず空リスト。
+final favoritesProvider = FutureProvider<List<Favorite>>((ref) {
+  if (!ref.watch(isAuthenticatedProvider)) {
+    return Future.value(const []);
+  }
+
+  final userId = ref.watch(authenticatedUserIdProvider)!;
+  return ref.watch(favoriteRepositoryProvider).fetchFavorites(userId);
+});
+
+/// 指定ワークフローがお気に入り登録済みか判定する。ゲストは Supabase を呼ばず false。
+final isFavoriteProvider = FutureProvider.family<bool, String>(
+  (ref, workflowId) {
+    if (!ref.watch(isAuthenticatedProvider)) {
+      return Future.value(false);
+    }
+
+    final userId = ref.watch(authenticatedUserIdProvider)!;
+    return ref.watch(favoriteRepositoryProvider).isFavorite(userId, workflowId);
   },
 );
 
-/// お気に入り判定用のパラメータ。
-typedef IsFavoriteParams = ({String userId, String workflowId});
-
-/// 指定ワークフローがお気に入り登録済みか判定する。
-final isFavoriteProvider = FutureProvider.family<bool, IsFavoriteParams>(
-  (ref, params) {
-    return ref
-        .watch(favoriteRepositoryProvider)
-        .isFavorite(params.userId, params.workflowId);
-  },
-);
-
-/// お気に入り登録済み [Workflow] 一覧。
-///
-/// [favoritesProvider] で取得した workflowId から [Workflow] を解決する。
+/// お気に入り登録済み [Workflow] 一覧。ゲストは Supabase / Workflow を呼ばず空リスト。
 final favoriteWorkflowsProvider = FutureProvider<List<Workflow>>((ref) async {
-  final favorites =
-      await ref.watch(favoritesProvider(mockCurrentUserId).future);
+  if (!ref.watch(isAuthenticatedProvider)) {
+    return const [];
+  }
+
+  final favorites = await ref.watch(favoritesProvider.future);
   if (favorites.isEmpty) {
     return [];
   }
@@ -62,3 +62,23 @@ final favoriteWorkflowsProvider = FutureProvider<List<Workflow>>((ref) async {
 
   return workflows.whereType<Workflow>().toList();
 });
+
+/// お気に入り関連 Provider を再取得する。
+void invalidateFavorites(WidgetRef ref) {
+  if (!ref.read(isAuthenticatedProvider)) {
+    return;
+  }
+
+  ref.invalidate(favoritesProvider);
+  ref.invalidate(favoriteWorkflowsProvider);
+}
+
+/// 指定 Workflow のお気に入り状態 Provider を再取得する。
+void invalidateFavoriteForWorkflow(WidgetRef ref, String workflowId) {
+  if (!ref.read(isAuthenticatedProvider)) {
+    return;
+  }
+
+  invalidateFavorites(ref);
+  ref.invalidate(isFavoriteProvider(workflowId));
+}

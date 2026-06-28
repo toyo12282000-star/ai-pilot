@@ -45,20 +45,30 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      ShellRoute(
-        builder: (context, state, child) => MainShell(child: child),
-        routes: [
-          GoRoute(
-            path: '/',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: HomePage(),
-            ),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return MainShell(navigationShell: navigationShell);
+        },
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/',
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: HomePage(),
+                ),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/favorites',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: FavoritesPage(),
-            ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/favorites',
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: FavoritesPage(),
+                ),
+              ),
+            ],
           ),
         ],
       ),

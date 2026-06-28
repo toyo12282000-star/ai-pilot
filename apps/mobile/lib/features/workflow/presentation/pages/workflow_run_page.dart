@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
-import 'package:ai_pilot/features/favorite/presentation/providers/favorite_providers.dart';
+import 'package:ai_pilot/shared/providers/authenticated_user_provider.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/ai_tool.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/prompt_template.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
@@ -100,37 +100,34 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
     }
     _historyStarted = true;
 
+    final userId = ref.read(authenticatedUserIdProvider);
+    if (userId == null) {
+      return;
+    }
+
     final repository = ref.read(workflowRunHistoryRepositoryProvider);
-    await repository.startWorkflow(mockCurrentUserId, widget.workflow.id);
-    invalidateWorkflowRunHistoryForWorkflow(
-      ref,
-      mockCurrentUserId,
-      widget.workflow.id,
-    );
+    await repository.startWorkflow(userId, widget.workflow.id);
+    invalidateWorkflowRunHistoryForWorkflow(ref, widget.workflow.id);
   }
 
   Future<void> _updateProgress(int stepIndex) async {
+    final userId = ref.read(authenticatedUserIdProvider);
+    if (userId == null) {
+      return;
+    }
+
     final repository = ref.read(workflowRunHistoryRepositoryProvider);
-    await repository.updateProgress(
-      mockCurrentUserId,
-      widget.workflow.id,
-      stepIndex,
-    );
-    invalidateWorkflowRunHistoryForWorkflow(
-      ref,
-      mockCurrentUserId,
-      widget.workflow.id,
-    );
+    await repository.updateProgress(userId, widget.workflow.id, stepIndex);
+    invalidateWorkflowRunHistoryForWorkflow(ref, widget.workflow.id);
   }
 
   Future<void> _completeWorkflow() async {
-    final repository = ref.read(workflowRunHistoryRepositoryProvider);
-    await repository.completeWorkflow(mockCurrentUserId, widget.workflow.id);
-    invalidateWorkflowRunHistoryForWorkflow(
-      ref,
-      mockCurrentUserId,
-      widget.workflow.id,
-    );
+    final userId = ref.read(authenticatedUserIdProvider);
+    if (userId != null) {
+      final repository = ref.read(workflowRunHistoryRepositoryProvider);
+      await repository.completeWorkflow(userId, widget.workflow.id);
+      invalidateWorkflowRunHistoryForWorkflow(ref, widget.workflow.id);
+    }
 
     if (!mounted) {
       return;
