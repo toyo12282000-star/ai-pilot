@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:ai_pilot/app/main_shell.dart';
+import 'package:ai_pilot/features/advisor/presentation/pages/advisor_page.dart';
 import 'package:ai_pilot/features/auth/presentation/pages/email_auth_page.dart';
 import 'package:ai_pilot/features/auth/presentation/pages/login_page.dart';
 import 'package:ai_pilot/features/auth/presentation/providers/auth_providers.dart';
@@ -85,6 +86,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: '/advisor',
+        builder: (context, state) => const AdvisorPage(),
       ),
       GoRoute(
         path: '/workflows/:id/run',

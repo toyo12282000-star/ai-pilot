@@ -295,6 +295,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           },
           onRefresh: _refresh,
           onRetry: _retry,
+          onAdvisorTap: () => context.push('/advisor'),
         ),
       ),
     );
@@ -341,6 +342,7 @@ class _HomeBody extends StatelessWidget {
     required this.onCategorySelected,
     required this.onRefresh,
     required this.onRetry,
+    required this.onAdvisorTap,
   });
 
   final TextEditingController searchController;
@@ -363,6 +365,7 @@ class _HomeBody extends StatelessWidget {
   final ValueChanged<String?> onCategorySelected;
   final Future<void> Function() onRefresh;
   final VoidCallback onRetry;
+  final VoidCallback onAdvisorTap;
 
   int get _categorySectionIndex {
     var index = 1;
@@ -393,6 +396,7 @@ class _HomeBody extends StatelessWidget {
             onSearchChanged: onSearchChanged,
             onSearchClear: onSearchClear,
             showClearButton: searchQuery.isNotEmpty,
+            onAdvisorTap: onAdvisorTap,
           ),
         ),
         if (showAiRecommendations)

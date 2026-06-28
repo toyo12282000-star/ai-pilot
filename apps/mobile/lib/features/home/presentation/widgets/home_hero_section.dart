@@ -6,7 +6,7 @@ import 'package:ai_pilot/design_system/typography.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_search_bar.dart';
 import 'package:ai_pilot/shared/widgets/hero_gradient_card.dart';
 
-/// ホーム上部の Hero セクション（見出し + 検索）。
+/// ホーム上部の Hero セクション（AI相談 + 検索）。
 class HomeHeroSection extends StatelessWidget {
   const HomeHeroSection({
     super.key,
@@ -14,12 +14,14 @@ class HomeHeroSection extends StatelessWidget {
     required this.onSearchChanged,
     required this.onSearchClear,
     required this.showClearButton,
+    required this.onAdvisorTap,
   });
 
   final TextEditingController searchController;
   final ValueChanged<String> onSearchChanged;
   final VoidCallback onSearchClear;
   final bool showClearButton;
+  final VoidCallback onAdvisorTap;
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +56,16 @@ class HomeHeroSection extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.s24),
+            FilledButton.tonalIcon(
+              onPressed: onAdvisorTap,
+              icon: const Icon(Icons.auto_awesome_rounded),
+              label: const Text('AIに相談する'),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+                alignment: Alignment.centerLeft,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.s16),
             WorkflowSearchBar(
               controller: searchController,
               onChanged: onSearchChanged,
