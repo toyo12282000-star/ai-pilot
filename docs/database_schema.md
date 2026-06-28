@@ -1,13 +1,15 @@
 # AI Pilot Database Schema
 
 Sprint 8.2 で定義した Supabase PostgreSQL スキーマ。  
-Sprint 10.2 で admin 権限基盤（`role`, 監査カラム, admin RLS）を追加。
+Sprint 10.2 で admin 権限基盤（`role`, 監査カラム, admin RLS）を追加。  
+Sprint 11.3 で Advisor 相談履歴（`advisor_histories`）を追加。
 
 マイグレーション:
 
 - [`supabase/migrations/001_initial_schema.sql`](../supabase/migrations/001_initial_schema.sql)
 - [`supabase/migrations/002_seed_initial_data.sql`](../supabase/migrations/002_seed_initial_data.sql)
 - [`supabase/migrations/003_admin_foundation.sql`](../supabase/migrations/003_admin_foundation.sql)
+- [`supabase/migrations/004_advisor_history.sql`](../supabase/migrations/004_advisor_history.sql)
 
 ## テーブル一覧
 
@@ -21,6 +23,7 @@ Sprint 10.2 で admin 権限基盤（`role`, 監査カラム, admin RLS）を追
 | `prompt_templates` | プロンプトテンプレート | Public read + admin CRUD |
 | `favorites` | ユーザーお気に入り | 本人のみ CRUD |
 | `workflow_run_histories` | 実行・再開履歴 | 本人のみ CRUD |
+| `advisor_histories` | Advisor 相談履歴 | 本人のみ SELECT / INSERT / DELETE |
 | `recommendations` | ホーム「何をしたいですか？」カード | Public read + admin CRUD |
 | `recommendation_workflows` | おすすめと Workflow の中間テーブル | Public read + admin CRUD |
 
@@ -31,6 +34,7 @@ erDiagram
   auth_users ||--|| profiles : "1:1"
   profiles ||--o{ favorites : "has"
   profiles ||--o{ workflow_run_histories : "has"
+  profiles ||--o{ advisor_histories : "has"
   categories ||--o{ workflows : "contains"
   workflows ||--o{ workflow_steps : "has"
   workflows ||--o{ favorites : "favorited"
@@ -98,6 +102,14 @@ erDiagram
     uuid workflow_id FK
     int last_step_index
     boolean is_completed
+  }
+
+  advisor_histories {
+    uuid id PK
+    uuid user_id FK
+    text query
+    uuid[] suggested_workflow_ids
+    timestamptz created_at
   }
 
   recommendations {
@@ -219,6 +231,18 @@ erDiagram
 | `updated_at` | timestamptz | |
 | UNIQUE | `(user_id, workflow_id)` | 1 ユーザー 1 Workflow につき 1 レコード |
 
+### advisor_histories（Sprint 11.3）
+
+| カラム | 型 | 備考 |
+|--------|-----|------|
+| `id` | uuid PK | `gen_random_uuid()` |
+| `user_id` | uuid FK → profiles | ON DELETE CASCADE |
+| `query` | text NOT NULL | ユーザーが入力した相談内容 |
+| `suggested_workflow_ids` | uuid[] | 提案された Workflow ID 一覧。デフォルト `'{}'` |
+| `created_at` | timestamptz | デフォルト `now()` |
+
+ゲスト（未ログイン / ゲストモード）は RLS により INSERT 不可。Flutter 側でも `isAuthenticatedProvider` が false のとき保存しない。
+
 ### recommendations
 
 | カラム | 型 | 備考 |
@@ -251,6 +275,8 @@ erDiagram
 | `favorites_user_id_idx` | `favorites.user_id` |
 | `favorites_workflow_id_idx` | `favorites.workflow_id` |
 | `workflow_run_histories_user_id_idx` | `workflow_run_histories.user_id` |
+| `advisor_histories_user_id_idx` | `advisor_histories.user_id` |
+| `advisor_histories_created_at_idx` | `advisor_histories.created_at DESC` |
 | `recommendations_priority_idx` | `recommendations.priority` |
 | `recommendation_workflows_recommendation_id_idx` | `recommendation_workflows.recommendation_id` |
 
@@ -314,6 +340,7 @@ erDiagram
 | `profiles` | 本人 | トリガーのみ | 本人（`role` 変更不可） | — |
 | `favorites` | 本人 | 本人 | — | 本人 |
 | `workflow_run_histories` | 本人 | 本人 | 本人 | 本人 |
+| `advisor_histories` | 本人 | 本人 | — | 本人 |
 
 ### Admin CRUD（`authenticated` + `profiles.role = 'admin'`）
 
@@ -427,4 +454,5 @@ supabase db push
 psql "$DATABASE_URL" -f supabase/migrations/001_initial_schema.sql
 psql "$DATABASE_URL" -f supabase/migrations/002_seed_initial_data.sql
 psql "$DATABASE_URL" -f supabase/migrations/003_admin_foundation.sql
+psql "$DATABASE_URL" -f supabase/migrations/004_advisor_history.sql
 ```

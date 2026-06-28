@@ -3,24 +3,38 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:ai_pilot/features/advisor/data/repositories/mock_advisor_history_repository.dart';
 import 'package:ai_pilot/features/advisor/presentation/pages/advisor_page.dart';
+import 'package:ai_pilot/features/advisor/presentation/providers/advisor_history_providers.dart';
 import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_example_chips.dart';
 import 'package:ai_pilot/features/recommendation/data/repositories/mock_recommendation_repository.dart';
 import 'package:ai_pilot/features/recommendation/presentation/providers/recommendation_providers.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_category_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_repository.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
+import 'package:ai_pilot/shared/providers/authenticated_user_provider.dart';
 
 void main() {
-  Future<void> pumpAdvisorPage(WidgetTester tester, GoRouter router) async {
+  List<Override> baseOverrides({String? userId}) {
+    return [
+      workflowRepositoryProvider.overrideWithValue(MockWorkflowRepository()),
+      categoryRepositoryProvider.overrideWithValue(MockCategoryRepository()),
+      recommendationRepositoryProvider
+          .overrideWithValue(MockRecommendationRepository()),
+      advisorHistoryRepositoryProvider
+          .overrideWithValue(MockAdvisorHistoryRepository()),
+      authenticatedUserIdProvider.overrideWith((ref) => userId),
+    ];
+  }
+
+  Future<void> pumpAdvisorPage(
+    WidgetTester tester,
+    GoRouter router, {
+    String? userId,
+  }) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          workflowRepositoryProvider.overrideWithValue(MockWorkflowRepository()),
-          categoryRepositoryProvider.overrideWithValue(MockCategoryRepository()),
-          recommendationRepositoryProvider
-              .overrideWithValue(MockRecommendationRepository()),
-        ],
+        overrides: baseOverrides(userId: userId),
         child: MaterialApp.router(routerConfig: router),
       ),
     );
@@ -55,6 +69,42 @@ void main() {
     for (final example in AdvisorExampleChips.exampleQueries) {
       expect(find.text(example), findsOneWidget);
     }
+  });
+
+  testWidgets('Guest does not show recent history section', (tester) async {
+    await pumpAdvisorPage(tester, buildRouter());
+
+    expect(find.text('最近の相談'), findsNothing);
+  });
+
+  testWidgets('Authenticated user sees recent history section', (tester) async {
+    await pumpAdvisorPage(tester, buildRouter(), userId: 'user-1');
+
+    expect(find.text('最近の相談'), findsOneWidget);
+    expect(find.text('YouTubeを始めたい'), findsWidgets);
+  });
+
+  testWidgets('Recent history tap refills query', (tester) async {
+    await pumpAdvisorPage(tester, buildRouter(), userId: 'user-1');
+
+    await tester.tap(find.text('1件のWorkflowを提案'));
+    await tester.pump();
+
+    final textField = tester.widget<TextField>(find.byType(TextField));
+    expect(textField.controller?.text, 'YouTubeを始めたい');
+
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  });
+
+  testWidgets('Recent history delete removes item', (tester) async {
+    await pumpAdvisorPage(tester, buildRouter(), userId: 'user-1');
+
+    expect(find.text('1件のWorkflowを提案'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('削除'));
+    await tester.pumpAndSettle(const Duration(milliseconds: 400));
+
+    expect(find.text('1件のWorkflowを提案'), findsNothing);
   });
 
   testWidgets('Advisor page shows input helper text', (tester) async {

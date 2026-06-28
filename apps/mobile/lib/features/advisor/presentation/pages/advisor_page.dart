@@ -6,14 +6,17 @@ import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
 import 'package:ai_pilot/features/advisor/domain/entities/advisor_suggestion.dart';
+import 'package:ai_pilot/features/advisor/presentation/providers/advisor_history_providers.dart';
 import 'package:ai_pilot/features/advisor/presentation/providers/advisor_providers.dart';
 import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_empty_section.dart';
 import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_hero_section.dart';
 import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_input_section.dart';
 import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_loading_section.dart';
+import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_recent_history_section.dart';
 import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_suggestion_card.dart';
 import 'package:ai_pilot/features/recommendation/presentation/providers/recommendation_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
+import 'package:ai_pilot/shared/providers/authenticated_user_provider.dart';
 import 'package:ai_pilot/shared/widgets/fade_slide_in.dart';
 
 /// 提案中の最低表示時間（体験用・短め）。
@@ -94,10 +97,37 @@ class _AdvisorPageState extends ConsumerState<AdvisorPage> {
       setState(() {
         _suggestions = suggestions;
       });
+
+      await _saveHistoryIfAuthenticated(query, suggestions);
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);
       }
+    }
+  }
+
+  Future<void> _saveHistoryIfAuthenticated(
+    String query,
+    List<AdvisorSuggestion> suggestions,
+  ) async {
+    if (!ref.read(isAuthenticatedProvider)) {
+      return;
+    }
+
+    final userId = ref.read(authenticatedUserIdProvider);
+    if (userId == null) {
+      return;
+    }
+
+    try {
+      await ref.read(advisorHistoryRepositoryProvider).addHistory(
+            userId,
+            query,
+            suggestions.map((item) => item.workflow.id).toList(),
+          );
+      invalidateAdvisorHistories(ref, userId);
+    } catch (_) {
+      // 履歴保存失敗は提案結果表示を妨げない。
     }
   }
 
@@ -131,15 +161,26 @@ class _AdvisorPageState extends ConsumerState<AdvisorPage> {
                 ),
               ),
             ),
+            FadeSlideIn(
+              index: 2,
+              child: AdvisorRecentHistorySection(
+                queryController: _queryController,
+                onHistorySelected: (query) {
+                  _queryController.text = query;
+                  _submit();
+                },
+                isLoading: _isSubmitting,
+              ),
+            ),
             if (_hasSubmitted && _isSubmitting)
               const FadeSlideIn(
-                index: 2,
+                index: 3,
                 child: AdvisorLoadingSection(),
               ),
             if (_hasSubmitted && !_isSubmitting && _suggestions != null) ...[
               if (_suggestions!.isEmpty)
                 FadeSlideIn(
-                  index: 2,
+                  index: 3,
                   child: AdvisorEmptySection(
                     controller: _queryController,
                     isLoading: _isSubmitting,
@@ -148,7 +189,7 @@ class _AdvisorPageState extends ConsumerState<AdvisorPage> {
                 )
               else ...[
                 FadeSlideIn(
-                  index: 2,
+                  index: 3,
                   child: Padding(
                     padding: AppSpacing.pageHorizontal.copyWith(
                       top: AppSpacing.s8,
@@ -163,7 +204,7 @@ class _AdvisorPageState extends ConsumerState<AdvisorPage> {
                 ),
                 for (var index = 0; index < _suggestions!.length; index++)
                   FadeSlideIn(
-                    index: 3 + index,
+                    index: 4 + index,
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(
                         AppSpacing.s16,
