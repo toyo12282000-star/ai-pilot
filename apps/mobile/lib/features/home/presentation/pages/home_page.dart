@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -21,6 +23,9 @@ import 'package:ai_pilot/shared/widgets/error_view.dart';
 import 'package:ai_pilot/shared/widgets/fade_slide_in.dart';
 import 'package:ai_pilot/shared/widgets/loading_view.dart';
 
+const _searchDebounceDuration = Duration(milliseconds: 400);
+const _minSearchQueryLength = 2;
+
 /// ホーム兼ワークフロー一覧画面。
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -34,30 +39,31 @@ class _HomePageState extends ConsumerState<HomePage> {
   String? _selectedCategoryId;
   Recommendation? _selectedRecommendation;
   String _searchQuery = '';
+  String _debouncedSearchQuery = '';
+  Timer? _debounceTimer;
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
-  String get _trimmedSearchQuery => _searchQuery.trim();
-
-  bool get _isSearching => _trimmedSearchQuery.isNotEmpty;
+  bool get _isSearchActive => _debouncedSearchQuery.length >= _minSearchQueryLength;
 
   bool get _showBrowseSections =>
-      !_isSearching &&
+      !_isSearchActive &&
       _selectedCategoryId == null &&
       _selectedRecommendation == null;
 
-  bool get _showAiRecommendations => !_isSearching;
+  bool get _showAiRecommendations => !_isSearchActive;
 
   void _retry() {
     ref.invalidate(categoriesProvider);
     ref.invalidate(workflowsProvider);
     ref.invalidate(recommendationsProvider);
-    if (_isSearching) {
-      ref.invalidate(searchWorkflowsProvider(_trimmedSearchQuery));
+    if (_isSearchActive) {
+      ref.invalidate(searchWorkflowsProvider(_debouncedSearchQuery));
     }
   }
 
@@ -68,11 +74,32 @@ class _HomePageState extends ConsumerState<HomePage> {
         _selectedRecommendation = null;
       }
     });
+
+    _debounceTimer?.cancel();
+    final trimmed = value.trim();
+    if (trimmed.length < _minSearchQueryLength) {
+      setState(() => _debouncedSearchQuery = '');
+      return;
+    }
+
+    _debounceTimer = Timer(_searchDebounceDuration, () {
+      if (!mounted) {
+        return;
+      }
+      final current = _searchController.text.trim();
+      if (current.length >= _minSearchQueryLength) {
+        setState(() => _debouncedSearchQuery = current);
+      }
+    });
   }
 
   void _clearSearch() {
+    _debounceTimer?.cancel();
     _searchController.clear();
-    setState(() => _searchQuery = '');
+    setState(() {
+      _searchQuery = '';
+      _debouncedSearchQuery = '';
+    });
   }
 
   List<Workflow> _filterByCategory(List<Workflow> workflows) {
@@ -104,7 +131,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     if (_selectedRecommendation != null) {
       return 'この目的に合うワークフローがありません';
     }
-    if (_isSearching || _selectedCategoryId != null) {
+    if (_isSearchActive || _selectedCategoryId != null) {
       return '条件に合うワークフローがありません';
     }
     return 'ワークフローがありません';
@@ -114,62 +141,136 @@ class _HomePageState extends ConsumerState<HomePage> {
     return _selectedRecommendation?.title ?? 'すべてのWorkflow';
   }
 
+  ({
+    List<Workflow> workflows,
+    bool showSearchError,
+    bool showInlineSearchLoading,
+  }) _resolveWorkflowList({
+    required AsyncValue<List<Workflow>> allWorkflowsAsync,
+    required AsyncValue<List<Workflow>>? searchAsync,
+  }) {
+    if (!_isSearchActive) {
+      return (
+        workflows: allWorkflowsAsync.valueOrNull ?? const [],
+        showSearchError: false,
+        showInlineSearchLoading: false,
+      );
+    }
+
+    final search = searchAsync!;
+    if (search.hasValue) {
+      return (
+        workflows: search.value!,
+        showSearchError: false,
+        showInlineSearchLoading: false,
+      );
+    }
+
+    if (search.hasError) {
+      return (
+        workflows: allWorkflowsAsync.valueOrNull ?? const [],
+        showSearchError: true,
+        showInlineSearchLoading: false,
+      );
+    }
+
+    return (
+      workflows: allWorkflowsAsync.valueOrNull ?? const [],
+      showSearchError: false,
+      showInlineSearchLoading: true,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final workflowsAsync = _isSearching
-        ? ref.watch(searchWorkflowsProvider(_trimmedSearchQuery))
-        : ref.watch(workflowsProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
+    final allWorkflowsAsync = ref.watch(workflowsProvider);
+    final searchAsync = _isSearchActive
+        ? ref.watch(searchWorkflowsProvider(_debouncedSearchQuery))
+        : null;
     final allWorkflows =
-        ref.watch(workflowsProvider).valueOrNull ?? const <Workflow>[];
+        allWorkflowsAsync.valueOrNull ?? const <Workflow>[];
     final recommendedWorkflows = _recommendedWorkflows(allWorkflows);
+    final resolved = _resolveWorkflowList(
+      allWorkflowsAsync: allWorkflowsAsync,
+      searchAsync: searchAsync,
+    );
+    final filteredWorkflows = _filterWorkflows(resolved.workflows);
+
+    if (categoriesAsync.isLoading && !categoriesAsync.hasValue) {
+      return const Scaffold(
+        backgroundColor: AppColors.background,
+        body: SafeArea(child: LoadingView()),
+      );
+    }
+
+    if (!categoriesAsync.hasValue && categoriesAsync.hasError) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: SafeArea(
+          child: ErrorView(
+            message: 'カテゴリの読み込みに失敗しました',
+            onRetry: _retry,
+          ),
+        ),
+      );
+    }
+
+    if (!_isSearchActive &&
+        allWorkflowsAsync.isLoading &&
+        !allWorkflowsAsync.hasValue) {
+      return const Scaffold(
+        backgroundColor: AppColors.background,
+        body: SafeArea(child: LoadingView()),
+      );
+    }
+
+    if (!_isSearchActive &&
+        allWorkflowsAsync.hasError &&
+        !allWorkflowsAsync.hasValue) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: SafeArea(
+          child: ErrorView(
+            message: 'ワークフローの読み込みに失敗しました',
+            onRetry: _retry,
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: workflowsAsync.when(
-          loading: () => const LoadingView(),
-          error: (_, _) => ErrorView(
-            message: _isSearching
-                ? '検索に失敗しました'
-                : 'ワークフローの読み込みに失敗しました',
-            onRetry: _retry,
-          ),
-          data: (workflows) => categoriesAsync.when(
-            loading: () => const LoadingView(),
-            error: (_, _) => ErrorView(
-              message: 'カテゴリの読み込みに失敗しました',
-              onRetry: _retry,
-            ),
-            data: (categories) => _HomeBody(
-              searchController: _searchController,
-              searchQuery: _searchQuery,
-              showAiRecommendations: _showAiRecommendations,
-              showBrowseSections: _showBrowseSections,
-              selectedRecommendation: _selectedRecommendation,
-              recommendedWorkflows: recommendedWorkflows,
-              workflows: _filterWorkflows(workflows),
-              listSectionTitle: _listSectionTitle(),
-              categories: categories,
-              selectedCategoryId: _selectedCategoryId,
-              emptyMessage: _emptyMessage(),
-              onSearchChanged: _onSearchChanged,
-              onSearchClear: _clearSearch,
-              onRecommendationSelected: (recommendation) {
-                setState(() {
-                  _selectedRecommendation = recommendation;
-                  _selectedCategoryId = null;
-                });
-              },
-              onCategorySelected: (categoryId) {
-                setState(() {
-                  _selectedCategoryId = categoryId;
-                  _selectedRecommendation = null;
-                });
-              },
-              onRetry: _retry,
-            ),
-          ),
+        child: _HomeBody(
+          searchController: _searchController,
+          searchQuery: _searchQuery,
+          showAiRecommendations: _showAiRecommendations,
+          showBrowseSections: _showBrowseSections,
+          selectedRecommendation: _selectedRecommendation,
+          recommendedWorkflows: recommendedWorkflows,
+          workflows: filteredWorkflows,
+          listSectionTitle: _listSectionTitle(),
+          categories: categoriesAsync.value ?? const [],
+          selectedCategoryId: _selectedCategoryId,
+          emptyMessage: _emptyMessage(),
+          showSearchError: resolved.showSearchError,
+          showInlineSearchLoading: resolved.showInlineSearchLoading,
+          onSearchChanged: _onSearchChanged,
+          onSearchClear: _clearSearch,
+          onRecommendationSelected: (recommendation) {
+            setState(() {
+              _selectedRecommendation = recommendation;
+              _selectedCategoryId = null;
+            });
+          },
+          onCategorySelected: (categoryId) {
+            setState(() {
+              _selectedCategoryId = categoryId;
+              _selectedRecommendation = null;
+            });
+          },
+          onRetry: _retry,
         ),
       ),
     );
@@ -189,6 +290,8 @@ class _HomeBody extends StatelessWidget {
     required this.categories,
     required this.selectedCategoryId,
     required this.emptyMessage,
+    required this.showSearchError,
+    required this.showInlineSearchLoading,
     required this.onSearchChanged,
     required this.onSearchClear,
     required this.onRecommendationSelected,
@@ -207,6 +310,8 @@ class _HomeBody extends StatelessWidget {
   final List<Category> categories;
   final String? selectedCategoryId;
   final String emptyMessage;
+  final bool showSearchError;
+  final bool showInlineSearchLoading;
   final ValueChanged<String> onSearchChanged;
   final VoidCallback onSearchClear;
   final ValueChanged<Recommendation?> onRecommendationSelected;
@@ -272,7 +377,23 @@ class _HomeBody extends StatelessWidget {
             ],
           ),
         ),
-        if (workflows.isEmpty)
+        if (showSearchError)
+          ErrorView(
+            message: '検索に失敗しました',
+            onRetry: onRetry,
+          )
+        else if (showInlineSearchLoading && workflows.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: AppSpacing.s32),
+            child: Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          )
+        else if (workflows.isEmpty)
           EmptyView(
             message: emptyMessage,
             actionLabel: '再読み込み',
@@ -283,7 +404,9 @@ class _HomeBody extends StatelessWidget {
             index: _listSectionIndex,
             child: HomeSectionHeader(
               title: listSectionTitle,
-              trailing: '${workflows.length}件',
+              trailing: showInlineSearchLoading
+                  ? '検索中...'
+                  : '${workflows.length}件',
             ),
           ),
           const SizedBox(height: AppSpacing.s4),
