@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:ai_pilot/features/workflow/data/repositories/mock_ai_tool_repository.dart';
-import 'package:ai_pilot/features/workflow/data/repositories/mock_category_repository.dart';
-import 'package:ai_pilot/features/workflow/data/repositories/mock_prompt_template_repository.dart';
-import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_repository.dart';
+import 'package:ai_pilot/features/workflow/data/repositories/supabase_ai_tool_repository.dart';
+import 'package:ai_pilot/features/workflow/data/repositories/supabase_category_repository.dart';
+import 'package:ai_pilot/features/workflow/data/repositories/supabase_prompt_template_repository.dart';
+import 'package:ai_pilot/features/workflow/data/repositories/supabase_workflow_repository.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/ai_tool.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/category.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/prompt_template.dart';
@@ -17,24 +17,24 @@ import 'package:ai_pilot/features/workflow/domain/repositories/workflow_reposito
 // Repository Providers
 // ---------------------------------------------------------------------------
 
-/// [WorkflowRepository] を提供する（Mock 実装）。
+/// [WorkflowRepository] を提供する（Supabase 実装）。
 final workflowRepositoryProvider = Provider<WorkflowRepository>((ref) {
-  return MockWorkflowRepository();
+  return SupabaseWorkflowRepository();
 });
 
-/// [CategoryRepository] を提供する（Mock 実装）。
+/// [CategoryRepository] を提供する（Supabase 実装）。
 final categoryRepositoryProvider = Provider<CategoryRepository>((ref) {
-  return MockCategoryRepository();
+  return SupabaseCategoryRepository();
 });
 
-/// [AIToolRepository] を提供する（Mock 実装）。
+/// [AIToolRepository] を提供する（Supabase 実装）。
 final aiToolRepositoryProvider = Provider<AIToolRepository>((ref) {
-  return MockAIToolRepository();
+  return SupabaseAIToolRepository();
 });
 
-/// [PromptTemplateRepository] を提供する（Mock 実装）。
+/// [PromptTemplateRepository] を提供する（Supabase 実装）。
 final promptTemplateRepositoryProvider = Provider<PromptTemplateRepository>((ref) {
-  return MockPromptTemplateRepository();
+  return SupabasePromptTemplateRepository();
 });
 
 // ---------------------------------------------------------------------------
