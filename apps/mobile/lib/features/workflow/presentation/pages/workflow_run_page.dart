@@ -4,11 +4,13 @@ import 'package:go_router/go_router.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
+import 'package:ai_pilot/features/favorite/presentation/providers/favorite_providers.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/ai_tool.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/prompt_template.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow_step.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
+import 'package:ai_pilot/features/workflow/presentation/providers/workflow_run_history_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_run_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_controls.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_header.dart';
@@ -26,13 +28,6 @@ class WorkflowRunPage extends ConsumerWidget {
   });
 
   final String workflowId;
-
-  void _completeWorkflow(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Workflowを完了しました')),
-    );
-    context.go('/');
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -68,7 +63,6 @@ class WorkflowRunPage extends ConsumerWidget {
           return _WorkflowRunBody(
             workflow: workflow,
             steps: sortedSteps,
-            onComplete: () => _completeWorkflow(context),
           );
         },
       ),
@@ -76,18 +70,79 @@ class WorkflowRunPage extends ConsumerWidget {
   }
 }
 
-class _WorkflowRunBody extends ConsumerWidget {
+class _WorkflowRunBody extends ConsumerStatefulWidget {
   const _WorkflowRunBody({
     required this.workflow,
     required this.steps,
-    required this.onComplete,
   });
 
   final Workflow workflow;
   final List<WorkflowStep> steps;
-  final VoidCallback onComplete;
 
-  void _retryResources(WidgetRef ref) {
+  @override
+  ConsumerState<_WorkflowRunBody> createState() => _WorkflowRunBodyState();
+}
+
+class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
+  bool _historyStarted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startWorkflowHistory();
+    });
+  }
+
+  Future<void> _startWorkflowHistory() async {
+    if (_historyStarted) {
+      return;
+    }
+    _historyStarted = true;
+
+    final repository = ref.read(workflowRunHistoryRepositoryProvider);
+    await repository.startWorkflow(mockCurrentUserId, widget.workflow.id);
+    invalidateWorkflowRunHistoryForWorkflow(
+      ref,
+      mockCurrentUserId,
+      widget.workflow.id,
+    );
+  }
+
+  Future<void> _updateProgress(int stepIndex) async {
+    final repository = ref.read(workflowRunHistoryRepositoryProvider);
+    await repository.updateProgress(
+      mockCurrentUserId,
+      widget.workflow.id,
+      stepIndex,
+    );
+    invalidateWorkflowRunHistoryForWorkflow(
+      ref,
+      mockCurrentUserId,
+      widget.workflow.id,
+    );
+  }
+
+  Future<void> _completeWorkflow() async {
+    final repository = ref.read(workflowRunHistoryRepositoryProvider);
+    await repository.completeWorkflow(mockCurrentUserId, widget.workflow.id);
+    invalidateWorkflowRunHistoryForWorkflow(
+      ref,
+      mockCurrentUserId,
+      widget.workflow.id,
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Workflowを完了しました')),
+    );
+    context.go('/');
+  }
+
+  void _retryResources() {
     ref.invalidate(aiToolsProvider);
     ref.invalidate(promptTemplatesProvider);
   }
@@ -116,26 +171,26 @@ class _WorkflowRunBody extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final aiToolsAsync = ref.watch(aiToolsProvider);
     final promptTemplatesAsync = ref.watch(promptTemplatesProvider);
-    final stepIndex = ref.watch(workflowRunStepIndexProvider(workflow.id));
-    final lastIndex = steps.length - 1;
-    final currentStep = steps[stepIndex.clamp(0, lastIndex)];
+    final stepIndex = ref.watch(workflowRunStepIndexProvider(widget.workflow.id));
+    final lastIndex = widget.steps.length - 1;
+    final currentStep = widget.steps[stepIndex.clamp(0, lastIndex)];
     final runNotifier =
-        ref.read(workflowRunStepIndexProvider(workflow.id).notifier);
+        ref.read(workflowRunStepIndexProvider(widget.workflow.id).notifier);
 
     return aiToolsAsync.when(
       loading: () => const LoadingView(message: 'ステップ情報を読み込み中...'),
       error: (_, _) => ErrorView(
         message: 'ステップ情報の読み込みに失敗しました',
-        onRetry: () => _retryResources(ref),
+        onRetry: _retryResources,
       ),
       data: (aiTools) => promptTemplatesAsync.when(
         loading: () => const LoadingView(message: 'ステップ情報を読み込み中...'),
         error: (_, _) => ErrorView(
           message: 'ステップ情報の読み込みに失敗しました',
-          onRetry: () => _retryResources(ref),
+          onRetry: _retryResources,
         ),
         data: (promptTemplates) {
           if (aiTools.isEmpty && promptTemplates.isEmpty) {
@@ -147,7 +202,7 @@ class _WorkflowRunBody extends ConsumerWidget {
             for (final template in promptTemplates) template.id: template,
           };
 
-          final progress = (stepIndex + 1) / steps.length;
+          final progress = (stepIndex + 1) / widget.steps.length;
 
           return Column(
             children: [
@@ -163,9 +218,9 @@ class _WorkflowRunBody extends ConsumerWidget {
                     FadeSlideIn(
                       index: 0,
                       child: WorkflowRunHeader(
-                        workflowTitle: workflow.title,
+                        workflowTitle: widget.workflow.title,
                         currentStepNumber: currentStep.order,
-                        totalSteps: steps.length,
+                        totalSteps: widget.steps.length,
                         progress: progress,
                       ),
                     ),
@@ -188,9 +243,19 @@ class _WorkflowRunBody extends ConsumerWidget {
                 canGoPrevious: stepIndex > 0,
                 canGoNext: stepIndex < lastIndex,
                 isLastStep: stepIndex >= lastIndex,
-                onPrevious: runNotifier.previous,
-                onNext: () => runNotifier.next(lastIndex),
-                onComplete: onComplete,
+                onPrevious: () {
+                  runNotifier.previous();
+                  _updateProgress(
+                    ref.read(workflowRunStepIndexProvider(widget.workflow.id)),
+                  );
+                },
+                onNext: () {
+                  runNotifier.next(lastIndex);
+                  _updateProgress(
+                    ref.read(workflowRunStepIndexProvider(widget.workflow.id)),
+                  );
+                },
+                onComplete: _completeWorkflow,
               ),
             ],
           );

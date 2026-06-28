@@ -4,14 +4,20 @@ import 'package:go_router/go_router.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
+import 'package:ai_pilot/features/favorite/presentation/providers/favorite_providers.dart';
+import 'package:ai_pilot/features/home/presentation/widgets/ai_recommendation_section.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/category_chip_list.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/home_hero_section.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/home_section_header.dart';
+import 'package:ai_pilot/features/home/presentation/widgets/recent_workflow_section.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/recommended_workflow_section.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/workflow_card.dart';
+import 'package:ai_pilot/features/recommendation/domain/entities/recommendation.dart';
+import 'package:ai_pilot/features/recommendation/presentation/providers/recommendation_providers.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/category.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
+import 'package:ai_pilot/features/workflow/presentation/providers/workflow_run_history_providers.dart';
 import 'package:ai_pilot/shared/widgets/empty_view.dart';
 import 'package:ai_pilot/shared/widgets/error_view.dart';
 import 'package:ai_pilot/shared/widgets/fade_slide_in.dart';
@@ -28,6 +34,7 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   final TextEditingController _searchController = TextEditingController();
   String? _selectedCategoryId;
+  Recommendation? _selectedRecommendation;
   String _searchQuery = '';
 
   @override
@@ -40,19 +47,29 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   bool get _isSearching => _trimmedSearchQuery.isNotEmpty;
 
-  bool get _showRecommended =>
-      !_isSearching && _selectedCategoryId == null;
+  bool get _showBrowseSections =>
+      !_isSearching &&
+      _selectedCategoryId == null &&
+      _selectedRecommendation == null;
+
+  bool get _showAiRecommendations => !_isSearching;
 
   void _retry() {
     ref.invalidate(categoriesProvider);
     ref.invalidate(workflowsProvider);
+    ref.invalidate(recommendationsProvider);
     if (_isSearching) {
       ref.invalidate(searchWorkflowsProvider(_trimmedSearchQuery));
     }
   }
 
   void _onSearchChanged(String value) {
-    setState(() => _searchQuery = value);
+    setState(() {
+      _searchQuery = value;
+      if (value.isNotEmpty) {
+        _selectedRecommendation = null;
+      }
+    });
   }
 
   void _clearSearch() {
@@ -69,19 +86,39 @@ class _HomePageState extends ConsumerState<HomePage> {
         .toList();
   }
 
+  List<Workflow> _filterWorkflows(List<Workflow> workflows) {
+    var result = _filterByCategory(workflows);
+
+    final recommendation = _selectedRecommendation;
+    if (recommendation != null) {
+      final ids = recommendation.recommendedWorkflowIds.toSet();
+      result = result.where((workflow) => ids.contains(workflow.id)).toList();
+    }
+
+    return result;
+  }
+
   List<Workflow> _recommendedWorkflows(List<Workflow> allWorkflows) {
     return allWorkflows.take(3).toList();
   }
 
   String _emptyMessage() {
+    if (_selectedRecommendation != null) {
+      return 'この目的に合うワークフローがありません';
+    }
     if (_isSearching || _selectedCategoryId != null) {
       return '条件に合うワークフローがありません';
     }
     return 'ワークフローがありません';
   }
 
+  String _listSectionTitle() {
+    return _selectedRecommendation?.title ?? 'すべてのWorkflow';
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.watch(recentWorkflowHistoriesProvider(mockCurrentUserId));
     final workflowsAsync = _isSearching
         ? ref.watch(searchWorkflowsProvider(_trimmedSearchQuery))
         : ref.watch(workflowsProvider);
@@ -110,16 +147,28 @@ class _HomePageState extends ConsumerState<HomePage> {
             data: (categories) => _HomeBody(
               searchController: _searchController,
               searchQuery: _searchQuery,
-              showRecommended: _showRecommended,
+              showAiRecommendations: _showAiRecommendations,
+              showBrowseSections: _showBrowseSections,
+              selectedRecommendation: _selectedRecommendation,
               recommendedWorkflows: recommendedWorkflows,
-              workflows: _filterByCategory(workflows),
+              workflows: _filterWorkflows(workflows),
+              listSectionTitle: _listSectionTitle(),
               categories: categories,
               selectedCategoryId: _selectedCategoryId,
               emptyMessage: _emptyMessage(),
               onSearchChanged: _onSearchChanged,
               onSearchClear: _clearSearch,
+              onRecommendationSelected: (recommendation) {
+                setState(() {
+                  _selectedRecommendation = recommendation;
+                  _selectedCategoryId = null;
+                });
+              },
               onCategorySelected: (categoryId) {
-                setState(() => _selectedCategoryId = categoryId);
+                setState(() {
+                  _selectedCategoryId = categoryId;
+                  _selectedRecommendation = null;
+                });
               },
               onRetry: _retry,
             ),
@@ -134,35 +183,56 @@ class _HomeBody extends StatelessWidget {
   const _HomeBody({
     required this.searchController,
     required this.searchQuery,
-    required this.showRecommended,
+    required this.showAiRecommendations,
+    required this.showBrowseSections,
+    required this.selectedRecommendation,
     required this.recommendedWorkflows,
     required this.workflows,
+    required this.listSectionTitle,
     required this.categories,
     required this.selectedCategoryId,
     required this.emptyMessage,
     required this.onSearchChanged,
     required this.onSearchClear,
+    required this.onRecommendationSelected,
     required this.onCategorySelected,
     required this.onRetry,
   });
 
   final TextEditingController searchController;
   final String searchQuery;
-  final bool showRecommended;
+  final bool showAiRecommendations;
+  final bool showBrowseSections;
+  final Recommendation? selectedRecommendation;
   final List<Workflow> recommendedWorkflows;
   final List<Workflow> workflows;
+  final String listSectionTitle;
   final List<Category> categories;
   final String? selectedCategoryId;
   final String emptyMessage;
   final ValueChanged<String> onSearchChanged;
   final VoidCallback onSearchClear;
+  final ValueChanged<Recommendation?> onRecommendationSelected;
   final ValueChanged<String?> onCategorySelected;
   final VoidCallback onRetry;
 
+  int get _categorySectionIndex {
+    var index = 1;
+    if (showAiRecommendations) {
+      index++;
+    }
+    if (showBrowseSections) {
+      index += 2;
+    }
+    return index;
+  }
+
+  int get _listSectionIndex => _categorySectionIndex + 1;
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return ListView(
+      padding: const EdgeInsets.only(bottom: AppSpacing.s32),
       children: [
         FadeSlideIn(
           index: 0,
@@ -173,13 +243,26 @@ class _HomeBody extends StatelessWidget {
             showClearButton: searchQuery.isNotEmpty,
           ),
         ),
-        if (showRecommended)
+        if (showAiRecommendations)
           FadeSlideIn(
             index: 1,
+            child: AiRecommendationSection(
+              selectedRecommendationId: selectedRecommendation?.id,
+              onRecommendationSelected: onRecommendationSelected,
+            ),
+          ),
+        if (showBrowseSections)
+          FadeSlideIn(
+            index: showAiRecommendations ? 2 : 1,
             child: RecommendedWorkflowSection(workflows: recommendedWorkflows),
           ),
+        if (showBrowseSections)
+          FadeSlideIn(
+            index: showAiRecommendations ? 3 : 2,
+            child: const RecentWorkflowSection(),
+          ),
         FadeSlideIn(
-          index: showRecommended ? 2 : 1,
+          index: _categorySectionIndex,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -192,45 +275,36 @@ class _HomeBody extends StatelessWidget {
             ],
           ),
         ),
-        Expanded(
-          child: workflows.isEmpty
-              ? EmptyView(
-                  message: emptyMessage,
-                  actionLabel: '再読み込み',
-                  onAction: onRetry,
-                )
-              : FadeSlideIn(
-                  index: showRecommended ? 3 : 2,
-                  child: ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.s16,
-                      0,
-                      AppSpacing.s16,
-                      AppSpacing.s32,
-                    ),
-                    itemCount: workflows.length + 1,
-                    separatorBuilder: (context, index) {
-                      if (index == 0) {
-                        return const SizedBox(height: AppSpacing.s4);
-                      }
-                      return const SizedBox(height: AppSpacing.s16);
-                    },
-                    itemBuilder: (context, index) {
-                      if (index == 0) {
-                        return HomeSectionHeader(
-                          title: 'すべてのWorkflow',
-                          trailing: '${workflows.length}件',
-                        );
-                      }
-                      final workflow = workflows[index - 1];
-                      return WorkflowCard(
-                        workflow: workflow,
-                        onTap: () => context.push('/workflows/${workflow.id}'),
-                      );
-                    },
-                  ),
+        if (workflows.isEmpty)
+          EmptyView(
+            message: emptyMessage,
+            actionLabel: '再読み込み',
+            onAction: onRetry,
+          )
+        else ...[
+          FadeSlideIn(
+            index: _listSectionIndex,
+            child: HomeSectionHeader(
+              title: listSectionTitle,
+              trailing: '${workflows.length}件',
+            ),
+          ),
+          const SizedBox(height: AppSpacing.s4),
+          for (var index = 0; index < workflows.length; index++) ...[
+            if (index > 0) const SizedBox(height: AppSpacing.s16),
+            Padding(
+              padding: AppSpacing.pageHorizontal,
+              child: FadeSlideIn(
+                index: _listSectionIndex + index + 1,
+                child: WorkflowCard(
+                  workflow: workflows[index],
+                  onTap: () =>
+                      context.push('/workflows/${workflows[index].id}'),
                 ),
-        ),
+              ),
+            ),
+          ],
+        ],
       ],
     );
   }
