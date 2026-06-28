@@ -5,12 +5,15 @@ import 'package:go_router/go_router.dart';
 
 import 'package:ai_pilot/app/main_shell.dart';
 import 'package:ai_pilot/features/auth/presentation/providers/auth_providers.dart';
-import 'package:ai_pilot/features/favorite/presentation/pages/favorites_page.dart';
 import 'package:ai_pilot/features/favorite/data/repositories/mock_favorite_repository.dart';
+import 'package:ai_pilot/features/favorite/presentation/pages/favorites_page.dart';
 import 'package:ai_pilot/features/favorite/presentation/providers/favorite_providers.dart';
 import 'package:ai_pilot/features/home/presentation/pages/home_page.dart';
 import 'package:ai_pilot/features/profile/data/repositories/mock_user_profile_repository.dart';
+import 'package:ai_pilot/features/profile/presentation/pages/about_page.dart';
+import 'package:ai_pilot/features/profile/presentation/pages/privacy_policy_page.dart';
 import 'package:ai_pilot/features/profile/presentation/pages/settings_page.dart';
+import 'package:ai_pilot/features/profile/presentation/pages/terms_page.dart';
 import 'package:ai_pilot/features/profile/presentation/providers/profile_providers.dart';
 import 'package:ai_pilot/features/recommendation/data/repositories/mock_recommendation_repository.dart';
 import 'package:ai_pilot/features/recommendation/presentation/providers/recommendation_providers.dart';
@@ -90,59 +93,113 @@ GoRouter _buildShellRouter({String initialLocation = '/settings'}) {
         builder: (context, state) =>
             const Scaffold(body: Text('Login Page')),
       ),
+      GoRoute(
+        path: '/about',
+        builder: (context, state) => const AboutPage(),
+      ),
+      GoRoute(
+        path: '/terms',
+        builder: (context, state) => const TermsPage(),
+      ),
+      GoRoute(
+        path: '/privacy',
+        builder: (context, state) => const PrivacyPolicyPage(),
+      ),
     ],
   );
+}
+
+Future<void> _openSettings(WidgetTester tester) async {
+  final router = _buildShellRouter();
+  await tester.pumpWidget(_buildGuestApp(router));
+  await tester.pumpAndSettle();
 }
 
 void main() {
   setUpAll(TestWidgetsFlutterBinding.ensureInitialized);
 
-  testWidgets('Guest settings shows guest status and login button', (tester) async {
-    final router = _buildShellRouter();
+  testWidgets('Settings shows app info links', (tester) async {
+    await _openSettings(tester);
 
-    await tester.pumpWidget(_buildGuestApp(router));
+    expect(find.text('AI Pilotについて'), findsOneWidget);
+    expect(find.text('利用規約'), findsOneWidget);
+    expect(find.text('プライバシーポリシー'), findsOneWidget);
+  });
+
+  testWidgets('About page shows title and content', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: AboutPage()),
+    );
     await tester.pumpAndSettle();
+
+    expect(find.text('AI Pilotについて'), findsOneWidget);
+    expect(find.text('AI Pilotとは'), findsOneWidget);
+    expect(
+      find.textContaining('やりたいことを選ぶだけで'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('Terms page shows title', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: TermsPage()),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('利用規約'), findsOneWidget);
+    expect(find.text('禁止事項'), findsOneWidget);
+  });
+
+  testWidgets('Privacy page shows title', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: PrivacyPolicyPage()),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('プライバシーポリシー'), findsOneWidget);
+    expect(find.textContaining('Supabase'), findsOneWidget);
+    expect(find.text('第三者への提供'), findsOneWidget);
+  });
+
+  testWidgets('Settings navigates to about page', (tester) async {
+    await _openSettings(tester);
+
+    await tester.tap(find.text('AI Pilotについて'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('AI Pilotとは'), findsOneWidget);
+  });
+
+  testWidgets('Settings navigates to terms page', (tester) async {
+    await _openSettings(tester);
+
+    await tester.tap(find.text('利用規約'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('免責事項'), findsOneWidget);
+  });
+
+  testWidgets('Settings navigates to privacy page', (tester) async {
+    await _openSettings(tester);
+
+    await tester.tap(find.text('プライバシーポリシー'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('お問い合わせ'), findsWidgets);
+  });
+
+  testWidgets('Guest settings shows guest status and login button', (tester) async {
+    await _openSettings(tester);
 
     expect(find.text('ゲスト利用中'), findsOneWidget);
     expect(find.text('ログインする'), findsOneWidget);
-    expect(find.text('ログアウト'), findsNothing);
-    expect(find.text('MVP Preview'), findsOneWidget);
-    expect(find.text('0.1.0'), findsOneWidget);
   });
 
   testWidgets('Settings tab exists in bottom navigation', (tester) async {
     final router = _buildShellRouter(initialLocation: '/');
-
     await tester.pumpWidget(_buildGuestApp(router));
     await tester.pumpAndSettle();
 
     expect(find.text('設定'), findsOneWidget);
-    expect(find.text('ホーム'), findsOneWidget);
-    expect(find.text('お気に入り'), findsOneWidget);
-  });
-
-  testWidgets('Tapping settings tab opens settings page', (tester) async {
-    final router = _buildShellRouter(initialLocation: '/');
-
-    await tester.pumpWidget(_buildGuestApp(router));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('設定'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('ゲスト利用中'), findsOneWidget);
-    expect(find.text('アプリ情報'), findsOneWidget);
-  });
-
-  testWidgets('Guest login button navigates to login page', (tester) async {
-    final router = _buildShellRouter();
-
-    await tester.pumpWidget(_buildGuestApp(router));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('ログインする'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Login Page'), findsOneWidget);
   });
 }

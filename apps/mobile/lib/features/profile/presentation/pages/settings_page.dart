@@ -33,12 +33,6 @@ class SettingsPage extends ConsumerWidget {
     context.go('/login');
   }
 
-  void _showComingSoon(BuildContext context, String title) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$title は準備中です')),
-    );
-  }
-
   ({String title, String subtitle}) _heroContent({
     required bool isAuthenticated,
     required String? email,
@@ -124,17 +118,17 @@ class SettingsPage extends ConsumerWidget {
                 SettingsListTile(
                   title: 'AI Pilotについて',
                   showChevron: true,
-                  onTap: () => _showComingSoon(context, 'AI Pilotについて'),
+                  onTap: () => context.push('/about'),
                 ),
                 SettingsListTile(
                   title: '利用規約',
                   showChevron: true,
-                  onTap: () => _showComingSoon(context, '利用規約'),
+                  onTap: () => context.push('/terms'),
                 ),
                 SettingsListTile(
                   title: 'プライバシーポリシー',
                   showChevron: true,
-                  onTap: () => _showComingSoon(context, 'プライバシーポリシー'),
+                  onTap: () => context.push('/privacy'),
                 ),
               ],
             ),

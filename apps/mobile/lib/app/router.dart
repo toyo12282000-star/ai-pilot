@@ -7,7 +7,10 @@ import 'package:ai_pilot/features/auth/presentation/pages/login_page.dart';
 import 'package:ai_pilot/features/auth/presentation/providers/auth_providers.dart';
 import 'package:ai_pilot/features/favorite/presentation/pages/favorites_page.dart';
 import 'package:ai_pilot/features/home/presentation/pages/home_page.dart';
+import 'package:ai_pilot/features/profile/presentation/pages/about_page.dart';
+import 'package:ai_pilot/features/profile/presentation/pages/privacy_policy_page.dart';
 import 'package:ai_pilot/features/profile/presentation/pages/settings_page.dart';
+import 'package:ai_pilot/features/profile/presentation/pages/terms_page.dart';
 import 'package:ai_pilot/features/workflow/presentation/pages/ai_tool_detail_page.dart';
 import 'package:ai_pilot/features/workflow/presentation/pages/workflow_detail_page.dart';
 import 'package:ai_pilot/features/workflow/presentation/pages/workflow_run_page.dart';
@@ -103,6 +106,18 @@ final routerProvider = Provider<GoRouter>((ref) {
           final id = state.pathParameters['id']!;
           return AIToolDetailPage(aiToolId: id);
         },
+      ),
+      GoRoute(
+        path: '/about',
+        builder: (context, state) => const AboutPage(),
+      ),
+      GoRoute(
+        path: '/terms',
+        builder: (context, state) => const TermsPage(),
+      ),
+      GoRoute(
+        path: '/privacy',
+        builder: (context, state) => const PrivacyPolicyPage(),
       ),
     ],
   );
