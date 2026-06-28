@@ -296,7 +296,74 @@ erDiagram
 | 管理者 / ロール | コンテンツ管理 UI 未着手 |
 | 監査ログ / Analytics | 別基盤で対応予定 |
 | 全文検索用 VIEW / マテリアライズド VIEW | 現行はアプリ側フィルタ。必要時に追加 |
-| Seed データ | 別マイグレーションまたは Supabase Dashboard で投入 |
+| `favorites` / `workflow_run_histories` の Seed | ユーザー依存のため別途（認証後にアプリ or 手動投入） |
+
+## Seed データ（Sprint 8.3）
+
+マイグレーション: [`supabase/migrations/002_seed_initial_data.sql`](../supabase/migrations/002_seed_initial_data.sql)
+
+Flutter Mock データ（`mock_seed_data.dart`, `mock_recommendation_seed_data.dart`）と同等の初期コンテンツを投入する。  
+`INSERT ... ON CONFLICT ... DO UPDATE` により再実行可能。
+
+### 投入件数
+
+| テーブル | 件数 |
+|---------|------|
+| `categories` | 5 |
+| `ai_tools` | 8 |
+| `prompt_templates` | 12 |
+| `workflows` | 5 |
+| `workflow_steps` | 12 |
+| `recommendations` | 6 |
+| `recommendation_workflows` | 8 |
+
+### 固定 UUID スキーム
+
+Repository 置き換え時に Mock ID と対応付けやすいよう、エンティティ種別ごとにプレフィックスを付与している。
+
+| プレフィックス | エンティティ | 例（Mock ID → UUID） |
+|---------------|-------------|---------------------|
+| `10000000-...` | categories | `cat_video` → `...0001` |
+| `20000000-...` | ai_tools | `tool_chatgpt` → `...0001` |
+| `30000000-...` | prompt_templates | `prompt_short_idea` → `...0001` |
+| `40000000-...` | workflows | `wf_youtube_short` → `...0001` |
+| `50000000-...` | workflow_steps | `step_short_1` → `...0001` |
+| `60000000-...` | recommendations | `rec_youtube` → `...0001` |
+
+完全な Mock ID マッピングは SQL ファイル先頭コメントを参照。
+
+### コンテンツ概要
+
+**カテゴリ:** 動画制作 / 文章作成 / 画像生成 / 調査 / 開発
+
+**AI ツール:** ChatGPT, Claude, Gemini, Perplexity, Canva, ElevenLabs, CapCut, Cursor
+
+**Workflow:**
+
+| UUID suffix | タイトル | ステップ数 | カテゴリ |
+|-------------|---------|-----------|---------|
+| `...0001` | YouTubeショートを作る | 4 | 動画制作 |
+| `...0002` | ブログ記事を書く | 2 | 文章作成 |
+| `...0003` | SNS投稿を作る | 2 | 画像生成 |
+| `...0004` | 調査レポートを作る | 2 | 調査 |
+| `...0005` | Flutterアプリを作る | 2 | 開発 |
+
+**Recommendation（目的カード）:**
+
+| priority | タイトル | 紐づく Workflow |
+|----------|---------|----------------|
+| 1 | YouTubeを始めたい | YouTubeショート |
+| 2 | 副業を始めたい | SNS投稿, ブログ記事 |
+| 3 | AIを学びたい | 調査レポート, Flutterアプリ |
+| 4 | ブログを書きたい | ブログ記事 |
+| 5 | SNSを伸ばしたい | SNS投稿 |
+| 6 | 資料を作りたい | 調査レポート |
+
+### Seed に含めないデータ
+
+- `profiles` — `auth.users` 作成トリガーで自動生成
+- `favorites` — Mock の `user-1` / `fav-1` 等は文字列 ID のため、Repository 置き換え時に認証ユーザー UUID で投入
+- `workflow_run_histories` — 同上（ユーザー実行データ）
 
 ## 適用方法
 
@@ -304,6 +371,7 @@ erDiagram
 # Supabase CLI（プロジェクトルート）
 supabase db push
 
-# または SQL Editor / psql で直接実行
+# または SQL Editor / psql で直接実行（順番に適用）
 psql "$DATABASE_URL" -f supabase/migrations/001_initial_schema.sql
+psql "$DATABASE_URL" -f supabase/migrations/002_seed_initial_data.sql
 ```
