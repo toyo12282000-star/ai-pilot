@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:ai_pilot/design_system/spacing.dart';
+import 'package:ai_pilot/features/advisor/domain/services/advisor_example_query_resolver.dart';
 
 /// Advisor 画面で使う例文チップ一覧。
 class AdvisorExampleChips extends StatelessWidget {
@@ -11,14 +12,7 @@ class AdvisorExampleChips extends StatelessWidget {
     this.onExampleSelected,
   });
 
-  static const exampleQueries = [
-    'YouTubeを始めたい',
-    '副業を始めたい',
-    'AIを学びたい',
-    'ブログを書きたい',
-    'SNSを伸ばしたい',
-    '資料を作りたい',
-  ];
+  static const exampleQueries = AdvisorExampleQueryResolver.exampleQueries;
 
   final TextEditingController controller;
   final bool isLoading;

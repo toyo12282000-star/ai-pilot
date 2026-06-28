@@ -1,4 +1,5 @@
 import 'package:ai_pilot/features/advisor/domain/entities/advisor_suggestion.dart';
+import 'package:ai_pilot/features/advisor/domain/services/advisor_example_query_resolver.dart';
 import 'package:ai_pilot/features/recommendation/domain/entities/recommendation.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/category.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
@@ -16,6 +17,15 @@ class WorkflowAdvisorService {
     final normalizedQuery = _normalize(query);
     if (normalizedQuery.isEmpty) {
       return const [];
+    }
+
+    if (AdvisorExampleQueryResolver.isExampleQuery(query)) {
+      return AdvisorExampleQueryResolver.buildSuggestions(
+        query: query,
+        workflows: workflows,
+        difficultyLabel: _difficultyLabel,
+        limit: limit,
+      );
     }
 
     final keywords = _extractKeywords(normalizedQuery);

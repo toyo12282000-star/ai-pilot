@@ -4,6 +4,7 @@ import 'package:ai_pilot/features/advisor/domain/entities/advisor_api_response.d
 import 'package:ai_pilot/features/advisor/domain/entities/advisor_suggestion.dart';
 import 'package:ai_pilot/features/advisor/domain/exceptions/advisor_api_exception.dart';
 import 'package:ai_pilot/features/advisor/domain/repositories/advisor_api_repository.dart';
+import 'package:ai_pilot/features/advisor/domain/services/advisor_example_query_resolver.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/category.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
 
@@ -32,6 +33,11 @@ class AdvisorService {
       return const [];
     }
 
+    if (workflows.isEmpty) {
+      debugPrint('[AdvisorService] workflows list is empty; cannot suggest.');
+      return const [];
+    }
+
     // TODO(Sprint 12+): Edge Function が OpenAI Responses API を呼ぶようになったら、
     // このメソッドの呼び出し先は SupabaseAdvisorApiRepository のまま。
     // Flutter 側の変更は DTO / 理由文のパース拡張のみで済む想定。
@@ -40,6 +46,55 @@ class AdvisorService {
       workflows: workflows,
     );
 
+    var suggestions = _buildSuggestionsFromApiResponse(
+      apiResponse: apiResponse,
+      workflows: workflows,
+      limit: limit,
+    );
+
+    if (suggestions.isEmpty && _shouldTryFallbackRepository) {
+      debugPrint(
+        '[AdvisorService] API returned no resolvable workflow IDs '
+        '(ids=${apiResponse.recommendationIds}). '
+        'Falling back to local rule-based advisor.',
+      );
+      final fallbackResponse = await _fallbackApiRepository!.suggest(
+        query: trimmedQuery,
+        workflows: workflows,
+      );
+      suggestions = _buildSuggestionsFromApiResponse(
+        apiResponse: fallbackResponse,
+        workflows: workflows,
+        limit: limit,
+      );
+    }
+
+    if (suggestions.isEmpty &&
+        AdvisorExampleQueryResolver.isExampleQuery(trimmedQuery)) {
+      debugPrint(
+        '[AdvisorService] Applying example-query resolver for "$trimmedQuery".',
+      );
+      suggestions = AdvisorExampleQueryResolver.buildSuggestions(
+        query: trimmedQuery,
+        workflows: workflows,
+        difficultyLabel: _difficultyLabel,
+        limit: limit,
+      );
+    }
+
+    return suggestions;
+  }
+
+  bool get _shouldTryFallbackRepository {
+    final fallback = _fallbackApiRepository;
+    return fallback != null && !identical(fallback, _apiRepository);
+  }
+
+  List<AdvisorSuggestion> _buildSuggestionsFromApiResponse({
+    required AdvisorApiResponse apiResponse,
+    required List<Workflow> workflows,
+    required int limit,
+  }) {
     if (apiResponse.recommendationIds.isEmpty) {
       return const [];
     }
@@ -51,6 +106,9 @@ class AdvisorService {
     for (final workflowId in apiResponse.recommendationIds.take(limit)) {
       final workflow = workflowById[workflowId];
       if (workflow == null) {
+        debugPrint(
+          '[AdvisorService] Skipping unknown workflow id from API: $workflowId',
+        );
         continue;
       }
 

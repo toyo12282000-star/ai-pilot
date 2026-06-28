@@ -59,15 +59,15 @@ void main() {
 
   test('Document query suggests research workflow', () async {
     final suggestions = await service.suggest(
-      query: '営業資料を作りたい',
+      query: '資料を作りたい',
       workflows: mockWorkflows,
       categories: mockCategories,
     );
 
     expect(suggestions, isNotEmpty);
     expect(
-      suggestions.map((item) => item.workflow.id),
-      contains('wf_research'),
+      suggestions.map((item) => item.workflow.title),
+      contains('調査レポートを作る'),
     );
   });
 

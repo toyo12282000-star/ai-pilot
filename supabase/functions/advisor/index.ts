@@ -82,6 +82,46 @@ function scoreWorkflow(
   return score;
 }
 
+const EXAMPLE_QUERY_WORKFLOW_TITLES: Record<string, string[]> = {
+  "YouTubeを始めたい": ["YouTubeショートを作る"],
+  "副業を始めたい": ["SNS投稿を作る", "ブログ記事を書く"],
+  "AIを学びたい": ["調査レポートを作る", "Flutterアプリを作る"],
+  "ブログを書きたい": ["ブログ記事を書く"],
+  "SNSを伸ばしたい": ["SNS投稿を作る"],
+  "資料を作りたい": ["調査レポートを作る"],
+};
+
+function resolveExampleQuery(
+  query: string,
+  workflows: WorkflowPayload[],
+): AdvisorResponse | null {
+  const titles = EXAMPLE_QUERY_WORKFLOW_TITLES[query.trim()];
+  if (!titles) {
+    return null;
+  }
+
+  const workflowByTitle = new Map(
+    workflows.map((workflow) => [workflow.title, workflow]),
+  );
+  const recommendationIds: string[] = [];
+
+  for (const title of titles) {
+    const workflow = workflowByTitle.get(title);
+    if (workflow && !recommendationIds.includes(workflow.id)) {
+      recommendationIds.push(workflow.id);
+    }
+  }
+
+  if (recommendationIds.length === 0) {
+    return null;
+  }
+
+  return {
+    recommendationIds,
+    reason: "例文に合うWorkflowとして選びました",
+  };
+}
+
 function mockSuggest(
   query: string,
   workflows: WorkflowPayload[],
@@ -92,6 +132,11 @@ function mockSuggest(
       recommendationIds: [],
       reason: "相談内容を入力してください",
     };
+  }
+
+  const exampleResult = resolveExampleQuery(query, workflows);
+  if (exampleResult) {
+    return exampleResult;
   }
 
   const ranked = workflows
