@@ -4,12 +4,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:ai_pilot/features/advisor/data/repositories/mock_advisor_history_repository.dart';
+import 'package:ai_pilot/features/advisor/data/repositories/mock_advisor_api_repository.dart';
 import 'package:ai_pilot/features/advisor/presentation/pages/advisor_page.dart';
 import 'package:ai_pilot/features/advisor/presentation/providers/advisor_history_providers.dart';
+import 'package:ai_pilot/features/advisor/presentation/providers/advisor_providers.dart';
 import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_example_chips.dart';
 import 'package:ai_pilot/features/recommendation/data/repositories/mock_recommendation_repository.dart';
+import 'package:ai_pilot/features/recommendation/data/repositories/mock_recommendation_seed_data.dart';
 import 'package:ai_pilot/features/recommendation/presentation/providers/recommendation_providers.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_category_repository.dart';
+import 'package:ai_pilot/features/workflow/data/repositories/mock_seed_data.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_repository.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
 import 'package:ai_pilot/shared/providers/authenticated_user_provider.dart';
@@ -23,6 +27,12 @@ void main() {
           .overrideWithValue(MockRecommendationRepository()),
       advisorHistoryRepositoryProvider
           .overrideWithValue(MockAdvisorHistoryRepository()),
+      advisorApiRepositoryProvider.overrideWithValue(
+        MockAdvisorApiRepository(
+          recommendations: mockRecommendations,
+          categories: mockCategories,
+        ),
+      ),
       authenticatedUserIdProvider.overrideWith((ref) => userId),
     ];
   }

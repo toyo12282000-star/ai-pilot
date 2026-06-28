@@ -22,7 +22,7 @@ import 'package:ai_pilot/shared/widgets/fade_slide_in.dart';
 /// 提案中の最低表示時間（体験用・短め）。
 const _minimumSuggestDuration = Duration(milliseconds: 450);
 
-/// AI Advisor 画面（MVP: ルールベース推薦）。
+/// AI Advisor 画面（Repository 経由で Edge Function / Mock 推薦）。
 class AdvisorPage extends ConsumerStatefulWidget {
   const AdvisorPage({super.key});
 
@@ -78,15 +78,12 @@ class _AdvisorPageState extends ConsumerState<AdvisorPage> {
       }
 
       final resolvedWorkflows = ref.read(workflowsProvider).valueOrNull ?? [];
-      final resolvedRecommendations =
-          ref.read(recommendationsProvider).valueOrNull ?? [];
       final resolvedCategories = ref.read(categoriesProvider).valueOrNull ?? [];
 
-      final service = ref.read(workflowAdvisorServiceProvider);
-      final suggestions = service.suggest(
+      final service = ref.read(advisorServiceProvider);
+      final suggestions = await service.suggest(
         query: query,
         workflows: resolvedWorkflows,
-        recommendations: resolvedRecommendations,
         categories: resolvedCategories,
       );
 
