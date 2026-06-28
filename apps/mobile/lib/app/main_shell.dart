@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/icons.dart';
 
-/// ホーム / お気に入りタブ用の Shell Scaffold。
+/// ホーム / お気に入り / 設定タブ用の Shell Scaffold。
 class MainShell extends StatelessWidget {
   const MainShell({
     super.key,
@@ -23,6 +23,11 @@ class MainShell extends StatelessWidget {
       icon: Icon(AppIcons.favorite),
       selectedIcon: Icon(AppIcons.favoriteFilled),
       label: 'お気に入り',
+    ),
+    NavigationDestination(
+      icon: Icon(AppIcons.settings),
+      selectedIcon: Icon(AppIcons.settingsFilled),
+      label: '設定',
     ),
   ];
 

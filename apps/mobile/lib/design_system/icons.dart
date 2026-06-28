@@ -6,6 +6,8 @@ abstract final class AppIcons {
   static const IconData homeFilled = Icons.home;
   static const IconData favorite = Icons.favorite_outline;
   static const IconData favoriteFilled = Icons.favorite;
+  static const IconData settings = Icons.settings_outlined;
+  static const IconData settingsFilled = Icons.settings;
   static const IconData search = Icons.search;
   static const IconData clear = Icons.clear;
   static const IconData copy = Icons.copy;

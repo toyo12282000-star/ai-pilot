@@ -7,6 +7,7 @@ import 'package:ai_pilot/features/auth/presentation/pages/login_page.dart';
 import 'package:ai_pilot/features/auth/presentation/providers/auth_providers.dart';
 import 'package:ai_pilot/features/favorite/presentation/pages/favorites_page.dart';
 import 'package:ai_pilot/features/home/presentation/pages/home_page.dart';
+import 'package:ai_pilot/features/profile/presentation/pages/settings_page.dart';
 import 'package:ai_pilot/features/workflow/presentation/pages/ai_tool_detail_page.dart';
 import 'package:ai_pilot/features/workflow/presentation/pages/workflow_detail_page.dart';
 import 'package:ai_pilot/features/workflow/presentation/pages/workflow_run_page.dart';
@@ -66,6 +67,16 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: '/favorites',
                 pageBuilder: (context, state) => const NoTransitionPage(
                   child: FavoritesPage(),
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/settings',
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: SettingsPage(),
                 ),
               ),
             ],
