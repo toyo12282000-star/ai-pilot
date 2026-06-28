@@ -12,6 +12,7 @@ import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
 import 'package:ai_pilot/shared/providers/authenticated_user_provider.dart';
 import 'package:ai_pilot/shared/widgets/error_view.dart';
 import 'package:ai_pilot/shared/widgets/fade_slide_in.dart';
+import 'package:ai_pilot/shared/widgets/login_required_view.dart';
 import 'package:ai_pilot/shared/widgets/rich_empty_view.dart';
 import 'package:ai_pilot/shared/widgets/skeleton_card.dart';
 import 'package:ai_pilot/shared/widgets/skeleton_list_view.dart';
@@ -29,14 +30,8 @@ class FavoritesPage extends ConsumerWidget {
     await ref.read(favoriteWorkflowsProvider.future);
   }
 
-  Widget _buildGuestPrompt(BuildContext context) {
-    return RichEmptyView(
-      icon: Icons.login,
-      title: 'ログインが必要です',
-      subtitle: 'お気に入りを保存するにはログインしてください',
-      actionLabel: 'ログインする',
-      onAction: () => context.go('/login'),
-    );
+  Widget _buildGuestPrompt() {
+    return const LoginRequiredView();
   }
 
   Widget _buildLoadingSkeleton() {
@@ -137,7 +132,7 @@ class FavoritesPage extends ConsumerWidget {
     final isAuthenticated = ref.watch(isAuthenticatedProvider);
 
     if (!isAuthenticated) {
-      return SafeArea(child: _buildGuestPrompt(context));
+      return SafeArea(child: _buildGuestPrompt());
     }
 
     final favoriteWorkflowsAsync = ref.watch(favoriteWorkflowsProvider);
@@ -145,9 +140,11 @@ class FavoritesPage extends ConsumerWidget {
     return SafeArea(
       child: favoriteWorkflowsAsync.when(
         loading: () => _buildLoadingSkeleton(),
-        error: (_, _) => ErrorView(
-          message: 'お気に入りの読み込みに失敗しました',
+        error: (error, _) => ErrorView(
+          title: 'お気に入りの読み込みに失敗しました',
+          description: '保存したWorkflowを取得できませんでした',
           onRetry: () => _retry(ref),
+          debugDetails: error,
         ),
         data: (workflows) => _buildContent(context, ref, workflows),
       ),

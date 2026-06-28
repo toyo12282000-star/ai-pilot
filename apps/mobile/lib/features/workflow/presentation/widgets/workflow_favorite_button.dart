@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/icons.dart';
 import 'package:ai_pilot/features/favorite/presentation/providers/favorite_providers.dart';
 import 'package:ai_pilot/shared/providers/authenticated_user_provider.dart';
+import 'package:ai_pilot/shared/widgets/login_prompt_sheet.dart';
 
 /// ワークフロー詳細画面のお気に入りボタン。
 class WorkflowFavoriteButton extends ConsumerStatefulWidget {
@@ -68,7 +68,7 @@ class _WorkflowFavoriteButtonState extends ConsumerState<WorkflowFavoriteButton>
   }
 
   void _handleGuestTap() {
-    context.go('/login');
+    showLoginPromptSheet(context);
   }
 
   @override

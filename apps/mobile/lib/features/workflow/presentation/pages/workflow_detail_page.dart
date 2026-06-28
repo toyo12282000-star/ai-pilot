@@ -56,9 +56,11 @@ class WorkflowDetailPage extends ConsumerWidget {
       ),
       body: workflowAsync.when(
         loading: () => const _WorkflowDetailSkeleton(),
-        error: (_, _) => ErrorView(
-          message: 'ワークフローの読み込みに失敗しました',
+        error: (error, _) => ErrorView(
+          title: 'ワークフローの読み込みに失敗しました',
+          description: '通信状況を確認して、もう一度お試しください',
           onRetry: () => ref.invalidate(workflowByIdProvider(workflowId)),
+          debugDetails: error,
         ),
         data: (workflow) {
           if (workflow == null) {
@@ -190,8 +192,12 @@ class _StepsSection extends StatelessWidget {
 
     if (aiToolsAsync.hasError || promptTemplatesAsync.hasError) {
       return ErrorView(
-        message: 'ステップ情報の読み込みに失敗しました',
+        title: 'ステップ情報の読み込みに失敗しました',
+        description: '通信状況を確認して、もう一度お試しください',
         onRetry: onRetry,
+        debugDetails: aiToolsAsync.hasError
+            ? aiToolsAsync.error
+            : promptTemplatesAsync.error,
       );
     }
 

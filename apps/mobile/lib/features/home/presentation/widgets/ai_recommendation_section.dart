@@ -25,11 +25,13 @@ class AiRecommendationSection extends ConsumerWidget {
 
     return recommendationsAsync.when(
       loading: () => const SizedBox.shrink(),
-      error: (_, _) => Padding(
+      error: (error, _) => Padding(
         padding: AppSpacing.pageHorizontal,
         child: ErrorView(
-          message: 'おすすめの読み込みに失敗しました',
+          title: 'おすすめの読み込みに失敗しました',
+          description: '通信状況を確認して、もう一度お試しください',
           onRetry: () => ref.invalidate(recommendationsProvider),
+          debugDetails: error,
         ),
       ),
       data: (recommendations) {

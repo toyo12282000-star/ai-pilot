@@ -71,9 +71,11 @@ class AIToolDetailPage extends ConsumerWidget {
             SkeletonHeroCard(compact: true),
           ],
         ),
-        error: (_, _) => ErrorView(
-          message: 'AIツールの読み込みに失敗しました',
+        error: (error, _) => ErrorView(
+          title: 'AIツールの読み込みに失敗しました',
+          description: '通信状況を確認して、もう一度お試しください',
           onRetry: () => ref.invalidate(aiToolByIdProvider(aiToolId)),
+          debugDetails: error,
         ),
         data: (tool) {
           if (tool == null) {

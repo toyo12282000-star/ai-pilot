@@ -221,8 +221,10 @@ class _HomePageState extends ConsumerState<HomePage> {
         backgroundColor: AppColors.background,
         body: SafeArea(
           child: ErrorView(
-            message: 'カテゴリの読み込みに失敗しました',
+            title: 'カテゴリの読み込みに失敗しました',
+            description: '通信状況を確認して、もう一度お試しください',
             onRetry: _retry,
+            debugDetails: categoriesAsync.error,
           ),
         ),
       );
@@ -244,8 +246,10 @@ class _HomePageState extends ConsumerState<HomePage> {
         backgroundColor: AppColors.background,
         body: SafeArea(
           child: ErrorView(
-            message: 'ワークフローの読み込みに失敗しました',
+            title: 'ワークフローの読み込みに失敗しました',
+            description: '通信状況を確認して、もう一度お試しください',
             onRetry: _retry,
+            debugDetails: allWorkflowsAsync.error,
           ),
         ),
       );
@@ -416,7 +420,8 @@ class _HomeBody extends StatelessWidget {
         ),
         if (showSearchError)
           ErrorView(
-            message: '検索に失敗しました',
+            title: '検索に失敗しました',
+            description: '通信状況を確認して、もう一度お試しください',
             onRetry: onRetry,
           )
         else if (showInlineSearchLoading && workflows.isEmpty)

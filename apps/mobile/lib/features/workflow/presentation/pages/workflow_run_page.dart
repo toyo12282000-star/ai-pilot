@@ -54,9 +54,11 @@ class WorkflowRunPage extends ConsumerWidget {
             SkeletonRunStepSection(),
           ],
         ),
-        error: (_, _) => ErrorView(
-          message: 'Workflowの読み込みに失敗しました',
+        error: (error, _) => ErrorView(
+          title: 'Workflowの読み込みに失敗しました',
+          description: '通信状況を確認して、もう一度お試しください',
           onRetry: () => ref.invalidate(workflowByIdProvider(workflowId)),
+          debugDetails: error,
         ),
         data: (workflow) {
           if (workflow == null) {
@@ -139,12 +141,20 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
       invalidateWorkflowRunHistoryForWorkflow(ref, widget.workflow.id);
     }
 
+    final isAuthenticated = ref.read(isAuthenticatedProvider);
+
     if (!mounted) {
       return;
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Workflowを完了しました')),
+      SnackBar(
+        content: Text(
+          isAuthenticated
+              ? 'Workflowを完了しました'
+              : 'Workflowを完了しました。履歴を保存するにはログインすると便利です',
+        ),
+      ),
     );
     context.go('/');
   }
@@ -199,9 +209,11 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
           SkeletonRunStepSection(),
         ],
       ),
-      error: (_, _) => ErrorView(
-        message: 'ステップ情報の読み込みに失敗しました',
+      error: (error, _) => ErrorView(
+        title: 'ステップ情報の読み込みに失敗しました',
+        description: '通信状況を確認して、もう一度お試しください',
         onRetry: _retryResources,
+        debugDetails: error,
       ),
       data: (aiTools) => promptTemplatesAsync.when(
         loading: () => ListView(
@@ -215,9 +227,11 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
             SkeletonRunStepSection(),
           ],
         ),
-        error: (_, _) => ErrorView(
-          message: 'ステップ情報の読み込みに失敗しました',
+        error: (error, _) => ErrorView(
+          title: 'ステップ情報の読み込みに失敗しました',
+          description: '通信状況を確認して、もう一度お試しください',
           onRetry: _retryResources,
+          debugDetails: error,
         ),
         data: (promptTemplates) {
           if (aiTools.isEmpty && promptTemplates.isEmpty) {
