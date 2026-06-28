@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
@@ -25,10 +26,8 @@ class WorkflowDetailPage extends ConsumerWidget {
 
   final String workflowId;
 
-  void _showComingSoonSnackBar(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('この機能は準備中です')),
-    );
+  void _startWorkflow(BuildContext context) {
+    context.push('/workflows/$workflowId/run');
   }
 
   @override
@@ -59,7 +58,7 @@ class WorkflowDetailPage extends ConsumerWidget {
           return _WorkflowDetailBody(
             workflow: workflow,
             workflowId: workflowId,
-            onStartWorkflow: () => _showComingSoonSnackBar(context),
+            onStartWorkflow: () => _startWorkflow(context),
           );
         },
       ),

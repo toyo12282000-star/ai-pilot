@@ -6,6 +6,7 @@ import 'package:ai_pilot/features/favorite/presentation/pages/favorites_page.dar
 import 'package:ai_pilot/features/home/presentation/pages/home_page.dart';
 import 'package:ai_pilot/features/workflow/presentation/pages/ai_tool_detail_page.dart';
 import 'package:ai_pilot/features/workflow/presentation/pages/workflow_detail_page.dart';
+import 'package:ai_pilot/features/workflow/presentation/pages/workflow_run_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -27,6 +28,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/workflows/:id/run',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return WorkflowRunPage(workflowId: id);
+        },
       ),
       GoRoute(
         path: '/workflows/:id',
