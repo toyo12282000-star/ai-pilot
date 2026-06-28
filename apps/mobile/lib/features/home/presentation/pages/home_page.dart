@@ -21,7 +21,8 @@ import 'package:ai_pilot/features/workflow/presentation/providers/workflow_provi
 import 'package:ai_pilot/shared/widgets/empty_view.dart';
 import 'package:ai_pilot/shared/widgets/error_view.dart';
 import 'package:ai_pilot/shared/widgets/fade_slide_in.dart';
-import 'package:ai_pilot/shared/widgets/loading_view.dart';
+import 'package:ai_pilot/shared/widgets/skeleton_card.dart';
+import 'package:ai_pilot/shared/widgets/skeleton_list_view.dart';
 
 const _searchDebounceDuration = Duration(milliseconds: 400);
 const _minSearchQueryLength = 2;
@@ -65,6 +66,17 @@ class _HomePageState extends ConsumerState<HomePage> {
     if (_isSearchActive) {
       ref.invalidate(searchWorkflowsProvider(_debouncedSearchQuery));
     }
+  }
+
+  Future<void> _refresh() async {
+    _retry();
+    await Future.wait([
+      ref.read(categoriesProvider.future),
+      ref.read(workflowsProvider.future),
+      ref.read(recommendationsProvider.future),
+      if (_isSearchActive)
+        ref.read(searchWorkflowsProvider(_debouncedSearchQuery).future),
+    ]);
   }
 
   void _onSearchChanged(String value) {
@@ -200,7 +212,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     if (categoriesAsync.isLoading && !categoriesAsync.hasValue) {
       return const Scaffold(
         backgroundColor: AppColors.background,
-        body: SafeArea(child: LoadingView()),
+        body: SafeArea(child: _HomeLoadingSkeleton()),
       );
     }
 
@@ -221,7 +233,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         !allWorkflowsAsync.hasValue) {
       return const Scaffold(
         backgroundColor: AppColors.background,
-        body: SafeArea(child: LoadingView()),
+        body: SafeArea(child: _HomeLoadingSkeleton()),
       );
     }
 
@@ -270,9 +282,28 @@ class _HomePageState extends ConsumerState<HomePage> {
               _selectedRecommendation = null;
             });
           },
+          onRefresh: _refresh,
           onRetry: _retry,
         ),
       ),
+    );
+  }
+}
+
+class _HomeLoadingSkeleton extends StatelessWidget {
+  const _HomeLoadingSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.only(bottom: AppSpacing.s32),
+      children: const [
+        SkeletonHomeHero(),
+        SizedBox(height: AppSpacing.s16),
+        SkeletonChipRow(),
+        SizedBox(height: AppSpacing.s16),
+        SkeletonListView(itemCount: 4),
+      ],
     );
   }
 }
@@ -296,6 +327,7 @@ class _HomeBody extends StatelessWidget {
     required this.onSearchClear,
     required this.onRecommendationSelected,
     required this.onCategorySelected,
+    required this.onRefresh,
     required this.onRetry,
   });
 
@@ -316,6 +348,7 @@ class _HomeBody extends StatelessWidget {
   final VoidCallback onSearchClear;
   final ValueChanged<Recommendation?> onRecommendationSelected;
   final ValueChanged<String?> onCategorySelected;
+  final Future<void> Function() onRefresh;
   final VoidCallback onRetry;
 
   int get _categorySectionIndex {
@@ -333,9 +366,13 @@ class _HomeBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.only(bottom: AppSpacing.s32),
-      children: [
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: onRefresh,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: AppSpacing.s32),
+        children: [
         FadeSlideIn(
           index: 0,
           child: HomeHeroSection(
@@ -384,14 +421,8 @@ class _HomeBody extends StatelessWidget {
           )
         else if (showInlineSearchLoading && workflows.isEmpty)
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: AppSpacing.s32),
-            child: Center(
-              child: SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
+            padding: AppSpacing.pageHorizontal,
+            child: SkeletonListView(itemCount: 2, showSectionHeader: false),
           )
         else if (workflows.isEmpty)
           EmptyView(
@@ -426,6 +457,7 @@ class _HomeBody extends StatelessWidget {
           ],
         ],
       ],
+      ),
     );
   }
 }

@@ -18,7 +18,7 @@ import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_ste
 import 'package:ai_pilot/shared/widgets/empty_view.dart';
 import 'package:ai_pilot/shared/widgets/error_view.dart';
 import 'package:ai_pilot/shared/widgets/fade_slide_in.dart';
-import 'package:ai_pilot/shared/widgets/loading_view.dart';
+import 'package:ai_pilot/shared/widgets/skeleton_card.dart';
 
 /// ワークフロー実行画面。
 class WorkflowRunPage extends ConsumerWidget {
@@ -43,7 +43,17 @@ class WorkflowRunPage extends ConsumerWidget {
         surfaceTintColor: Colors.transparent,
       ),
       body: workflowAsync.when(
-        loading: () => const LoadingView(message: 'Workflowを読み込み中...'),
+        loading: () => ListView(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.s16,
+            AppSpacing.s8,
+            AppSpacing.s16,
+            AppSpacing.s16,
+          ),
+          children: const [
+            SkeletonRunStepSection(),
+          ],
+        ),
         error: (_, _) => ErrorView(
           message: 'Workflowの読み込みに失敗しました',
           onRetry: () => ref.invalidate(workflowByIdProvider(workflowId)),
@@ -178,13 +188,33 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
         ref.read(workflowRunStepIndexProvider(widget.workflow.id).notifier);
 
     return aiToolsAsync.when(
-      loading: () => const LoadingView(message: 'ステップ情報を読み込み中...'),
+      loading: () => ListView(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.s16,
+          AppSpacing.s8,
+          AppSpacing.s16,
+          AppSpacing.s16,
+        ),
+        children: const [
+          SkeletonRunStepSection(),
+        ],
+      ),
       error: (_, _) => ErrorView(
         message: 'ステップ情報の読み込みに失敗しました',
         onRetry: _retryResources,
       ),
       data: (aiTools) => promptTemplatesAsync.when(
-        loading: () => const LoadingView(message: 'ステップ情報を読み込み中...'),
+        loading: () => ListView(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.s16,
+            AppSpacing.s8,
+            AppSpacing.s16,
+            AppSpacing.s16,
+          ),
+          children: const [
+            SkeletonRunStepSection(),
+          ],
+        ),
         error: (_, _) => ErrorView(
           message: 'ステップ情報の読み込みに失敗しました',
           onRetry: _retryResources,

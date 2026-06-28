@@ -15,7 +15,7 @@ import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_step_ti
 import 'package:ai_pilot/shared/widgets/empty_view.dart';
 import 'package:ai_pilot/shared/widgets/error_view.dart';
 import 'package:ai_pilot/shared/widgets/fade_slide_in.dart';
-import 'package:ai_pilot/shared/widgets/loading_view.dart';
+import 'package:ai_pilot/shared/widgets/skeleton_card.dart';
 
 /// ワークフロー詳細画面。
 class WorkflowDetailPage extends ConsumerWidget {
@@ -28,6 +28,17 @@ class WorkflowDetailPage extends ConsumerWidget {
 
   void _startWorkflow(BuildContext context) {
     context.push('/workflows/$workflowId/run');
+  }
+
+  Future<void> _refresh(WidgetRef ref) async {
+    ref.invalidate(workflowByIdProvider(workflowId));
+    ref.invalidate(aiToolsProvider);
+    ref.invalidate(promptTemplatesProvider);
+    await Future.wait([
+      ref.read(workflowByIdProvider(workflowId).future),
+      ref.read(aiToolsProvider.future),
+      ref.read(promptTemplatesProvider.future),
+    ]);
   }
 
   @override
@@ -44,7 +55,7 @@ class WorkflowDetailPage extends ConsumerWidget {
         surfaceTintColor: Colors.transparent,
       ),
       body: workflowAsync.when(
-        loading: () => const LoadingView(),
+        loading: () => const _WorkflowDetailSkeleton(),
         error: (_, _) => ErrorView(
           message: 'ワークフローの読み込みに失敗しました',
           onRetry: () => ref.invalidate(workflowByIdProvider(workflowId)),
@@ -59,9 +70,31 @@ class WorkflowDetailPage extends ConsumerWidget {
             workflow: workflow,
             workflowId: workflowId,
             onStartWorkflow: () => _startWorkflow(context),
+            onRefresh: () => _refresh(ref),
           );
         },
       ),
+    );
+  }
+}
+
+class _WorkflowDetailSkeleton extends StatelessWidget {
+  const _WorkflowDetailSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.s16,
+        kToolbarHeight + AppSpacing.s8,
+        AppSpacing.s16,
+        AppSpacing.s16,
+      ),
+      children: const [
+        SkeletonHeroCard(),
+        SizedBox(height: AppSpacing.s32),
+        SkeletonStepTimeline(),
+      ],
     );
   }
 }
@@ -71,11 +104,13 @@ class _WorkflowDetailBody extends ConsumerWidget {
     required this.workflow,
     required this.workflowId,
     required this.onStartWorkflow,
+    required this.onRefresh,
   });
 
   final Workflow workflow;
   final String workflowId;
   final VoidCallback onStartWorkflow;
+  final Future<void> Function() onRefresh;
 
   void _retryStepResources(WidgetRef ref) {
     ref.invalidate(aiToolsProvider);
@@ -92,35 +127,40 @@ class _WorkflowDetailBody extends ConsumerWidget {
     return Column(
       children: [
         Expanded(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.s16,
-              kToolbarHeight + AppSpacing.s8,
-              AppSpacing.s16,
-              AppSpacing.s16,
-            ),
-            children: [
-              FadeSlideIn(
-                index: 0,
-                child: WorkflowDetailHero(
-                  workflow: workflow,
-                  workflowId: workflowId,
-                ),
+          child: RefreshIndicator(
+            color: AppColors.primary,
+            onRefresh: onRefresh,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.s16,
+                kToolbarHeight + AppSpacing.s8,
+                AppSpacing.s16,
+                AppSpacing.s16,
               ),
-              const SizedBox(height: AppSpacing.s32),
-              if (sortedSteps.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: AppSpacing.s32),
-                  child: EmptyView(message: 'ステップがありません'),
-                )
-              else
-                _StepsSection(
-                  steps: sortedSteps,
-                  aiToolsAsync: aiToolsAsync,
-                  promptTemplatesAsync: promptTemplatesAsync,
-                  onRetry: () => _retryStepResources(ref),
+              children: [
+                FadeSlideIn(
+                  index: 0,
+                  child: WorkflowDetailHero(
+                    workflow: workflow,
+                    workflowId: workflowId,
+                  ),
                 ),
-            ],
+                const SizedBox(height: AppSpacing.s32),
+                if (sortedSteps.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: AppSpacing.s32),
+                    child: EmptyView(message: 'ステップがありません'),
+                  )
+                else
+                  _StepsSection(
+                    steps: sortedSteps,
+                    aiToolsAsync: aiToolsAsync,
+                    promptTemplatesAsync: promptTemplatesAsync,
+                    onRetry: () => _retryStepResources(ref),
+                  ),
+              ],
+            ),
           ),
         ),
         WorkflowStartCta(onPressed: onStartWorkflow),
@@ -145,10 +185,7 @@ class _StepsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (aiToolsAsync.isLoading || promptTemplatesAsync.isLoading) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: AppSpacing.s32),
-        child: LoadingView(message: 'ステップ情報を読み込み中...'),
-      );
+      return const SkeletonStepTimeline();
     }
 
     if (aiToolsAsync.hasError || promptTemplatesAsync.hasError) {

@@ -12,7 +12,7 @@ import 'package:ai_pilot/shared/widgets/bottom_action_bar.dart';
 import 'package:ai_pilot/shared/widgets/empty_view.dart';
 import 'package:ai_pilot/shared/widgets/error_view.dart';
 import 'package:ai_pilot/shared/widgets/fade_slide_in.dart';
-import 'package:ai_pilot/shared/widgets/loading_view.dart';
+import 'package:ai_pilot/shared/widgets/skeleton_card.dart';
 
 /// AI ツール詳細画面。
 class AIToolDetailPage extends ConsumerWidget {
@@ -60,7 +60,17 @@ class AIToolDetailPage extends ConsumerWidget {
         surfaceTintColor: Colors.transparent,
       ),
       body: aiToolAsync.when(
-        loading: () => const LoadingView(),
+        loading: () => ListView(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.s16,
+            kToolbarHeight + AppSpacing.s8,
+            AppSpacing.s16,
+            AppSpacing.s16,
+          ),
+          children: const [
+            SkeletonHeroCard(compact: true),
+          ],
+        ),
         error: (_, _) => ErrorView(
           message: 'AIツールの読み込みに失敗しました',
           onRetry: () => ref.invalidate(aiToolByIdProvider(aiToolId)),
