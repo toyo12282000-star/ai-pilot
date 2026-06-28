@@ -23,20 +23,39 @@ class AdvisorSuggestionCard extends StatelessWidget {
   final VoidCallback onOpenWorkflow;
   final VoidCallback onStartWorkflow;
 
+  bool get _isTopPick => rank == 1;
+
+  String get _matchLabel {
+    return switch (rank) {
+      1 => 'おすすめ度：高',
+      2 => 'おすすめ度：中',
+      _ => 'おすすめ度：低',
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final workflow = suggestion.workflow;
+    final borderColor = _isTopPick ? AppColors.primary : AppColors.outline;
+    final backgroundColor = _isTopPick
+        ? AppColors.primary.withValues(alpha: 0.04)
+        : AppColors.surface;
 
     return Material(
-      color: AppColors.surface,
+      color: backgroundColor,
       borderRadius: AppRadius.large,
+      elevation: _isTopPick ? 1 : 0,
+      shadowColor: AppColors.primary.withValues(alpha: 0.12),
       child: InkWell(
         onTap: onOpenWorkflow,
         borderRadius: AppRadius.large,
         child: Ink(
           decoration: BoxDecoration(
             borderRadius: AppRadius.large,
-            border: Border.all(color: AppColors.outline),
+            border: Border.all(
+              color: borderColor,
+              width: _isTopPick ? 1.5 : 1,
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.s16),
@@ -51,13 +70,17 @@ class AdvisorSuggestionCard extends StatelessWidget {
                       height: 28,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
+                        color: _isTopPick
+                            ? AppColors.primary
+                            : AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: AppRadius.small,
                       ),
                       child: Text(
                         '$rank',
                         style: AppTypography.labelLarge.copyWith(
-                          color: AppColors.primary,
+                          color: _isTopPick
+                              ? AppColors.surface
+                              : AppColors.primary,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -69,7 +92,31 @@ class AdvisorSuggestionCard extends StatelessWidget {
                         children: [
                           Text(
                             workflow.title,
-                            style: AppTypography.titleMedium,
+                            style: AppTypography.titleMedium.copyWith(
+                              color: _isTopPick ? AppColors.primary : null,
+                              fontWeight:
+                                  _isTopPick ? FontWeight.w700 : FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.s8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.s8,
+                              vertical: AppSpacing.s4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _isTopPick
+                                  ? AppColors.primary.withValues(alpha: 0.12)
+                                  : AppColors.primary.withValues(alpha: 0.06),
+                              borderRadius: AppRadius.small,
+                            ),
+                            child: Text(
+                              _matchLabel,
+                              style: AppTypography.labelMedium.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
                           const SizedBox(height: AppSpacing.s8),
                           Text(
@@ -104,22 +151,20 @@ class AdvisorSuggestionCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.s16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: onOpenWorkflow,
-                        child: const Text('詳細を見る'),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.s12),
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: onStartWorkflow,
-                        child: const Text('開始する'),
-                      ),
-                    ),
-                  ],
+                OutlinedButton(
+                  onPressed: onOpenWorkflow,
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(44),
+                  ),
+                  child: const Text('詳細を見る'),
+                ),
+                const SizedBox(height: AppSpacing.s8),
+                FilledButton(
+                  onPressed: onStartWorkflow,
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  child: const Text('このWorkflowを開始する'),
                 ),
               ],
             ),

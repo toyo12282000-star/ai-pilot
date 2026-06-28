@@ -192,6 +192,11 @@ class SkeletonHomeHero extends StatelessWidget {
               height: 48,
               borderRadius: AppRadius.medium,
             ),
+            const SizedBox(height: AppSpacing.s16),
+            SkeletonBox(
+              height: 48,
+              borderRadius: AppRadius.medium,
+            ),
           ],
         ),
       ),

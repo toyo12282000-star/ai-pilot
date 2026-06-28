@@ -224,21 +224,21 @@ class WorkflowAdvisorService {
 
   String _buildReason(_ScoredWorkflow item) {
     if (item.matchedRecommendationTitle != null) {
-      return '「${item.matchedRecommendationTitle}」の目的に近いWorkflowです';
+      return '「${item.matchedRecommendationTitle}」を達成するのに役立つ手順です';
     }
     if (item.titleMatch) {
-      return '入力内容とWorkflowのタイトルが一致しています';
+      return '入力した内容にぴったり合うWorkflowです';
     }
     if (item.matchedTags.isNotEmpty) {
-      return '「${item.matchedTags.first}」に関連するタグが一致しました';
+      return '「${item.matchedTags.first}」のテーマに合っています';
     }
     if (item.matchedCategoryName != null) {
-      return '「${item.matchedCategoryName}」カテゴリが関連しています';
+      return '「${item.matchedCategoryName}」分野のWorkflowです';
     }
     if (item.descriptionMatch) {
-      return 'Workflowの概要が入力内容と関連しています';
+      return '入力内容に近い内容のWorkflowです';
     }
-    return '入力内容に最も近いWorkflowです';
+    return '今の入力に近いWorkflowとして選びました';
   }
 
   String _difficultyLabel(Workflow workflow) {

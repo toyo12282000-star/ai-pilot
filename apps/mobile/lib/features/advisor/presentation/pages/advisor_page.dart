@@ -7,13 +7,17 @@ import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
 import 'package:ai_pilot/features/advisor/domain/entities/advisor_suggestion.dart';
 import 'package:ai_pilot/features/advisor/presentation/providers/advisor_providers.dart';
+import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_empty_section.dart';
 import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_hero_section.dart';
 import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_input_section.dart';
+import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_loading_section.dart';
 import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_suggestion_card.dart';
 import 'package:ai_pilot/features/recommendation/presentation/providers/recommendation_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
-import 'package:ai_pilot/shared/widgets/empty_view.dart';
 import 'package:ai_pilot/shared/widgets/fade_slide_in.dart';
+
+/// 提案中の最低表示時間（体験用・短め）。
+const _minimumSuggestDuration = Duration(milliseconds: 450);
 
 /// AI Advisor 画面（MVP: ルールベース推薦）。
 class AdvisorPage extends ConsumerStatefulWidget {
@@ -44,9 +48,12 @@ class _AdvisorPageState extends ConsumerState<AdvisorPage> {
     setState(() {
       _isSubmitting = true;
       _hasSubmitted = true;
+      _suggestions = null;
     });
 
     try {
+      final minimumDelay = Future<void>.delayed(_minimumSuggestDuration);
+
       final workflowsAsync = ref.read(workflowsProvider);
       final recommendationsAsync = ref.read(recommendationsProvider);
       final categoriesAsync = ref.read(categoriesProvider);
@@ -61,7 +68,10 @@ class _AdvisorPageState extends ConsumerState<AdvisorPage> {
           if (recommendations == null)
             ref.read(recommendationsProvider.future),
           if (categories == null) ref.read(categoriesProvider.future),
+          minimumDelay,
         ]);
+      } else {
+        await minimumDelay;
       }
 
       final resolvedWorkflows = ref.read(workflowsProvider).valueOrNull ?? [];
@@ -121,37 +131,36 @@ class _AdvisorPageState extends ConsumerState<AdvisorPage> {
                 ),
               ),
             ),
-            if (_hasSubmitted && !_isSubmitting) ...[
-              FadeSlideIn(
+            if (_hasSubmitted && _isSubmitting)
+              const FadeSlideIn(
                 index: 2,
-                child: Padding(
-                  padding: AppSpacing.pageHorizontal.copyWith(
-                    top: AppSpacing.s8,
+                child: AdvisorLoadingSection(),
+              ),
+            if (_hasSubmitted && !_isSubmitting && _suggestions != null) ...[
+              if (_suggestions!.isEmpty)
+                FadeSlideIn(
+                  index: 2,
+                  child: AdvisorEmptySection(
+                    controller: _queryController,
+                    isLoading: _isSubmitting,
+                    onExampleSelected: (_) {},
                   ),
-                  child: Text(
-                    'おすすめWorkflow',
-                    style: AppTypography.titleMedium.copyWith(
-                      fontWeight: FontWeight.w700,
+                )
+              else ...[
+                FadeSlideIn(
+                  index: 2,
+                  child: Padding(
+                    padding: AppSpacing.pageHorizontal.copyWith(
+                      top: AppSpacing.s8,
+                    ),
+                    child: Text(
+                      'おすすめWorkflow',
+                      style: AppTypography.titleMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              if (_suggestions == null)
-                const Padding(
-                  padding: EdgeInsets.all(AppSpacing.s24),
-                  child: Center(child: CircularProgressIndicator()),
-                )
-              else if (_suggestions!.isEmpty)
-                FadeSlideIn(
-                  index: 3,
-                  child: Padding(
-                    padding: AppSpacing.pageHorizontal,
-                    child: EmptyView(
-                      message: '条件に合うWorkflowが見つかりませんでした\n別の言い方で試してください',
-                    ),
-                  ),
-                )
-              else
                 for (var index = 0; index < _suggestions!.length; index++)
                   FadeSlideIn(
                     index: 3 + index,
@@ -166,14 +175,19 @@ class _AdvisorPageState extends ConsumerState<AdvisorPage> {
                         suggestion: _suggestions![index],
                         rank: index + 1,
                         onOpenWorkflow: () {
-                          context.push('/workflows/${_suggestions![index].workflow.id}');
+                          context.push(
+                            '/workflows/${_suggestions![index].workflow.id}',
+                          );
                         },
                         onStartWorkflow: () {
-                          context.push('/workflows/${_suggestions![index].workflow.id}/run');
+                          context.push(
+                            '/workflows/${_suggestions![index].workflow.id}/run',
+                          );
                         },
                       ),
                     ),
                   ),
+              ],
             ],
           ],
         ),
