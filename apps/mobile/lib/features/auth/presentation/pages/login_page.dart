@@ -34,7 +34,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('認証に失敗しました: $error')),
+        const SnackBar(content: Text('認証に失敗しました。もう一度お試しください')),
       );
     } finally {
       if (mounted) {

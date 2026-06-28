@@ -117,9 +117,13 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
       return;
     }
 
-    final repository = ref.read(workflowRunHistoryRepositoryProvider);
-    await repository.startWorkflow(userId, widget.workflow.id);
-    invalidateWorkflowRunHistoryForWorkflow(ref, widget.workflow.id);
+    try {
+      final repository = ref.read(workflowRunHistoryRepositoryProvider);
+      await repository.startWorkflow(userId, widget.workflow.id);
+      invalidateWorkflowRunHistoryForWorkflow(ref, widget.workflow.id);
+    } catch (_) {
+      // 履歴開始の失敗は実行自体を妨げない。
+    }
   }
 
   Future<void> _updateProgress(int stepIndex) async {
@@ -128,17 +132,33 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
       return;
     }
 
-    final repository = ref.read(workflowRunHistoryRepositoryProvider);
-    await repository.updateProgress(userId, widget.workflow.id, stepIndex);
-    invalidateWorkflowRunHistoryForWorkflow(ref, widget.workflow.id);
+    try {
+      final repository = ref.read(workflowRunHistoryRepositoryProvider);
+      await repository.updateProgress(userId, widget.workflow.id, stepIndex);
+      invalidateWorkflowRunHistoryForWorkflow(ref, widget.workflow.id);
+    } catch (_) {
+      // 進捗保存の失敗は実行自体を妨げない。
+    }
   }
 
   Future<void> _completeWorkflow() async {
     final userId = ref.read(authenticatedUserIdProvider);
     if (userId != null) {
-      final repository = ref.read(workflowRunHistoryRepositoryProvider);
-      await repository.completeWorkflow(userId, widget.workflow.id);
-      invalidateWorkflowRunHistoryForWorkflow(ref, widget.workflow.id);
+      try {
+        final repository = ref.read(workflowRunHistoryRepositoryProvider);
+        await repository.completeWorkflow(userId, widget.workflow.id);
+        invalidateWorkflowRunHistoryForWorkflow(ref, widget.workflow.id);
+      } catch (_) {
+        if (!mounted) {
+          return;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('完了状態の保存に失敗しました。もう一度お試しください'),
+          ),
+        );
+        return;
+      }
     }
 
     final isAuthenticated = ref.read(isAuthenticatedProvider);

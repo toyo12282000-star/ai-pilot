@@ -68,7 +68,7 @@ class _WorkflowFavoriteButtonState extends ConsumerState<WorkflowFavoriteButton>
   }
 
   void _handleGuestTap() {
-    showLoginPromptSheet(context);
+    showLoginPromptSheet(context, ref);
   }
 
   @override

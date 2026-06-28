@@ -7,6 +7,7 @@ import 'package:ai_pilot/features/auth/presentation/providers/auth_providers.dar
 import 'package:ai_pilot/features/profile/domain/entities/user_profile.dart';
 import 'package:ai_pilot/features/profile/presentation/providers/profile_providers.dart';
 import 'package:ai_pilot/features/profile/presentation/widgets/settings_hero_section.dart';
+import 'package:ai_pilot/shared/navigation/login_navigation.dart';
 import 'package:ai_pilot/shared/providers/authenticated_user_provider.dart';
 import 'package:ai_pilot/shared/providers/guest_mode_provider.dart';
 import 'package:ai_pilot/shared/widgets/fade_slide_in.dart';
@@ -20,8 +21,7 @@ class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
 
   void _navigateToLogin(WidgetRef ref, BuildContext context) {
-    disableGuestMode(ref);
-    context.go('/login');
+    navigateToLogin(ref, context);
   }
 
   Future<void> _signOut(WidgetRef ref, BuildContext context) async {

@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
+import 'package:ai_pilot/shared/navigation/login_navigation.dart';
 
 /// ゲストユーザー向けのログイン案内 BottomSheet。
-Future<void> showLoginPromptSheet(BuildContext context) {
+Future<void> showLoginPromptSheet(
+  BuildContext context,
+  WidgetRef ref,
+) {
   return showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
@@ -14,8 +18,8 @@ Future<void> showLoginPromptSheet(BuildContext context) {
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.s16)),
     ),
-    builder: (context) {
-      final bottomPadding = MediaQuery.paddingOf(context).bottom;
+    builder: (sheetContext) {
+      final bottomPadding = MediaQuery.paddingOf(sheetContext).bottom;
 
       return Padding(
         padding: EdgeInsets.fromLTRB(
@@ -42,14 +46,14 @@ Future<void> showLoginPromptSheet(BuildContext context) {
             const SizedBox(height: AppSpacing.s24),
             FilledButton(
               onPressed: () {
-                Navigator.of(context).pop();
-                context.go('/login');
+                Navigator.of(sheetContext).pop();
+                navigateToLogin(ref, context);
               },
               child: const Text('ログインする'),
             ),
             const SizedBox(height: AppSpacing.s8),
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(sheetContext).pop(),
               child: const Text('あとで'),
             ),
           ],

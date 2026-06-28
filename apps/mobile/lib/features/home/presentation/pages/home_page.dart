@@ -149,6 +149,12 @@ class _HomePageState extends ConsumerState<HomePage> {
     return 'ワークフローがありません';
   }
 
+  bool get _showEmptyReload {
+    return _selectedRecommendation == null &&
+        !_isSearchActive &&
+        _selectedCategoryId == null;
+  }
+
   String _listSectionTitle() {
     return _selectedRecommendation?.title ?? 'すべてのWorkflow';
   }
@@ -270,6 +276,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           categories: categoriesAsync.value ?? const [],
           selectedCategoryId: _selectedCategoryId,
           emptyMessage: _emptyMessage(),
+          showEmptyReload: _showEmptyReload,
           showSearchError: resolved.showSearchError,
           showInlineSearchLoading: resolved.showInlineSearchLoading,
           onSearchChanged: _onSearchChanged,
@@ -325,6 +332,7 @@ class _HomeBody extends StatelessWidget {
     required this.categories,
     required this.selectedCategoryId,
     required this.emptyMessage,
+    required this.showEmptyReload,
     required this.showSearchError,
     required this.showInlineSearchLoading,
     required this.onSearchChanged,
@@ -346,6 +354,7 @@ class _HomeBody extends StatelessWidget {
   final List<Category> categories;
   final String? selectedCategoryId;
   final String emptyMessage;
+  final bool showEmptyReload;
   final bool showSearchError;
   final bool showInlineSearchLoading;
   final ValueChanged<String> onSearchChanged;
@@ -432,8 +441,8 @@ class _HomeBody extends StatelessWidget {
         else if (workflows.isEmpty)
           EmptyView(
             message: emptyMessage,
-            actionLabel: '再読み込み',
-            onAction: onRetry,
+            actionLabel: showEmptyReload ? '再読み込み' : null,
+            onAction: showEmptyReload ? onRetry : null,
           )
         else ...[
           FadeSlideIn(

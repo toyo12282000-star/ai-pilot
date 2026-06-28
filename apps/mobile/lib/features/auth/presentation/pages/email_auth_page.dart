@@ -55,7 +55,13 @@ class _EmailAuthPageState extends ConsumerState<EmailAuthPage> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('認証に失敗しました: $error')),
+        SnackBar(
+          content: Text(
+            _isSignUp
+                ? '登録に失敗しました。入力内容を確認してください'
+                : 'ログインに失敗しました。メールアドレスとパスワードを確認してください',
+          ),
+        ),
       );
     } finally {
       if (mounted) {

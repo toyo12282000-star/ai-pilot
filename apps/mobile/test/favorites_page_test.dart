@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:ai_pilot/features/favorite/presentation/pages/favorites_page.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_favorite_button.dart';
 import 'package:ai_pilot/shared/providers/authenticated_user_provider.dart';
+import 'package:ai_pilot/shared/providers/guest_mode_provider.dart';
 import 'package:ai_pilot/shared/widgets/error_view.dart';
 import 'package:ai_pilot/shared/widgets/login_required_view.dart';
 
@@ -66,6 +67,7 @@ void main() {
       ProviderScope(
         overrides: [
           authenticatedUserIdProvider.overrideWith((ref) => null),
+          guestModeProvider.overrideWith((ref) => true),
         ],
         child: MaterialApp.router(routerConfig: router),
       ),
