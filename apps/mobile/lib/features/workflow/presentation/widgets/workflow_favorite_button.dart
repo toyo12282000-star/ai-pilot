@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:ai_pilot/design_system/colors.dart';
+import 'package:ai_pilot/design_system/icons.dart';
 import 'package:ai_pilot/features/favorite/presentation/providers/favorite_providers.dart';
 
 /// ワークフロー詳細画面のお気に入りボタン。
@@ -90,8 +92,8 @@ class _WorkflowFavoriteButtonState extends ConsumerState<WorkflowFavoriteButton>
       onPressed: isDisabled ? null : () => _toggleFavorite(isFavorite),
       tooltip: isFavorite ? 'お気に入り解除' : 'お気に入りに追加',
       icon: Icon(
-        isFavorite ? Icons.favorite : Icons.favorite_border,
-        color: isFavorite ? Theme.of(context).colorScheme.primary : null,
+        isFavorite ? AppIcons.favoriteFilled : AppIcons.favorite,
+        color: isFavorite ? AppColors.primary : AppColors.textSecondary,
       ),
     );
   }

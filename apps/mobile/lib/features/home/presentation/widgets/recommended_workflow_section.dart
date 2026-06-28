@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:ai_pilot/app/app_text_styles.dart';
-import 'package:ai_pilot/core/constants/app_spacing.dart';
+import 'package:ai_pilot/design_system/spacing.dart';
+import 'package:ai_pilot/features/home/presentation/widgets/home_section_header.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/recommended_workflow_card.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
 
@@ -15,8 +15,6 @@ class RecommendedWorkflowSection extends StatelessWidget {
 
   final List<Workflow> workflows;
 
-  static const double _listHeight = 132;
-
   @override
   Widget build(BuildContext context) {
     if (workflows.isEmpty) {
@@ -26,25 +24,14 @@ class RecommendedWorkflowSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.md,
-            0,
-            AppSpacing.md,
-            AppSpacing.sm,
-          ),
-          child: Text(
-            'おすすめWorkflow',
-            style: Theme.of(context).appText.sectionTitle,
-          ),
-        ),
+        const HomeSectionHeader(title: 'おすすめWorkflow'),
         SizedBox(
-          height: _listHeight,
+          height: RecommendedWorkflowCard.cardHeight,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: AppSpacing.pageHorizontal,
             itemCount: workflows.length,
-            separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
+            separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.s12),
             itemBuilder: (context, index) {
               final workflow = workflows[index];
               return RecommendedWorkflowCard(
@@ -54,7 +41,7 @@ class RecommendedWorkflowSection extends StatelessWidget {
             },
           ),
         ),
-        const SizedBox(height: AppSpacing.md),
+        const SizedBox(height: AppSpacing.s24),
       ],
     );
   }

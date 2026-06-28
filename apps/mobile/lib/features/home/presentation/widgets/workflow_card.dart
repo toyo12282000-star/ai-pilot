@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
-import 'package:ai_pilot/app/app_text_styles.dart';
-import 'package:ai_pilot/core/constants/app_radius.dart';
-import 'package:ai_pilot/core/constants/app_spacing.dart';
+import 'package:ai_pilot/design_system/colors.dart';
+import 'package:ai_pilot/design_system/icons.dart';
+import 'package:ai_pilot/design_system/radius.dart';
+import 'package:ai_pilot/design_system/spacing.dart';
+import 'package:ai_pilot/design_system/typography.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
 
 /// ワークフロー一覧のカード表示。
@@ -18,61 +20,92 @@ class WorkflowCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Card(
-      clipBehavior: Clip.antiAlias,
+    return Material(
+      color: AppColors.surface,
+      borderRadius: AppRadius.large,
       child: InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: AppSpacing.card,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                workflow.title,
-                style: theme.appText.cardTitle,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                workflow.description,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md - AppSpacing.xs),
-              Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.sm,
-                children: [
-                  if (workflow.estimatedMinutes != null)
-                    _MetaChip(
-                      icon: Icons.schedule,
-                      label: '約${workflow.estimatedMinutes}分',
-                    ),
-                  _MetaChip(
-                    icon: Icons.format_list_numbered,
-                    label: '${workflow.steps.length}ステップ',
-                  ),
-                ],
-              ),
-              if (workflow.tags.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.md - AppSpacing.xs),
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
+        borderRadius: AppRadius.large,
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.large,
+            border: Border.all(color: AppColors.outline),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.s16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    for (final tag in workflow.tags)
-                      Chip(
-                        label: Text(tag),
-                        visualDensity: VisualDensity.compact,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    Expanded(
+                      child: Text(
+                        workflow.title,
+                        style: AppTypography.titleMedium,
                       ),
+                    ),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      size: AppIcons.sizeLg,
+                      color: AppColors.textSecondary,
+                    ),
                   ],
                 ),
+                const SizedBox(height: AppSpacing.s8),
+                Text(
+                  workflow.description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.s16),
+                Wrap(
+                  spacing: AppSpacing.s8,
+                  runSpacing: AppSpacing.s8,
+                  children: [
+                    if (workflow.estimatedMinutes != null)
+                      _MetaBadge(
+                        icon: AppIcons.schedule,
+                        label: '約${workflow.estimatedMinutes}分',
+                      ),
+                    _MetaBadge(
+                      icon: AppIcons.steps,
+                      label: '${workflow.steps.length}ステップ',
+                    ),
+                  ],
+                ),
+                if (workflow.tags.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.s12),
+                  Wrap(
+                    spacing: AppSpacing.s8,
+                    runSpacing: AppSpacing.s8,
+                    children: [
+                      for (final tag in workflow.tags)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.s8,
+                            vertical: AppSpacing.s4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.background,
+                            borderRadius: AppRadius.small,
+                            border: Border.all(color: AppColors.outline),
+                          ),
+                          child: Text(
+                            tag,
+                            style: AppTypography.labelSmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -80,8 +113,8 @@ class WorkflowCard extends StatelessWidget {
   }
 }
 
-class _MetaChip extends StatelessWidget {
-  const _MetaChip({
+class _MetaBadge extends StatelessWidget {
+  const _MetaBadge({
     required this.icon,
     required this.label,
   });
@@ -91,27 +124,24 @@ class _MetaChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
+        horizontal: AppSpacing.s8,
+        vertical: AppSpacing.s4,
       ),
       decoration: BoxDecoration(
-        color: colorScheme.secondaryContainer.withValues(alpha: 0.35),
-        borderRadius: AppRadius.chip,
+        color: AppColors.primary.withValues(alpha: 0.06),
+        borderRadius: AppRadius.small,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: colorScheme.secondary),
-          const SizedBox(width: AppSpacing.xs),
+          Icon(icon, size: AppIcons.sizeSm, color: AppColors.primary),
+          const SizedBox(width: AppSpacing.s4),
           Text(
             label,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
+            style: AppTypography.labelMedium.copyWith(
+              color: AppColors.textSecondary,
             ),
           ),
         ],

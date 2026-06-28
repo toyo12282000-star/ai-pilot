@@ -12,6 +12,6 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('AI Pilot'), findsWidgets);
+    expect(find.text('今日は何を作りますか？'), findsOneWidget);
   });
 }

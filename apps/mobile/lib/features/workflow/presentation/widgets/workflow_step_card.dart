@@ -2,32 +2,47 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:ai_pilot/app/app_text_styles.dart';
-import 'package:ai_pilot/core/constants/app_radius.dart';
-import 'package:ai_pilot/core/constants/app_spacing.dart';
+import 'package:ai_pilot/design_system/animations.dart';
+import 'package:ai_pilot/design_system/colors.dart';
+import 'package:ai_pilot/design_system/icons.dart';
+import 'package:ai_pilot/design_system/radius.dart';
+import 'package:ai_pilot/design_system/spacing.dart';
+import 'package:ai_pilot/design_system/typography.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow_step.dart';
 
 /// ワークフロー詳細画面のステップカード。
-class WorkflowStepCard extends StatelessWidget {
+class WorkflowStepCard extends StatefulWidget {
   const WorkflowStepCard({
     super.key,
     required this.step,
+    this.aiToolId,
     this.aiToolName,
     this.promptContent,
   });
 
   final WorkflowStep step;
+  final String? aiToolId;
   final String? aiToolName;
   final String? promptContent;
 
-  Future<void> _copyPrompt(BuildContext context) async {
-    final content = promptContent;
+  @override
+  State<WorkflowStepCard> createState() => _WorkflowStepCardState();
+}
+
+class _WorkflowStepCardState extends State<WorkflowStepCard> {
+  bool _isPromptExpanded = false;
+
+  bool get _hasPrompt =>
+      widget.promptContent != null && widget.promptContent!.isNotEmpty;
+
+  Future<void> _copyPrompt() async {
+    final content = widget.promptContent;
     if (content == null || content.isEmpty) {
       return;
     }
 
     await Clipboard.setData(ClipboardData(text: content));
-    if (!context.mounted) {
+    if (!mounted) {
       return;
     }
 
@@ -36,105 +51,78 @@ class WorkflowStepCard extends StatelessWidget {
     );
   }
 
+  void _togglePrompt() {
+    setState(() => _isPromptExpanded = !_isPromptExpanded);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Card(
-      child: Padding(
-        padding: AppSpacing.card,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 16,
-                  backgroundColor: colorScheme.primaryContainer,
-                  child: Text(
-                    '${step.order}',
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: colorScheme.onPrimaryContainer,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+    return Material(
+      color: AppColors.surface,
+      borderRadius: AppRadius.large,
+      child: Ink(
+        decoration: BoxDecoration(
+          borderRadius: AppRadius.large,
+          border: Border.all(color: AppColors.outline),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.s16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Step ${widget.step.order}',
+                style: AppTypography.labelMedium.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(width: AppSpacing.md - AppSpacing.xs),
-                Expanded(
-                  child: Text(
-                    step.title,
-                    style: theme.appText.cardTitle,
+              ),
+              const SizedBox(height: AppSpacing.s4),
+              Text(
+                widget.step.title,
+                style: AppTypography.titleSmall,
+              ),
+              const SizedBox(height: AppSpacing.s12),
+              Text(
+                widget.step.instruction,
+                style: AppTypography.bodyLarge.copyWith(
+                  fontWeight: FontWeight.w500,
+                  height: 1.5,
+                ),
+              ),
+              if (widget.step.description != null) ...[
+                const SizedBox(height: AppSpacing.s8),
+                Text(
+                  widget.step.description!,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: AppSpacing.md - AppSpacing.xs),
-            Text('説明', style: theme.appText.captionLabel),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              step.instruction,
-              style: theme.textTheme.bodyMedium,
-            ),
-            if (step.description != null) ...[
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                step.description!,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+              const SizedBox(height: AppSpacing.s16),
+              _AiToolChip(
+                aiToolId: widget.aiToolId,
+                aiToolName: widget.aiToolName,
               ),
+              if (_hasPrompt) ...[
+                const SizedBox(height: AppSpacing.s16),
+                _PromptSection(
+                  isExpanded: _isPromptExpanded,
+                  promptContent: widget.promptContent!,
+                  onToggle: _togglePrompt,
+                  onCopy: _copyPrompt,
+                ),
+              ],
             ],
-            const SizedBox(height: AppSpacing.md),
-            Text('使用AIツール', style: theme.appText.captionLabel),
-            const SizedBox(height: AppSpacing.xs),
-            _AiToolNameLink(
-              aiToolId: step.aiToolId,
-              aiToolName: aiToolName,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Row(
-              children: [
-                Text('プロンプト', style: theme.appText.captionLabel),
-                const Spacer(),
-                if (promptContent != null && promptContent!.isNotEmpty)
-                  TextButton.icon(
-                    onPressed: () => _copyPrompt(context),
-                    icon: const Icon(Icons.copy, size: 18),
-                    label: const Text('コピー'),
-                  ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            if (promptContent == null || promptContent!.isEmpty)
-              Text(
-                '未設定',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              )
-            else
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppSpacing.md - AppSpacing.xs),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest,
-                  borderRadius: AppRadius.chip,
-                ),
-                child: Text(
-                  promptContent!,
-                  style: theme.textTheme.bodySmall,
-                ),
-              ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _AiToolNameLink extends StatelessWidget {
-  const _AiToolNameLink({
+class _AiToolChip extends StatelessWidget {
+  const _AiToolChip({
     required this.aiToolId,
     required this.aiToolName,
   });
@@ -144,32 +132,151 @@ class _AiToolNameLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final displayName = aiToolName ?? '未設定';
     final canNavigate = aiToolId != null;
 
-    if (!canNavigate) {
-      return Text(
-        displayName,
-        style: theme.textTheme.bodyMedium,
-      );
-    }
-
-    return InkWell(
-      onTap: () => context.push('/ai-tools/$aiToolId'),
-      borderRadius: AppRadius.chip,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs / 2),
-        child: Text(
-          displayName,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.secondary,
-            fontWeight: FontWeight.w600,
-            decoration: TextDecoration.underline,
-            decorationColor: theme.colorScheme.secondary,
-          ),
+    final chip = Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.s12,
+        vertical: AppSpacing.s8,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.06),
+        borderRadius: AppRadius.pill,
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.2),
         ),
       ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.auto_awesome,
+            size: AppIcons.sizeSm,
+            color: AppColors.primary,
+          ),
+          const SizedBox(width: AppSpacing.s8),
+          Text(
+            displayName,
+            style: AppTypography.labelLarge.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          if (canNavigate) ...[
+            const SizedBox(width: AppSpacing.s4),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: AppIcons.sizeSm,
+              color: AppColors.primary.withValues(alpha: 0.7),
+            ),
+          ],
+        ],
+      ),
+    );
+
+    if (!canNavigate) {
+      return chip;
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => context.push('/ai-tools/$aiToolId'),
+        borderRadius: AppRadius.pill,
+        child: chip,
+      ),
+    );
+  }
+}
+
+class _PromptSection extends StatelessWidget {
+  const _PromptSection({
+    required this.isExpanded,
+    required this.promptContent,
+    required this.onToggle,
+    required this.onCopy,
+  });
+
+  final bool isExpanded;
+  final String promptContent;
+  final VoidCallback onToggle;
+  final VoidCallback onCopy;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextButton.icon(
+          onPressed: onToggle,
+          icon: AnimatedRotation(
+            turns: isExpanded ? 0.5 : 0,
+            duration: AppAnimations.fast,
+            curve: AppAnimations.easeInOut,
+            child: const Icon(Icons.expand_more, size: AppIcons.sizeMd),
+          ),
+          label: Text(isExpanded ? 'プロンプトを閉じる' : 'プロンプトを見る'),
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.zero,
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        ),
+        AnimatedCrossFade(
+          duration: AppAnimations.normal,
+          sizeCurve: AppAnimations.easeInOut,
+          firstCurve: AppAnimations.easeOut,
+          secondCurve: AppAnimations.easeOut,
+          crossFadeState: isExpanded
+              ? CrossFadeState.showSecond
+              : CrossFadeState.showFirst,
+          firstChild: const SizedBox(width: double.infinity),
+          secondChild: AnimatedSize(
+            duration: AppAnimations.normal,
+            curve: AppAnimations.easeInOut,
+            alignment: Alignment.topCenter,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: AppSpacing.s8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppSpacing.s12),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: AppRadius.medium,
+                    border: Border.all(color: AppColors.outline),
+                  ),
+                  child: Text(
+                    promptContent,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textPrimary,
+                      height: 1.6,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.s8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: onCopy,
+                    icon: const Icon(AppIcons.copy, size: AppIcons.sizeSm),
+                    label: const Text('コピー'),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.s8,
+                      ),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

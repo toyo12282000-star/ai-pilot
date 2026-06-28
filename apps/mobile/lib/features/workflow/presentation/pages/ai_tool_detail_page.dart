@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'package:ai_pilot/app/app_text_styles.dart';
-import 'package:ai_pilot/core/constants/app_spacing.dart';
+import 'package:ai_pilot/design_system/colors.dart';
+import 'package:ai_pilot/design_system/icons.dart';
+import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/ai_tool.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
-import 'package:ai_pilot/features/workflow/presentation/widgets/ai_tool_type_label.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/ai_tool_detail_hero.dart';
+import 'package:ai_pilot/shared/widgets/bottom_action_bar.dart';
 import 'package:ai_pilot/shared/widgets/empty_view.dart';
 import 'package:ai_pilot/shared/widgets/error_view.dart';
+import 'package:ai_pilot/shared/widgets/fade_slide_in.dart';
 import 'package:ai_pilot/shared/widgets/loading_view.dart';
 
 /// AI ツール詳細画面。
@@ -47,14 +50,14 @@ class AIToolDetailPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final aiToolAsync = ref.watch(aiToolByIdProvider(aiToolId));
 
-    final appBarTitle = aiToolAsync.maybeWhen(
-      data: (tool) => tool?.name ?? 'AIツール詳細',
-      orElse: () => 'AIツール詳細',
-    );
-
     return Scaffold(
+      backgroundColor: AppColors.background,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text(appBarTitle),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
       ),
       body: aiToolAsync.when(
         loading: () => const LoadingView(),
@@ -87,80 +90,34 @@ class _AIToolDetailBody extends StatelessWidget {
   final AITool tool;
   final ValueChanged<String> onOpenOfficialSite;
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return ListView(
-      padding: AppSpacing.page,
-      children: [
-        Text(
-          tool.name,
-          style: theme.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        _DetailRow(
-          label: '説明',
-          value: tool.description ?? '未設定',
-        ),
-        const SizedBox(height: AppSpacing.md),
-        _DetailRow(
-          label: '種別',
-          value: tool.type.label,
-        ),
-        const SizedBox(height: AppSpacing.md),
-        _DetailRow(
-          label: 'URL',
-          value: tool.url ?? '未設定',
-        ),
-        const SizedBox(height: AppSpacing.md),
-        _DetailRow(
-          label: 'アイコン',
-          value: tool.iconName ?? '未設定',
-        ),
-        if (tool.url != null && tool.url!.isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.xl),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: () => onOpenOfficialSite(tool.url!),
-              icon: const Icon(Icons.open_in_new),
-              label: const Text('公式サイトを開く'),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _DetailRow extends StatelessWidget {
-  const _DetailRow({
-    required this.label,
-    required this.value,
-  });
-
-  final String label;
-  final String value;
+  bool get _hasUrl => tool.url != null && tool.url!.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: theme.appText.captionLabel,
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.s16,
+              kToolbarHeight + AppSpacing.s8,
+              AppSpacing.s16,
+              AppSpacing.s16,
+            ),
+            children: [
+              FadeSlideIn(
+                index: 0,
+                child: AIToolDetailHero(tool: tool),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          value,
-          style: theme.textTheme.bodyLarge,
-        ),
+        if (_hasUrl)
+          BottomActionBar(
+            label: '公式サイトを開く',
+            icon: AppIcons.externalLink,
+            onPressed: () => onOpenOfficialSite(tool.url!),
+          ),
       ],
     );
   }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// AI Pilot 用の追加 TextStyle（ThemeExtension）。
+import 'package:ai_pilot/design_system/typography.dart';
+
+/// AI Pilot 用 ThemeExtension（セマンティック TextStyle）。
 @immutable
 class AppTextStyles extends ThemeExtension<AppTextStyles> {
   const AppTextStyles({
@@ -12,6 +14,14 @@ class AppTextStyles extends ThemeExtension<AppTextStyles> {
   final TextStyle sectionTitle;
   final TextStyle cardTitle;
   final TextStyle captionLabel;
+
+  factory AppTextStyles.fromTypography() {
+    return const AppTextStyles(
+      sectionTitle: AppTypography.titleMedium,
+      cardTitle: AppTypography.titleMedium,
+      captionLabel: AppTypography.labelMedium,
+    );
+  }
 
   @override
   AppTextStyles copyWith({
@@ -41,10 +51,5 @@ class AppTextStyles extends ThemeExtension<AppTextStyles> {
 
 extension AppTextStylesX on ThemeData {
   AppTextStyles get appText =>
-      extension<AppTextStyles>() ??
-      const AppTextStyles(
-        sectionTitle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        cardTitle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        captionLabel: TextStyle(fontSize: 12),
-      );
+      extension<AppTextStyles>() ?? AppTextStyles.fromTypography();
 }
