@@ -2,7 +2,8 @@
 
 Sprint 8.2 で定義した Supabase PostgreSQL スキーマ。  
 Sprint 10.2 で admin 権限基盤（`role`, 監査カラム, admin RLS）を追加。  
-Sprint 11.3 で Advisor 相談履歴（`advisor_histories`）を追加。
+Sprint 11.3 で Advisor 相談履歴（`advisor_histories`）を追加。  
+Sprint 12.2 で Outcome 基盤（`workflow_outcomes` 等）を追加。
 
 マイグレーション:
 
@@ -10,6 +11,7 @@ Sprint 11.3 で Advisor 相談履歴（`advisor_histories`）を追加。
 - [`supabase/migrations/002_seed_initial_data.sql`](../supabase/migrations/002_seed_initial_data.sql)
 - [`supabase/migrations/003_admin_foundation.sql`](../supabase/migrations/003_admin_foundation.sql)
 - [`supabase/migrations/004_advisor_history.sql`](../supabase/migrations/004_advisor_history.sql)
+- [`supabase/migrations/005_outcome_foundation.sql`](../supabase/migrations/005_outcome_foundation.sql)
 
 ## テーブル一覧
 
@@ -26,6 +28,10 @@ Sprint 11.3 で Advisor 相談履歴（`advisor_histories`）を追加。
 | `advisor_histories` | Advisor 相談履歴 | 本人のみ SELECT / INSERT / DELETE |
 | `recommendations` | ホーム「何をしたいですか？」カード | Public read + admin CRUD |
 | `recommendation_workflows` | おすすめと Workflow の中間テーブル | Public read + admin CRUD |
+| `workflow_outcomes` | Workflow 完成イメージ（Outcome） | Public read + admin CRUD |
+| `workflow_step_tool_options` | Step ごとの AI ツール候補 | Public read + admin CRUD |
+| `prompt_variants` | Step ごとの用途別プロンプト | Public read + admin CRUD |
+| `ai_tool_alternatives` | AI ツール代替候補 | Public read + admin CRUD |
 
 ## ER 図（リレーション）
 
@@ -42,6 +48,13 @@ erDiagram
   ai_tools ||--o{ workflow_steps : "used_by"
   ai_tools ||--o{ prompt_templates : "recommended"
   prompt_templates ||--o{ workflow_steps : "used_by"
+  workflows ||--o{ workflow_outcomes : "delivers"
+  workflow_steps ||--o{ workflow_step_tool_options : "has"
+  workflow_steps ||--o{ prompt_variants : "has"
+  ai_tools ||--o{ workflow_step_tool_options : "option_for"
+  ai_tools ||--o{ ai_tool_alternatives : "has_alternative"
+  ai_tools ||--o{ ai_tool_alternatives : "alternative_of"
+  prompt_templates ||--o{ prompt_variants : "based_on"
   recommendations ||--o{ recommendation_workflows : "links"
   workflows ||--o{ recommendation_workflows : "linked"
 
@@ -263,6 +276,74 @@ erDiagram
 | `workflow_id` | uuid PK, FK | ON DELETE CASCADE |
 | `sort_order` | int | デフォルト `0` |
 
+### workflow_outcomes（Sprint 12.2）
+
+| カラム | 型 | 備考 |
+|--------|-----|------|
+| `id` | uuid PK | |
+| `workflow_id` | uuid FK → workflows | ON DELETE CASCADE |
+| `title` | text NOT NULL | ユーザー向け成果物名 |
+| `description` | text | |
+| `outcome_type` | text | `video` / `article` / `image` / `slide` / `sns_post` / `app` / `other` |
+| `preview_image_url` | text | |
+| `preview_url` | text | |
+| `expected_result` | text | 完成後の状態 |
+| `target_users` | text[] | 想定ユーザー |
+| `use_cases` | text[] | 利用シーン |
+| `sort_order` | int | デフォルト `0` |
+| `created_at` / `updated_at` | timestamptz | |
+
+### workflow_step_tool_options（Sprint 12.2）
+
+| カラム | 型 | 備考 |
+|--------|-----|------|
+| `id` | uuid PK | |
+| `workflow_step_id` | uuid FK → workflow_steps | ON DELETE CASCADE |
+| `ai_tool_id` | uuid FK → ai_tools | ON DELETE CASCADE |
+| `is_recommended` | boolean | デフォルト `false` |
+| `recommendation_reason` | text | 選定理由 |
+| `difficulty` | text | `easy` / `normal` / `hard` |
+| `pricing_note` | text | |
+| `sort_order` | int | デフォルト `0` |
+| UNIQUE | `(workflow_step_id, ai_tool_id)` | |
+| `created_at` / `updated_at` | timestamptz | |
+
+### prompt_variants（Sprint 12.2）
+
+| カラム | 型 | 備考 |
+|--------|-----|------|
+| `id` | uuid PK | |
+| `workflow_step_id` | uuid FK → workflow_steps | ON DELETE CASCADE |
+| `prompt_template_id` | uuid FK → prompt_templates | ON DELETE SET NULL |
+| `title` | text NOT NULL | |
+| `variant_type` | text | `beginner` / `high_quality` / `short_time` / `viral` / `professional` / `seo` / `sns` |
+| `content` | text NOT NULL | プロンプト本文 |
+| `expected_output` | text | |
+| `usage_tips` | text | |
+| `variables` | text[] | 変数名一覧 |
+| `sort_order` | int | デフォルト `0` |
+| `created_at` / `updated_at` | timestamptz | |
+
+### ai_tool_alternatives（Sprint 12.2）
+
+| カラム | 型 | 備考 |
+|--------|-----|------|
+| `ai_tool_id` | uuid PK, FK → ai_tools | ON DELETE CASCADE |
+| `alternative_ai_tool_id` | uuid PK, FK → ai_tools | ON DELETE CASCADE |
+| `reason` | text | 代替理由 |
+| `sort_order` | int | デフォルト `0` |
+| CHECK | `ai_tool_id <> alternative_ai_tool_id` | 自己参照禁止 |
+
+### 既存テーブル拡張（Sprint 12.2）
+
+**workflows** — `outcome_summary`, `difficulty`, `required_time_minutes`, `target_user_label`
+
+**workflow_steps** — `goal`, `output_example`, `completion_criteria`, `tips`, `common_mistakes`
+
+**ai_tools** — `pricing_type`, `difficulty`, `strengths`, `weaknesses`, `best_for`, `tutorial_url`
+
+**prompt_templates** — `expected_output`, `usage_tips`
+
 ## インデックス
 
 | インデックス | カラム |
@@ -279,6 +360,13 @@ erDiagram
 | `advisor_histories_created_at_idx` | `advisor_histories.created_at DESC` |
 | `recommendations_priority_idx` | `recommendations.priority` |
 | `recommendation_workflows_recommendation_id_idx` | `recommendation_workflows.recommendation_id` |
+| `workflow_outcomes_workflow_id_idx` | `workflow_outcomes.workflow_id` |
+| `workflow_outcomes_outcome_type_idx` | `workflow_outcomes.outcome_type` |
+| `workflow_step_tool_options_workflow_step_id_idx` | `workflow_step_tool_options.workflow_step_id` |
+| `workflow_step_tool_options_ai_tool_id_idx` | `workflow_step_tool_options.ai_tool_id` |
+| `prompt_variants_workflow_step_id_idx` | `prompt_variants.workflow_step_id` |
+| `prompt_variants_variant_type_idx` | `prompt_variants.variant_type` |
+| `ai_tool_alternatives_ai_tool_id_idx` | `ai_tool_alternatives.ai_tool_id` |
 
 ## トリガー
 
@@ -314,6 +402,7 @@ erDiagram
 
 - `profiles`, `categories`, `ai_tools`, `workflows`, `workflow_steps`
 - `prompt_templates`, `workflow_run_histories`, `recommendations`
+- `workflow_outcomes`, `workflow_step_tool_options`, `prompt_variants`（Sprint 12.2）
 
 ## RLS 方針
 
@@ -328,6 +417,10 @@ erDiagram
 - `prompt_templates`
 - `recommendations`
 - `recommendation_workflows`
+- `workflow_outcomes`（Sprint 12.2）
+- `workflow_step_tool_options`（Sprint 12.2）
+- `prompt_variants`（Sprint 12.2）
+- `ai_tool_alternatives`（Sprint 12.2）
 
 > **Note:** `workflows.is_published` カラムは将来の下書き運用用。現行 RLS では全行を公開読み取り可能としている。下書き非公開が必要になったら `USING (is_published = true)` に変更する。
 
@@ -356,6 +449,10 @@ Public read ポリシーと併存（一般ユーザー・ゲストは SELECT の
 | `workflow_steps` | `Admins can manage workflow_steps` |
 | `recommendations` | `Admins can manage recommendations` |
 | `recommendation_workflows` | `Admins can manage recommendation_workflows` |
+| `workflow_outcomes` | `Admins can manage workflow_outcomes` |
+| `workflow_step_tool_options` | `Admins can manage workflow_step_tool_options` |
+| `prompt_variants` | `Admins can manage prompt_variants` |
+| `ai_tool_alternatives` | `Admins can manage ai_tool_alternatives` |
 
 初回 admin 付与:
 
