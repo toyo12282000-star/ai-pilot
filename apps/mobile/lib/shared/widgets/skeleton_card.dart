@@ -155,9 +155,9 @@ class SkeletonHeroCard extends StatelessWidget {
 class SkeletonShowcaseCard extends StatelessWidget {
   const SkeletonShowcaseCard({super.key});
 
-  static const double cardWidth = 300;
-  static const double imageHeight = 168;
-  static const double cardHeight = 420;
+  static const double cardWidth = 320;
+  static const double imageHeight = cardWidth * 10 / 16;
+  static const double cardHeight = 324;
 
   @override
   Widget build(BuildContext context) {
@@ -166,65 +166,48 @@ class SkeletonShowcaseCard extends StatelessWidget {
       height: SkeletonShowcaseCard.cardHeight,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          borderRadius: AppRadius.large,
-          border: Border.all(color: AppColors.outline.withValues(alpha: 0.7)),
-          color: const Color(0xFF0F172A).withValues(alpha: 0.03),
+          borderRadius: AppRadius.pill,
+          border: Border.all(color: AppColors.outline.withValues(alpha: 0.45)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
+                top: Radius.circular(24),
               ),
               child: SkeletonBox(
                 height: imageHeight,
                 borderRadius: AppRadius.small,
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.all(AppSpacing.s12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SkeletonBox(
-                    width: 56,
-                    height: 12,
-                    borderRadius: AppRadius.small,
-                  ),
-                  SizedBox(height: AppSpacing.s8),
-                  SkeletonBox(height: 18, borderRadius: AppRadius.small),
-                  SizedBox(height: AppSpacing.s8),
-                  SkeletonBox(height: 14, borderRadius: AppRadius.small),
-                  SizedBox(height: AppSpacing.s8),
-                  SkeletonBox(
-                    width: 180,
-                    height: 14,
-                    borderRadius: AppRadius.small,
-                  ),
-                  SizedBox(height: AppSpacing.s12),
-                  Row(
-                    children: [
-                      SkeletonBox(
-                        width: 52,
-                        height: 22,
-                        borderRadius: AppRadius.pill,
-                      ),
-                      SizedBox(width: AppSpacing.s8),
-                      SkeletonBox(
-                        width: 64,
-                        height: 22,
-                        borderRadius: AppRadius.pill,
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: AppSpacing.s12),
-                  SkeletonBox(
-                    width: 120,
-                    height: 14,
-                    borderRadius: AppRadius.small,
-                  ),
-                ],
+            const Expanded(
+              child: Padding(
+                padding: EdgeInsets.all(AppSpacing.s12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SkeletonBox(
+                      width: 48,
+                      height: 10,
+                      borderRadius: AppRadius.small,
+                    ),
+                    SizedBox(height: AppSpacing.s8),
+                    SkeletonBox(height: 16, borderRadius: AppRadius.small),
+                    SizedBox(height: AppSpacing.s8),
+                    SkeletonBox(
+                      width: 120,
+                      height: 12,
+                      borderRadius: AppRadius.small,
+                    ),
+                    Spacer(),
+                    SkeletonBox(
+                      width: 72,
+                      height: 14,
+                      borderRadius: AppRadius.small,
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -248,23 +231,12 @@ class SkeletonShowcaseSection extends StatelessWidget {
             AppSpacing.s16,
             0,
             AppSpacing.s16,
-            AppSpacing.s12,
+            AppSpacing.s16,
           ),
-          child: Row(
-            children: [
-              Expanded(
-                child: SkeletonBox(
-                  width: 160,
-                  height: 18,
-                  borderRadius: AppRadius.small,
-                ),
-              ),
-              SkeletonBox(
-                width: 120,
-                height: 14,
-                borderRadius: AppRadius.small,
-              ),
-            ],
+          child: SkeletonBox(
+            width: 180,
+            height: 18,
+            borderRadius: AppRadius.small,
           ),
         ),
         SizedBox(
@@ -277,7 +249,7 @@ class SkeletonShowcaseSection extends StatelessWidget {
             itemBuilder: (_, _) => const SkeletonShowcaseCard(),
           ),
         ),
-        const SizedBox(height: AppSpacing.s24),
+        const SizedBox(height: AppSpacing.s32),
       ],
     );
   }
@@ -292,44 +264,41 @@ class SkeletonHomeHero extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.s16,
+        AppSpacing.s24,
         AppSpacing.s16,
         AppSpacing.s16,
-        AppSpacing.s8,
       ),
-      child: HeroGradientCard(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.s24,
-          AppSpacing.s32,
-          AppSpacing.s24,
-          AppSpacing.s24,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: AppRadius.pill,
+          border: Border.all(color: AppColors.outline.withValues(alpha: 0.45)),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SkeletonBox(
-              width: 240,
-              height: 26,
-              borderRadius: AppRadius.small,
-            ),
-            const SizedBox(height: AppSpacing.s8),
-            SkeletonBox(height: 14, borderRadius: AppRadius.small),
-            const SizedBox(height: AppSpacing.s8),
-            SkeletonBox(
-              width: 280,
-              height: 14,
-              borderRadius: AppRadius.small,
-            ),
-            const SizedBox(height: AppSpacing.s24),
-            SkeletonBox(
-              height: 48,
-              borderRadius: AppRadius.medium,
-            ),
-            const SizedBox(height: AppSpacing.s16),
-            SkeletonBox(
-              height: 48,
-              borderRadius: AppRadius.medium,
-            ),
-          ],
+        child: const Padding(
+          padding: EdgeInsets.all(AppSpacing.s32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SkeletonBox(
+                width: 260,
+                height: 28,
+                borderRadius: AppRadius.small,
+              ),
+              SizedBox(height: AppSpacing.s12),
+              SkeletonBox(height: 14, borderRadius: AppRadius.small),
+              SizedBox(height: AppSpacing.s8),
+              SkeletonBox(height: 14, borderRadius: AppRadius.small),
+              SizedBox(height: AppSpacing.s24),
+              SkeletonBox(
+                height: 48,
+                borderRadius: AppRadius.medium,
+              ),
+              SizedBox(height: AppSpacing.s12),
+              SkeletonBox(
+                height: 48,
+                borderRadius: AppRadius.medium,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -390,13 +359,132 @@ class SkeletonChipRow extends StatelessWidget {
       padding: AppSpacing.pageHorizontal,
       child: Row(
         children: [
-          for (var index = 0; index < 5; index++) ...[
+          for (var index = 0; index < 6; index++) ...[
             if (index > 0) const SizedBox(width: AppSpacing.s8),
             SkeletonBox(
-              width: index == 0 ? 56 : 72 + index * 8.0,
+              width: index == 0 ? 56 : 64 + index * 6.0,
               height: 36,
               borderRadius: AppRadius.pill,
             ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// ホームカテゴリセクション形状の Skeleton。
+class SkeletonHomeCategorySection extends StatelessWidget {
+  const SkeletonHomeCategorySection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.s16,
+            0,
+            AppSpacing.s16,
+            AppSpacing.s16,
+          ),
+          child: SkeletonBox(
+            width: 72,
+            height: 18,
+            borderRadius: AppRadius.small,
+          ),
+        ),
+        SkeletonChipRow(),
+        SizedBox(height: AppSpacing.s32),
+      ],
+    );
+  }
+}
+
+/// ホーム AI 相談カード形状の Skeleton。
+class SkeletonHomeAdvisorSection extends StatelessWidget {
+  const SkeletonHomeAdvisorSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: AppSpacing.pageHorizontal,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: AppRadius.pill,
+          border: Border.all(color: AppColors.outline.withValues(alpha: 0.45)),
+        ),
+        child: const Padding(
+          padding: EdgeInsets.all(AppSpacing.s24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SkeletonBox(height: 18, borderRadius: AppRadius.small),
+              SizedBox(height: AppSpacing.s8),
+              SkeletonBox(height: 14, borderRadius: AppRadius.small),
+              SizedBox(height: AppSpacing.s16),
+              SkeletonBox(height: 44, borderRadius: AppRadius.medium),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// ホームおすすめセクション形状の Skeleton。
+class SkeletonHomeRecommendationSection extends StatelessWidget {
+  const SkeletonHomeRecommendationSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.s16,
+            AppSpacing.s32,
+            AppSpacing.s16,
+            AppSpacing.s16,
+          ),
+          child: SkeletonBox(
+            width: 160,
+            height: 18,
+            borderRadius: AppRadius.small,
+          ),
+        ),
+        SkeletonChipRow(),
+      ],
+    );
+  }
+}
+
+/// ホーム Workflow 一覧形状の Skeleton。
+class SkeletonHomeWorkflowSection extends StatelessWidget {
+  const SkeletonHomeWorkflowSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.s16,
+        AppSpacing.s32,
+        AppSpacing.s16,
+        0,
+      ),
+      child: Column(
+        children: [
+          const SkeletonBox(
+            width: 140,
+            height: 18,
+            borderRadius: AppRadius.small,
+          ),
+          const SizedBox(height: AppSpacing.s16),
+          for (var i = 0; i < 3; i++) ...[
+            if (i > 0) const SizedBox(height: AppSpacing.s12),
+            const SkeletonCard(),
           ],
         ],
       ),

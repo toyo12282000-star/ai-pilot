@@ -7,16 +7,16 @@ import 'package:go_router/go_router.dart';
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/ai_recommendation_section.dart';
-import 'package:ai_pilot/features/home/presentation/widgets/category_chip_list.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/featured_showcase_section.dart';
+import 'package:ai_pilot/features/home/presentation/widgets/home_advisor_section.dart';
+import 'package:ai_pilot/features/home/presentation/widgets/home_category_section.dart';
+import 'package:ai_pilot/features/home/presentation/widgets/home_content_layout.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/home_hero_section.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/home_section_header.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/recent_workflow_section.dart';
-import 'package:ai_pilot/features/home/presentation/widgets/recommended_workflow_section.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/workflow_card.dart';
 import 'package:ai_pilot/features/recommendation/domain/entities/recommendation.dart';
 import 'package:ai_pilot/features/recommendation/presentation/providers/recommendation_providers.dart';
-import 'package:ai_pilot/features/workflow/domain/entities/category.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/showcase_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
@@ -54,12 +54,14 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   bool get _isSearchActive => _debouncedSearchQuery.length >= _minSearchQueryLength;
 
-  bool get _showBrowseSections =>
+  bool get _showDiscoverySections =>
       !_isSearchActive &&
       _selectedCategoryId == null &&
       _selectedRecommendation == null;
 
-  bool get _showAiRecommendations => !_isSearchActive;
+  bool get _showCategorySection => !_isSearchActive;
+
+  bool get _showRecommendations => !_isSearchActive;
 
   void _retry() {
     ref.invalidate(categoriesProvider);
@@ -139,10 +141,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     return result;
   }
 
-  List<Workflow> _recommendedWorkflows(List<Workflow> allWorkflows) {
-    return allWorkflows.take(3).toList();
-  }
-
   String _emptyMessage() {
     if (_selectedRecommendation != null) {
       return 'この目的に合うワークフローがありません';
@@ -210,9 +208,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     final searchAsync = _isSearchActive
         ? ref.watch(searchWorkflowsProvider(_debouncedSearchQuery))
         : null;
-    final allWorkflows =
-        allWorkflowsAsync.valueOrNull ?? const <Workflow>[];
-    final recommendedWorkflows = _recommendedWorkflows(allWorkflows);
     final resolved = _resolveWorkflowList(
       allWorkflowsAsync: allWorkflowsAsync,
       searchAsync: searchAsync,
@@ -271,13 +266,12 @@ class _HomePageState extends ConsumerState<HomePage> {
         child: _HomeBody(
           searchController: _searchController,
           searchQuery: _searchQuery,
-          showAiRecommendations: _showAiRecommendations,
-          showBrowseSections: _showBrowseSections,
+          showRecommendations: _showRecommendations,
+          showDiscoverySections: _showDiscoverySections,
+          showCategorySection: _showCategorySection,
           selectedRecommendation: _selectedRecommendation,
-          recommendedWorkflows: recommendedWorkflows,
           workflows: filteredWorkflows,
           listSectionTitle: _listSectionTitle(),
-          categories: categoriesAsync.value ?? const [],
           selectedCategoryId: _selectedCategoryId,
           emptyMessage: _emptyMessage(),
           showEmptyReload: _showEmptyReload,
@@ -315,12 +309,12 @@ class _HomeLoadingSkeleton extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppSpacing.s32),
       children: const [
         SkeletonHomeHero(),
-        SizedBox(height: AppSpacing.s8),
         SkeletonShowcaseSection(),
-        SizedBox(height: AppSpacing.s8),
-        SkeletonChipRow(),
-        SizedBox(height: AppSpacing.s16),
-        SkeletonListView(itemCount: 4),
+        SkeletonHomeCategorySection(),
+        SkeletonHomeAdvisorSection(),
+        SizedBox(height: AppSpacing.s32),
+        SkeletonHomeRecommendationSection(),
+        SkeletonHomeWorkflowSection(),
       ],
     );
   }
@@ -330,13 +324,12 @@ class _HomeBody extends StatelessWidget {
   const _HomeBody({
     required this.searchController,
     required this.searchQuery,
-    required this.showAiRecommendations,
-    required this.showBrowseSections,
+    required this.showRecommendations,
+    required this.showDiscoverySections,
+    required this.showCategorySection,
     required this.selectedRecommendation,
-    required this.recommendedWorkflows,
     required this.workflows,
     required this.listSectionTitle,
-    required this.categories,
     required this.selectedCategoryId,
     required this.emptyMessage,
     required this.showEmptyReload,
@@ -353,13 +346,12 @@ class _HomeBody extends StatelessWidget {
 
   final TextEditingController searchController;
   final String searchQuery;
-  final bool showAiRecommendations;
-  final bool showBrowseSections;
+  final bool showRecommendations;
+  final bool showDiscoverySections;
+  final bool showCategorySection;
   final Recommendation? selectedRecommendation;
-  final List<Workflow> recommendedWorkflows;
   final List<Workflow> workflows;
   final String listSectionTitle;
-  final List<Category> categories;
   final String? selectedCategoryId;
   final String emptyMessage;
   final bool showEmptyReload;
@@ -373,22 +365,6 @@ class _HomeBody extends StatelessWidget {
   final VoidCallback onRetry;
   final VoidCallback onAdvisorTap;
 
-  int get _categorySectionIndex {
-    var index = 1;
-    if (showBrowseSections) {
-      index++;
-    }
-    if (showAiRecommendations) {
-      index++;
-    }
-    if (showBrowseSections) {
-      index += 2;
-    }
-    return index;
-  }
-
-  int get _listSectionIndex => _categorySectionIndex + 1;
-
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
@@ -398,97 +374,99 @@ class _HomeBody extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.only(bottom: AppSpacing.s32),
         children: [
-        FadeSlideIn(
-          index: 0,
-          child: HomeHeroSection(
-            searchController: searchController,
-            onSearchChanged: onSearchChanged,
-            onSearchClear: onSearchClear,
-            showClearButton: searchQuery.isNotEmpty,
-            onAdvisorTap: onAdvisorTap,
-          ),
-        ),
-        if (showBrowseSections)
           FadeSlideIn(
-            index: 1,
-            child: const FeaturedShowcaseSection(),
-          ),
-        if (showAiRecommendations)
-          FadeSlideIn(
-            index: showBrowseSections ? 2 : 1,
-            child: AiRecommendationSection(
-              selectedRecommendationId: selectedRecommendation?.id,
-              onRecommendationSelected: onRecommendationSelected,
+            index: 0,
+            child: HomeHeroSection(
+              searchController: searchController,
+              onSearchChanged: onSearchChanged,
+              onSearchClear: onSearchClear,
+              showClearButton: searchQuery.isNotEmpty,
+              onAdvisorTap: onAdvisorTap,
             ),
           ),
-        if (showBrowseSections)
-          FadeSlideIn(
-            index: showAiRecommendations ? 3 : 2,
-            child: const RecentWorkflowSection(),
-          ),
-        if (showBrowseSections)
-          FadeSlideIn(
-            index: showAiRecommendations ? 4 : 3,
-            child: RecommendedWorkflowSection(workflows: recommendedWorkflows),
-          ),
-        FadeSlideIn(
-          index: _categorySectionIndex,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CategoryChipList(
-                categories: categories,
+          if (showDiscoverySections)
+            const FadeSlideIn(
+              index: 1,
+              child: FeaturedShowcaseSection(),
+            ),
+          if (showCategorySection)
+            FadeSlideIn(
+              index: showDiscoverySections ? 2 : 1,
+              child: HomeCategorySection(
                 selectedCategoryId: selectedCategoryId,
-                onSelected: onCategorySelected,
+                onCategorySelected: onCategorySelected,
               ),
-              const SizedBox(height: AppSpacing.s16),
-            ],
-          ),
-        ),
-        if (showSearchError)
-          ErrorView(
-            title: '検索に失敗しました',
-            description: '通信状況を確認して、もう一度お試しください',
-            onRetry: onRetry,
-          )
-        else if (showInlineSearchLoading && workflows.isEmpty)
-          const Padding(
-            padding: AppSpacing.pageHorizontal,
-            child: SkeletonListView(itemCount: 2, showSectionHeader: false),
-          )
-        else if (workflows.isEmpty)
-          EmptyView(
-            message: emptyMessage,
-            actionLabel: showEmptyReload ? '再読み込み' : null,
-            onAction: showEmptyReload ? onRetry : null,
-          )
-        else ...[
-          FadeSlideIn(
-            index: _listSectionIndex,
-            child: HomeSectionHeader(
-              title: listSectionTitle,
-              trailing: showInlineSearchLoading
-                  ? '検索中...'
-                  : '${workflows.length}件',
             ),
-          ),
-          const SizedBox(height: AppSpacing.s4),
-          for (var index = 0; index < workflows.length; index++) ...[
-            if (index > 0) const SizedBox(height: AppSpacing.s16),
-            Padding(
-              padding: AppSpacing.pageHorizontal,
-              child: FadeSlideIn(
-                index: _listSectionIndex + index + 1,
-                child: WorkflowCard(
-                  workflow: workflows[index],
-                  onTap: () =>
-                      context.push('/workflows/${workflows[index].id}'),
+          if (showDiscoverySections)
+            FadeSlideIn(
+              index: 3,
+              child: HomeAdvisorSection(onAdvisorTap: onAdvisorTap),
+            ),
+          if (showRecommendations)
+            FadeSlideIn(
+              index: showDiscoverySections ? 4 : 2,
+              child: AiRecommendationSection(
+                selectedRecommendationId: selectedRecommendation?.id,
+                onRecommendationSelected: onRecommendationSelected,
+              ),
+            ),
+          if (showDiscoverySections)
+            const FadeSlideIn(
+              index: 5,
+              child: RecentWorkflowSection(),
+            ),
+          if (showSearchError)
+            HomeContentLayout.constrain(
+              context: context,
+              child: ErrorView(
+                title: '検索に失敗しました',
+                description: '通信状況を確認して、もう一度お試しください',
+                onRetry: onRetry,
+              ),
+            )
+          else if (showInlineSearchLoading && workflows.isEmpty)
+            HomeContentLayout.constrain(
+              context: context,
+              child: const SkeletonListView(itemCount: 2, showSectionHeader: false),
+            )
+          else if (workflows.isEmpty)
+            HomeContentLayout.constrain(
+              context: context,
+              child: EmptyView(
+                message: emptyMessage,
+                actionLabel: showEmptyReload ? '再読み込み' : null,
+                onAction: showEmptyReload ? onRetry : null,
+              ),
+            )
+          else ...[
+            FadeSlideIn(
+              index: showDiscoverySections ? 6 : 3,
+              child: HomeContentLayout.constrain(
+                context: context,
+                child: HomeSectionHeader(
+                  title: listSectionTitle,
+                  trailing: showInlineSearchLoading
+                      ? '検索中...'
+                      : '${workflows.length}件',
                 ),
               ),
             ),
+            for (var index = 0; index < workflows.length; index++) ...[
+              if (index > 0) const SizedBox(height: AppSpacing.s12),
+              HomeContentLayout.constrain(
+                context: context,
+                child: FadeSlideIn(
+                  index: (showDiscoverySections ? 7 : 4) + index,
+                  child: WorkflowCard(
+                    workflow: workflows[index],
+                    onTap: () =>
+                        context.push('/workflows/${workflows[index].id}'),
+                  ),
+                ),
+              ),
+            ],
           ],
         ],
-      ],
       ),
     );
   }

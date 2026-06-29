@@ -4,41 +4,65 @@ import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/radius.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
+import 'package:ai_pilot/features/home/presentation/widgets/home_browse_category.dart';
+import 'package:ai_pilot/features/home/presentation/widgets/home_content_layout.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/category.dart';
 
 /// カテゴリ横スクロールチップ一覧。
 class CategoryChipList extends StatelessWidget {
   const CategoryChipList({
     super.key,
-    required this.categories,
+    this.categories = const [],
+    this.chips,
     required this.selectedCategoryId,
     required this.onSelected,
   });
 
   final List<Category> categories;
+  final List<HomeBrowseCategory>? chips;
   final String? selectedCategoryId;
   final ValueChanged<String?> onSelected;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 44,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: AppSpacing.pageHorizontal,
-        children: [
-          _CategoryChip(
-            label: 'すべて',
-            selected: selectedCategoryId == null,
-            onTap: () => onSelected(null),
-          ),
-          for (final category in categories)
-            _CategoryChip(
+    final browseChips = chips ?? const <HomeBrowseCategory>[];
+
+    return HomeContentLayout.constrain(
+      context: context,
+      padding: EdgeInsets.zero,
+      child: SizedBox(
+        height: 44,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: HomeContentLayout.horizontalPadding(context),
+          itemCount: browseChips.isNotEmpty ? browseChips.length + 1 : categories.length + 1,
+          separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.s8),
+          itemBuilder: (context, index) {
+            if (index == 0) {
+              return _CategoryChip(
+                label: 'すべて',
+                selected: selectedCategoryId == null,
+                onTap: () => onSelected(null),
+              );
+            }
+
+            if (browseChips.isNotEmpty) {
+              final chip = browseChips[index - 1];
+              return _CategoryChip(
+                label: chip.label,
+                selected: selectedCategoryId == chip.categoryId,
+                onTap: () => onSelected(chip.categoryId),
+              );
+            }
+
+            final category = categories[index - 1];
+            return _CategoryChip(
               label: category.name,
               selected: selectedCategoryId == category.id,
               onTap: () => onSelected(category.id),
-            ),
-        ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -57,32 +81,33 @@ class _CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: AppSpacing.s8),
-      child: Material(
-        color: selected ? AppColors.primary : AppColors.surface,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: AppRadius.pill,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: AppRadius.pill,
-          child: Ink(
-            decoration: BoxDecoration(
-              borderRadius: AppRadius.pill,
-              border: selected
-                  ? null
-                  : Border.all(color: AppColors.outline),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.pill,
+            color: selected
+                ? AppColors.primary.withValues(alpha: 0.1)
+                : Colors.transparent,
+            border: Border.all(
+              color: selected
+                  ? AppColors.primary.withValues(alpha: 0.35)
+                  : AppColors.outline.withValues(alpha: 0.55),
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.s16,
-                vertical: AppSpacing.s8,
-              ),
-              child: Text(
-                label,
-                style: AppTypography.labelLarge.copyWith(
-                  color: selected ? AppColors.surface : AppColors.textPrimary,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.s16,
+              vertical: AppSpacing.s8,
+            ),
+            child: Text(
+              label,
+              style: AppTypography.labelLarge.copyWith(
+                color: selected ? AppColors.primary : AppColors.textPrimary,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),
           ),

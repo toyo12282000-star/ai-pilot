@@ -58,34 +58,36 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('Home shows showcase-first hero copy and section', (tester) async {
-    await pumpHome(tester);
-
-    expect(find.text('何を作りたいですか？'), findsAtLeastNWidgets(1));
-    expect(
-      find.text('完成イメージからAIワークフローを選べます'),
-      findsOneWidget,
-    );
-    expect(find.text('完成作品から選ぶ'), findsOneWidget);
-    expect(find.text('世界一危険な島3選'), findsOneWidget);
-    expect(find.text('この作品を作る'), findsWidgets);
-  });
-
-  testWidgets('Showcase section appears before recommended workflows',
+  testWidgets('Home shows outcome-first hero copy and featured showcase',
       (tester) async {
     await pumpHome(tester);
 
-    await tester.ensureVisible(find.text('完成作品から選ぶ'));
-    final showcaseOffset = tester.getTopLeft(find.text('完成作品から選ぶ'));
+    expect(find.text('今日は何を作りますか？'), findsOneWidget);
+    expect(
+      find.text('完成作品から選ぶだけで、必要なAI・プロンプト・手順までまとめて案内します。'),
+      findsOneWidget,
+    );
+    expect(find.text('🔥 人気の完成作品'), findsOneWidget);
+    expect(find.text('世界一危険な島3選'), findsOneWidget);
+    expect(find.text('作ってみる'), findsWidgets);
+  });
+
+  testWidgets('Featured showcase appears before recommendation section',
+      (tester) async {
+    await pumpHome(tester);
+
+    await tester.ensureVisible(find.text('🔥 人気の完成作品'));
+    final showcaseOffset = tester.getTopLeft(find.text('🔥 人気の完成作品'));
 
     await tester.scrollUntilVisible(
-      find.text('おすすめWorkflow'),
+      find.text('こんな人におすすめ'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    final recommendedOffset = tester.getTopLeft(find.text('おすすめWorkflow'));
+    final recommendationOffset =
+        tester.getTopLeft(find.text('こんな人におすすめ'));
 
-    expect(showcaseOffset.dy, lessThan(recommendedOffset.dy));
+    expect(showcaseOffset.dy, lessThan(recommendationOffset.dy));
   });
 
   testWidgets('Tapping showcase card navigates to workflow detail', (tester) async {
@@ -104,7 +106,7 @@ void main() {
     expect(find.text('完成作品ギャラリー'), findsOneWidget);
   });
 
-  testWidgets('Search hides showcase browse section', (tester) async {
+  testWidgets('Search hides discovery sections', (tester) async {
     await pumpHome(tester);
 
     await tester.enterText(find.byType(SearchBar), 'zz');
@@ -112,6 +114,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pumpAndSettle();
 
-    expect(find.text('完成作品から選ぶ'), findsNothing);
+    expect(find.text('🔥 人気の完成作品'), findsNothing);
+    expect(find.text('何を作ればいいか迷っていますか？'), findsNothing);
   });
 }

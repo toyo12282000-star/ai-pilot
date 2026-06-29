@@ -53,25 +53,22 @@ void main() {
   }
 
   Future<void> scrollToSearchBar(WidgetTester tester) async {
-    await tester.scrollUntilVisible(
-      find.byType(SearchBar),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byType(SearchBar));
   }
 
   testWidgets('Single character keeps browse sections without full-page loading',
       (tester) async {
     await pumpHome(tester);
 
-    expect(find.text('完成作品から選ぶ'), findsOneWidget);
+    expect(find.text('🔥 人気の完成作品'), findsOneWidget);
 
     await scrollToSearchBar(tester);
     await tester.enterText(find.byType(SearchBar), 'a');
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pumpAndSettle();
 
-    expect(find.text('完成作品から選ぶ'), findsOneWidget);
+    expect(find.text('🔥 人気の完成作品'), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
@@ -83,13 +80,13 @@ void main() {
     await tester.enterText(find.byType(SearchBar), 'zz');
     await tester.pump(const Duration(milliseconds: 200));
 
-    expect(find.text('完成作品から選ぶ'), findsOneWidget);
+    expect(find.text('🔥 人気の完成作品'), findsOneWidget);
 
     await tester.pump(const Duration(milliseconds: 250));
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pumpAndSettle();
 
-    expect(find.text('完成作品から選ぶ'), findsNothing);
+    expect(find.text('🔥 人気の完成作品'), findsNothing);
     expect(find.text('条件に合うワークフローがありません'), findsOneWidget);
   });
 
@@ -105,7 +102,7 @@ void main() {
     await tester.tap(find.byTooltip('クリア'));
     await tester.pumpAndSettle();
 
-    expect(find.text('完成作品から選ぶ'), findsOneWidget);
+    expect(find.text('🔥 人気の完成作品'), findsOneWidget);
     expect(find.text('条件に合うワークフローがありません'), findsNothing);
   });
 }

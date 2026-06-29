@@ -4,7 +4,9 @@ import 'package:ai_pilot/design_system/spacing.dart';
 
 /// ホーム画面の PC 向け最大コンテンツ幅。
 abstract final class HomeContentLayout {
-  static const double maxWidth = 720;
+  static const double maxWidth = 1200;
+
+  static const double sectionSpacing = AppSpacing.s32;
 
   static EdgeInsets horizontalPadding(BuildContext context) {
     return AppSpacing.pageHorizontal;

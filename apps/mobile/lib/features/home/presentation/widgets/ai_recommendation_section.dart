@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:ai_pilot/design_system/spacing.dart';
+import 'package:ai_pilot/features/home/presentation/widgets/home_content_layout.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/home_section_header.dart';
 import 'package:ai_pilot/features/recommendation/domain/entities/recommendation.dart';
 import 'package:ai_pilot/features/recommendation/presentation/providers/recommendation_providers.dart';
 import 'package:ai_pilot/features/recommendation/presentation/widgets/recommendation_goal_card.dart';
 import 'package:ai_pilot/shared/widgets/error_view.dart';
 
-/// 「何をしたいですか？」AI おすすめ目的セクション。
+/// 「こんな人におすすめ」セクション。
 class AiRecommendationSection extends ConsumerWidget {
   const AiRecommendationSection({
     super.key,
@@ -19,14 +20,16 @@ class AiRecommendationSection extends ConsumerWidget {
   final String? selectedRecommendationId;
   final ValueChanged<Recommendation?> onRecommendationSelected;
 
+  static const double _listHeight = RecommendationGoalCard.cardHeight;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final recommendationsAsync = ref.watch(recommendationsProvider);
 
     return recommendationsAsync.when(
       loading: () => const SizedBox.shrink(),
-      error: (error, _) => Padding(
-        padding: AppSpacing.pageHorizontal,
+      error: (error, _) => HomeContentLayout.constrain(
+        context: context,
         child: ErrorView(
           title: 'おすすめの読み込みに失敗しました',
           description: '通信状況を確認して、もう一度お試しください',
@@ -42,35 +45,44 @@ class AiRecommendationSection extends ConsumerWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const HomeSectionHeader(title: '何をしたいですか？'),
+            HomeContentLayout.constrain(
+              context: context,
+              child: const HomeSectionHeader(title: 'こんな人におすすめ'),
+            ),
             SizedBox(
-              height: RecommendationGoalCard.cardHeight,
-              child: ListView.separated(
+              height: _listHeight,
+              child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: AppSpacing.pageHorizontal,
+                padding: HomeContentLayout.horizontalPadding(context),
+                cacheExtent: 360,
                 itemCount: recommendations.length,
-                separatorBuilder: (_, _) =>
-                    const SizedBox(width: AppSpacing.s12),
                 itemBuilder: (context, index) {
                   final recommendation = recommendations[index];
                   final selected =
                       selectedRecommendationId == recommendation.id;
 
-                  return RecommendationGoalCard(
-                    recommendation: recommendation,
-                    selected: selected,
-                    onTap: () {
-                      if (selected) {
-                        onRecommendationSelected(null);
-                      } else {
-                        onRecommendationSelected(recommendation);
-                      }
-                    },
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      right: index < recommendations.length - 1
+                          ? AppSpacing.s12
+                          : 0,
+                    ),
+                    child: RecommendationGoalCard(
+                      recommendation: recommendation,
+                      selected: selected,
+                      onTap: () {
+                        if (selected) {
+                          onRecommendationSelected(null);
+                        } else {
+                          onRecommendationSelected(recommendation);
+                        }
+                      },
+                    ),
                   );
                 },
               ),
             ),
-            const SizedBox(height: AppSpacing.s24),
+            const SizedBox(height: HomeContentLayout.sectionSpacing),
           ],
         );
       },

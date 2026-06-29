@@ -50,6 +50,6 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('何を作りたいですか？'), findsAtLeastNWidgets(1));
+    expect(find.text('今日は何を作りますか？'), findsOneWidget);
   });
 }

@@ -7,7 +7,7 @@ import 'package:ai_pilot/design_system/typography.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/showcase_tag.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow_showcase.dart';
 
-/// 完成作品サンプル用の横スクロールカード。
+/// 人気完成作品用の横スクロール大カード。
 class ShowcaseCard extends StatelessWidget {
   const ShowcaseCard({
     super.key,
@@ -18,9 +18,9 @@ class ShowcaseCard extends StatelessWidget {
   final WorkflowShowcase showcase;
   final VoidCallback onTap;
 
-  static const double cardWidth = 300;
-  static const double imageHeight = 168;
-  static const double cardHeight = 420;
+  static const double cardWidth = 320;
+  static const double cardHeight = 324;
+  static const double imageHeight = cardWidth * 10 / 16;
 
   @override
   Widget build(BuildContext context) {
@@ -31,21 +31,21 @@ class ShowcaseCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: AppRadius.large,
+          borderRadius: AppRadius.pill,
           child: Ink(
             decoration: BoxDecoration(
-              borderRadius: AppRadius.large,
-              color: const Color(0xFF0F172A).withValues(alpha: 0.03),
+              borderRadius: AppRadius.pill,
               border: Border.all(
-                color: AppColors.outline.withValues(alpha: 0.7),
+                color: AppColors.outline.withValues(alpha: 0.45),
               ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.max,
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(16),
+                    top: Radius.circular(24),
                   ),
                   child: SizedBox(
                     height: imageHeight,
@@ -56,52 +56,39 @@ class ShowcaseCard extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(
                       AppSpacing.s12,
-                      AppSpacing.s12,
+                      AppSpacing.s8,
                       AppSpacing.s12,
                       AppSpacing.s12,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (showcase.category != null) ...[
+                        if (showcase.category != null)
                           Text(
                             showcase.category!,
-                            style: AppTypography.labelMedium.copyWith(
+                            style: AppTypography.labelSmall.copyWith(
                               color: AppColors.primary,
                               fontWeight: FontWeight.w600,
-                              letterSpacing: 0.2,
                             ),
                           ),
-                          const SizedBox(height: AppSpacing.s8),
-                        ],
+                        if (showcase.category != null)
+                          const SizedBox(height: AppSpacing.s4),
                         Text(
                           showcase.title,
-                          maxLines: 2,
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTypography.titleMedium.copyWith(
-                            height: 1.3,
+                          style: AppTypography.titleSmall.copyWith(
                             fontWeight: FontWeight.w700,
+                            letterSpacing: -0.2,
                           ),
                         ),
-                        if (showcase.description != null) ...[
-                          const SizedBox(height: AppSpacing.s8),
-                          Text(
-                            showcase.description!,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTypography.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
-                              height: 1.45,
-                            ),
-                          ),
-                        ],
-                        const Spacer(),
+                        const SizedBox(height: AppSpacing.s4),
                         _ShowcaseMetaRow(showcase: showcase),
                         if (showcase.tags.isNotEmpty) ...[
-                          const SizedBox(height: AppSpacing.s8),
+                          const SizedBox(height: AppSpacing.s4),
                           _ShowcaseTagRow(tags: showcase.tags),
                         ],
-                        const SizedBox(height: AppSpacing.s12),
+                        const Spacer(),
                         _ShowcaseCta(onTap: onTap),
                       ],
                     ),
@@ -187,30 +174,14 @@ class _ShowcaseGradientPlaceholder extends StatelessWidget {
           ],
         ),
       ),
-      child: Stack(
-        children: [
-          Positioned(
-            right: -24,
-            top: -24,
-            child: Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.06),
-              ),
-            ),
-          ),
-          Center(
-            child: Icon(
-              showcase.previewVideoUrl != null
-                  ? Icons.play_circle_outline_rounded
-                  : Icons.auto_awesome_rounded,
-              size: 44,
-              color: Colors.white.withValues(alpha: 0.82),
-            ),
-          ),
-        ],
+      child: Center(
+        child: Icon(
+          showcase.previewVideoUrl != null
+              ? Icons.play_circle_outline_rounded
+              : Icons.auto_awesome_rounded,
+          size: 40,
+          color: Colors.white.withValues(alpha: 0.82),
+        ),
       ),
     );
   }
@@ -225,11 +196,11 @@ class _ShowcaseMetaRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = <Widget>[];
 
-    if (showcase.difficulty != null) {
-      items.add(_MetaChip(label: _difficultyLabel(showcase.difficulty!)));
-    }
     if (showcase.estimatedTime != null) {
       items.add(_MetaChip(label: '約${showcase.estimatedTime}分'));
+    }
+    if (showcase.difficulty != null) {
+      items.add(_MetaChip(label: _difficultyLabel(showcase.difficulty!)));
     }
 
     if (items.isEmpty) {
@@ -237,8 +208,8 @@ class _ShowcaseMetaRow extends StatelessWidget {
     }
 
     return Wrap(
-      spacing: AppSpacing.s8,
-      runSpacing: AppSpacing.s8,
+      spacing: AppSpacing.s4,
+      runSpacing: AppSpacing.s4,
       children: items,
     );
   }
@@ -248,7 +219,7 @@ class _ShowcaseMetaRow extends StatelessWidget {
       case ShowcaseDifficulty.easy:
         return 'かんたん';
       case ShowcaseDifficulty.normal:
-        return '普通';
+        return 'ふつう';
       case ShowcaseDifficulty.hard:
         return 'むずかしい';
     }
@@ -262,22 +233,11 @@ class _MetaChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.s8,
-        vertical: AppSpacing.s4,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: AppRadius.pill,
-        border: Border.all(color: AppColors.outline.withValues(alpha: 0.8)),
-      ),
-      child: Text(
-        label,
-        style: AppTypography.labelSmall.copyWith(
-          color: AppColors.textSecondary,
-          fontWeight: FontWeight.w500,
-        ),
+    return Text(
+      label,
+      style: AppTypography.labelSmall.copyWith(
+        color: AppColors.textSecondary,
+        fontWeight: FontWeight.w500,
       ),
     );
   }
@@ -290,31 +250,16 @@ class _ShowcaseTagRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tagLabels = tags.map((tag) => tag.tag).take(3).toList();
+    final tagLabels = tags.map((tag) => tag.tag).take(2).toList();
 
-    return Wrap(
-      spacing: AppSpacing.s8,
-      runSpacing: AppSpacing.s8,
-      children: [
-        for (final label in tagLabels)
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.s8,
-              vertical: AppSpacing.s4,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.08),
-              borderRadius: AppRadius.pill,
-            ),
-            child: Text(
-              '#$label',
-              style: AppTypography.labelSmall.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-      ],
+    return Text(
+      tagLabels.map((label) => '#$label').join(' '),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: AppTypography.labelSmall.copyWith(
+        color: AppColors.primary.withValues(alpha: 0.85),
+        fontWeight: FontWeight.w500,
+      ),
     );
   }
 }
@@ -326,22 +271,34 @@ class _ShowcaseCta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Text(
-          'この作品を作る',
-          style: AppTypography.labelLarge.copyWith(
-            color: AppColors.primary,
-            fontWeight: FontWeight.w600,
-          ),
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton(
+        onPressed: onTap,
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.zero,
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
-        const SizedBox(width: AppSpacing.s4),
-        Icon(
-          Icons.arrow_forward_rounded,
-          size: 16,
-          color: AppColors.primary.withValues(alpha: 0.85),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '作ってみる',
+              style: AppTypography.labelLarge.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.s4),
+            Icon(
+              Icons.arrow_forward_rounded,
+              size: 16,
+              color: AppColors.primary.withValues(alpha: 0.85),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

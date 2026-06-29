@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
+import 'package:ai_pilot/features/home/presentation/widgets/home_content_layout.dart';
 
 /// ホーム画面のセクション見出し。
 class HomeSectionHeader extends StatelessWidget {
@@ -10,20 +11,19 @@ class HomeSectionHeader extends StatelessWidget {
     super.key,
     required this.title,
     this.trailing,
+    this.useLayout = false,
   });
 
   final String title;
   final String? trailing;
 
+  /// [HomeContentLayout.constrain] 内で使う場合は false。
+  final bool useLayout;
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.s16,
-        0,
-        AppSpacing.s16,
-        AppSpacing.s12,
-      ),
+    final header = Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.s16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.baseline,
         textBaseline: TextBaseline.alphabetic,
@@ -31,7 +31,10 @@ class HomeSectionHeader extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: AppTypography.titleMedium,
+              style: AppTypography.titleMedium.copyWith(
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
+              ),
             ),
           ),
           if (trailing != null)
@@ -44,5 +47,14 @@ class HomeSectionHeader extends StatelessWidget {
         ],
       ),
     );
+
+    if (useLayout) {
+      return HomeContentLayout.constrain(
+        context: context,
+        child: header,
+      );
+    }
+
+    return header;
   }
 }

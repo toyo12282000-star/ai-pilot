@@ -9,11 +9,11 @@ import 'package:ai_pilot/features/home/presentation/widgets/showcase_card.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/showcase_providers.dart';
 import 'package:ai_pilot/shared/widgets/skeleton_card.dart';
 
-/// おすすめ完成作品の横スクロールセクション。
+/// 人気完成作品の横スクロールセクション。
 class FeaturedShowcaseSection extends ConsumerWidget {
   const FeaturedShowcaseSection({super.key});
 
-  static double listHeight(BuildContext context) => ShowcaseCard.cardHeight;
+  static const double _listHeight = ShowcaseCard.cardHeight;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,33 +33,32 @@ class FeaturedShowcaseSection extends ConsumerWidget {
             HomeContentLayout.constrain(
               context: context,
               child: const HomeSectionHeader(
-                title: '完成作品から選ぶ',
-                trailing: '完成イメージから始める',
+                title: '🔥 人気の完成作品',
               ),
             ),
             SizedBox(
-              height: listHeight(context),
-              child: HomeContentLayout.constrain(
-                context: context,
-                padding: EdgeInsets.zero,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: HomeContentLayout.horizontalPadding(context),
-                  itemCount: showcases.length,
-                  separatorBuilder: (_, _) =>
-                      const SizedBox(width: AppSpacing.s12),
-                  itemBuilder: (context, index) {
-                    final showcase = showcases[index];
-                    return ShowcaseCard(
+              height: _listHeight,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: HomeContentLayout.horizontalPadding(context),
+                cacheExtent: ShowcaseCard.cardWidth * 2,
+                itemCount: showcases.length,
+                itemBuilder: (context, index) {
+                  final showcase = showcases[index];
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      right: index < showcases.length - 1 ? AppSpacing.s12 : 0,
+                    ),
+                    child: ShowcaseCard(
                       showcase: showcase,
                       onTap: () =>
                           context.push('/workflows/${showcase.workflowId}'),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
               ),
             ),
-            const SizedBox(height: AppSpacing.s24),
+            const SizedBox(height: HomeContentLayout.sectionSpacing),
           ],
         );
       },
