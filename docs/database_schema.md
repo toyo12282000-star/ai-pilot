@@ -3,7 +3,9 @@
 Sprint 8.2 で定義した Supabase PostgreSQL スキーマ。  
 Sprint 10.2 で admin 権限基盤（`role`, 監査カラム, admin RLS）を追加。  
 Sprint 11.3 で Advisor 相談履歴（`advisor_histories`）を追加。  
-Sprint 12.2 で Outcome 基盤（`workflow_outcomes` 等）を追加。
+Sprint 12.2 で Outcome 基盤（`workflow_outcomes` 等）を追加。  
+Sprint 12.3 で 3 Workflow 向け品質シード（`006_outcome_seed_data.sql`）を追加。  
+Sprint 12.4 で完成作品サンプル基盤（`007_showcase_foundation.sql`）を追加。
 
 マイグレーション:
 
@@ -12,6 +14,8 @@ Sprint 12.2 で Outcome 基盤（`workflow_outcomes` 等）を追加。
 - [`supabase/migrations/003_admin_foundation.sql`](../supabase/migrations/003_admin_foundation.sql)
 - [`supabase/migrations/004_advisor_history.sql`](../supabase/migrations/004_advisor_history.sql)
 - [`supabase/migrations/005_outcome_foundation.sql`](../supabase/migrations/005_outcome_foundation.sql)
+- [`supabase/migrations/006_outcome_seed_data.sql`](../supabase/migrations/006_outcome_seed_data.sql)
+- [`supabase/migrations/007_showcase_foundation.sql`](../supabase/migrations/007_showcase_foundation.sql)
 
 ## テーブル一覧
 
@@ -32,6 +36,9 @@ Sprint 12.2 で Outcome 基盤（`workflow_outcomes` 等）を追加。
 | `workflow_step_tool_options` | Step ごとの AI ツール候補 | Public read + admin CRUD |
 | `prompt_variants` | Step ごとの用途別プロンプト | Public read + admin CRUD |
 | `ai_tool_alternatives` | AI ツール代替候補 | Public read + admin CRUD |
+| `workflow_showcases` | 完成作品サンプル | Public read + admin CRUD |
+| `showcase_tags` | 完成作品タグ | Public read + admin CRUD |
+| `showcase_assets` | 完成作品関連アセット | Public read + admin CRUD |
 
 ## ER 図（リレーション）
 
@@ -344,6 +351,77 @@ erDiagram
 
 **prompt_templates** — `expected_output`, `usage_tips`
 
+### Sprint 12.3 品質シード（`006_outcome_seed_data.sql`）
+
+対象 Workflow（3件）:
+
+| Workflow | Step 数 | Outcome | Tool Options | Prompt Variants |
+|----------|---------|---------|--------------|-----------------|
+| YouTubeショートを作る | 4 | 1 | 16（各 Step 4） | 20（各 Step 5） |
+| ブログ記事を書く | 2 | 1 | 8 | 10 |
+| SNS投稿を作る（Instagram） | 2 | 1 | 8 | 10 |
+
+合計: **3 Outcomes**, **32 Tool Options**, **40 Prompt Variants**, **22 AI Tool Alternatives**
+
+追加 AI ツール: Ideogram, Vrew, VOICEVOX
+
+各 Step に `goal` / `output_example` / `completion_criteria` / `tips`（4件）/ `common_mistakes`（4件）を設定。  
+各 Tool Option に `recommendation_reason` / `difficulty` / `pricing_note` を設定。  
+各 Prompt Variant に `expected_output` / `usage_tips` と用途別 `variant_type`（beginner / high_quality / short_time / seo / sns / viral / professional）を設定。
+
+Mock データは `apps/mobile/lib/features/workflow/data/repositories/mock_outcome_seed_data.dart`（`tools/generate_mock_outcome_seed.py` で SQL から生成）。
+
+### workflow_showcases（Sprint 12.4）
+
+| カラム | 型 | 備考 |
+|--------|-----|------|
+| `id` | uuid PK | |
+| `workflow_id` | uuid FK → workflows | ON DELETE CASCADE |
+| `title` | text NOT NULL | 完成作品名 |
+| `description` | text | |
+| `thumbnail_url` | text | 一覧用サムネイル |
+| `preview_image_url` | text | プレビュー画像 |
+| `preview_video_url` | text | プレビュー動画（任意） |
+| `completed_output` | text | 完成物の説明 |
+| `category` | text | カテゴリラベル |
+| `difficulty` | text | `easy` / `normal` / `hard` |
+| `estimated_time` | int | 制作目安（分） |
+| `is_featured` | boolean | ホーム等のおすすめ表示用 |
+| `sort_order` | int | デフォルト `0` |
+| `created_at` / `updated_at` | timestamptz | |
+
+### showcase_tags（Sprint 12.4）
+
+| カラム | 型 | 備考 |
+|--------|-----|------|
+| `id` | uuid PK | |
+| `showcase_id` | uuid FK → workflow_showcases | ON DELETE CASCADE |
+| `tag` | text NOT NULL | |
+| UNIQUE | `(showcase_id, tag)` | |
+
+### showcase_assets（Sprint 12.4）
+
+| カラム | 型 | 備考 |
+|--------|-----|------|
+| `id` | uuid PK | |
+| `showcase_id` | uuid FK → workflow_showcases | ON DELETE CASCADE |
+| `asset_type` | text | `image` / `video` / `article` / `slide` / `prompt` |
+| `url` | text | 完成物 URL（ダミー可） |
+| `title` | text | |
+| `sort_order` | int | デフォルト `0` |
+
+### Sprint 12.4 完成作品シード（`007_showcase_foundation.sql`）
+
+| Workflow | Showcases | Tags | Assets | Featured |
+|----------|-----------|------|--------|----------|
+| YouTubeショート | 3 | 9 | 6 | 1 |
+| ブログ記事 | 3 | 9 | 6 | 1 |
+| Instagram投稿 | 3 | 9 | 6 | 1 |
+
+合計: **9 Showcases**, **27 Tags**, **18 Assets**（Featured 3件）
+
+Mock データ: `mock_showcase_seed_data.dart`
+
 ## インデックス
 
 | インデックス | カラム |
@@ -366,6 +444,11 @@ erDiagram
 | `workflow_step_tool_options_ai_tool_id_idx` | `workflow_step_tool_options.ai_tool_id` |
 | `prompt_variants_workflow_step_id_idx` | `prompt_variants.workflow_step_id` |
 | `prompt_variants_variant_type_idx` | `prompt_variants.variant_type` |
+| `workflow_showcases_workflow_id_idx` | `workflow_showcases.workflow_id` |
+| `workflow_showcases_is_featured_idx` | `workflow_showcases.is_featured`（部分インデックス） |
+| `workflow_showcases_category_idx` | `workflow_showcases.category` |
+| `showcase_tags_showcase_id_idx` | `showcase_tags.showcase_id` |
+| `showcase_assets_showcase_id_idx` | `showcase_assets.showcase_id` |
 | `ai_tool_alternatives_ai_tool_id_idx` | `ai_tool_alternatives.ai_tool_id` |
 
 ## トリガー
@@ -403,6 +486,7 @@ erDiagram
 - `profiles`, `categories`, `ai_tools`, `workflows`, `workflow_steps`
 - `prompt_templates`, `workflow_run_histories`, `recommendations`
 - `workflow_outcomes`, `workflow_step_tool_options`, `prompt_variants`（Sprint 12.2）
+- `workflow_showcases`（Sprint 12.4）
 
 ## RLS 方針
 
@@ -421,6 +505,9 @@ erDiagram
 - `workflow_step_tool_options`（Sprint 12.2）
 - `prompt_variants`（Sprint 12.2）
 - `ai_tool_alternatives`（Sprint 12.2）
+- `workflow_showcases`（Sprint 12.4）
+- `showcase_tags`（Sprint 12.4）
+- `showcase_assets`（Sprint 12.4）
 
 > **Note:** `workflows.is_published` カラムは将来の下書き運用用。現行 RLS では全行を公開読み取り可能としている。下書き非公開が必要になったら `USING (is_published = true)` に変更する。
 
@@ -453,6 +540,9 @@ Public read ポリシーと併存（一般ユーザー・ゲストは SELECT の
 | `workflow_step_tool_options` | `Admins can manage workflow_step_tool_options` |
 | `prompt_variants` | `Admins can manage prompt_variants` |
 | `ai_tool_alternatives` | `Admins can manage ai_tool_alternatives` |
+| `workflow_showcases` | `Admins can manage workflow_showcases` |
+| `showcase_tags` | `Admins can manage showcase_tags` |
+| `showcase_assets` | `Admins can manage showcase_assets` |
 
 初回 admin 付与:
 

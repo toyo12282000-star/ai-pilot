@@ -127,6 +127,30 @@ final List<AITool> mockAITools = [
     url: 'https://cursor.com',
     iconName: 'cursor',
   ),
+  AITool(
+    id: 'tool_ideogram',
+    name: 'Ideogram',
+    type: AIToolType.image,
+    description: 'テキストから高品質な画像・ロゴを生成',
+    url: 'https://ideogram.ai',
+    iconName: 'ideogram',
+  ),
+  AITool(
+    id: 'tool_vrew',
+    name: 'Vrew',
+    type: AIToolType.other,
+    description: 'テキストから自動で字幕付き動画を生成',
+    url: 'https://vrew.voyagerx.com',
+    iconName: 'vrew',
+  ),
+  AITool(
+    id: 'tool_voicevox',
+    name: 'VOICEVOX',
+    type: AIToolType.audio,
+    description: '無料の日本語 AI 音声合成',
+    url: 'https://voicevox.hiroshiba.jp',
+    iconName: 'voicevox',
+  ),
 ];
 
 /// Mock プロンプトテンプレート一覧。

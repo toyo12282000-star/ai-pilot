@@ -93,6 +93,13 @@ void main() {
   });
 
   group('Mock repositories', () {
+    test('Sprint 12.3 seed counts meet quality targets', () {
+      expect(mockWorkflowOutcomes, hasLength(3));
+      expect(mockWorkflowStepToolOptions.length, greaterThanOrEqualTo(30));
+      expect(mockPromptVariants.length, greaterThanOrEqualTo(40));
+      expect(mockAIToolAlternatives.length, greaterThanOrEqualTo(20));
+    });
+
     test('fetchOutcomesByWorkflowId returns youtube outcome', () async {
       final repository = MockWorkflowOutcomeRepository();
       final outcomes = await repository.fetchOutcomesByWorkflowId(
@@ -103,21 +110,21 @@ void main() {
       expect(outcomes.first.outcomeType, OutcomeType.video);
     });
 
-    test('fetchToolOptionsByStepId returns options for step', () async {
+    test('fetchToolOptionsByStepId returns at least three options', () async {
       final repository = MockWorkflowStepToolOptionRepository();
       final options = await repository.fetchToolOptionsByStepId('step_short_1');
 
-      expect(options.length, greaterThanOrEqualTo(2));
+      expect(options.length, greaterThanOrEqualTo(3));
       expect(options.any((option) => option.isRecommended), isTrue);
     });
 
-    test('fetchPromptVariantsByStepId returns at least three variants', () async {
+    test('fetchPromptVariantsByStepId returns five variants for short step 1', () async {
       final repository = MockPromptVariantRepository();
       final variants = await repository.fetchPromptVariantsByStepId(
         'step_short_1',
       );
 
-      expect(variants.length, 3);
+      expect(variants.length, 5);
       expect(
         variants.map((variant) => variant.variantType),
         contains(PromptVariantType.beginner),
@@ -166,7 +173,7 @@ void main() {
         promptVariantsProvider('step_short_1').future,
       );
 
-      expect(variants, hasLength(3));
+      expect(variants, hasLength(5));
     });
   });
 }
