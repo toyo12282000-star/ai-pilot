@@ -13,6 +13,7 @@ class App extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'AI Pilot',
+      debugShowCheckedModeBanner: false,
       theme: appTheme,
       routerConfig: router,
     );

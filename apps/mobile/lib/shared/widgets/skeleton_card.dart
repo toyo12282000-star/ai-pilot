@@ -157,57 +157,61 @@ class SkeletonShowcaseCard extends StatelessWidget {
 
   static const double cardWidth = 320;
   static const double imageHeight = cardWidth * 10 / 16;
-  static const double cardHeight = 324;
+  static const double bodyExtent = 180;
+
+  /// [ShowcaseCard.listExtent] と同じ高さ。
+  static double get listExtent => imageHeight + bodyExtent;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: cardWidth,
-      height: SkeletonShowcaseCard.cardHeight,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          borderRadius: AppRadius.pill,
-          border: Border.all(color: AppColors.outline.withValues(alpha: 0.45)),
+          borderRadius: AppRadius.card,
+          border: Border.all(color: AppColors.border),
+          color: AppColors.surface,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
           children: [
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(24),
+                top: Radius.circular(16),
               ),
               child: SkeletonBox(
                 height: imageHeight,
                 borderRadius: AppRadius.small,
               ),
             ),
-            const Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(AppSpacing.s12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SkeletonBox(
-                      width: 48,
-                      height: 10,
-                      borderRadius: AppRadius.small,
-                    ),
-                    SizedBox(height: AppSpacing.s8),
-                    SkeletonBox(height: 16, borderRadius: AppRadius.small),
-                    SizedBox(height: AppSpacing.s8),
-                    SkeletonBox(
-                      width: 120,
-                      height: 12,
-                      borderRadius: AppRadius.small,
-                    ),
-                    Spacer(),
-                    SkeletonBox(
-                      width: 72,
-                      height: 14,
-                      borderRadius: AppRadius.small,
-                    ),
-                  ],
-                ),
+            const Padding(
+              padding: EdgeInsets.all(AppSpacing.s16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SkeletonBox(
+                    width: 48,
+                    height: 10,
+                    borderRadius: AppRadius.small,
+                  ),
+                  SizedBox(height: AppSpacing.s8),
+                  SkeletonBox(height: 16, borderRadius: AppRadius.small),
+                  SizedBox(height: AppSpacing.s8),
+                  SkeletonBox(height: 16, borderRadius: AppRadius.small),
+                  SizedBox(height: AppSpacing.s8),
+                  SkeletonBox(
+                    width: 120,
+                    height: 12,
+                    borderRadius: AppRadius.small,
+                  ),
+                  SizedBox(height: AppSpacing.s12),
+                  SkeletonBox(
+                    width: 72,
+                    height: 32,
+                    borderRadius: AppRadius.pill,
+                  ),
+                ],
               ),
             ),
           ],
@@ -240,7 +244,7 @@ class SkeletonShowcaseSection extends StatelessWidget {
           ),
         ),
         SizedBox(
-          height: SkeletonShowcaseCard.cardHeight,
+          height: SkeletonShowcaseCard.listExtent,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: AppSpacing.pageHorizontal,
@@ -270,11 +274,12 @@ class SkeletonHomeHero extends StatelessWidget {
       ),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          borderRadius: AppRadius.pill,
-          border: Border.all(color: AppColors.outline.withValues(alpha: 0.45)),
+          borderRadius: AppRadius.card,
+          border: Border.all(color: AppColors.border),
+          color: AppColors.surface,
         ),
         child: const Padding(
-          padding: EdgeInsets.all(AppSpacing.s32),
+          padding: EdgeInsets.all(AppSpacing.s24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -283,19 +288,17 @@ class SkeletonHomeHero extends StatelessWidget {
                 height: 28,
                 borderRadius: AppRadius.small,
               ),
-              SizedBox(height: AppSpacing.s12),
-              SkeletonBox(height: 14, borderRadius: AppRadius.small),
               SizedBox(height: AppSpacing.s8),
               SkeletonBox(height: 14, borderRadius: AppRadius.small),
               SizedBox(height: AppSpacing.s24),
               SkeletonBox(
                 height: 48,
-                borderRadius: AppRadius.medium,
+                borderRadius: AppRadius.pill,
               ),
               SizedBox(height: AppSpacing.s12),
               SkeletonBox(
                 height: 48,
-                borderRadius: AppRadius.medium,
+                borderRadius: AppRadius.pill,
               ),
             ],
           ),

@@ -27,17 +27,16 @@ class RecommendedWorkflowCard extends StatelessWidget {
       width: cardWidth,
       height: cardHeight,
       child: Material(
-        color: AppColors.primary.withValues(alpha: 0.06),
-        borderRadius: AppRadius.large,
+        color: AppColors.surface,
+        borderRadius: AppRadius.card,
         child: InkWell(
           onTap: onTap,
-          borderRadius: AppRadius.large,
+          borderRadius: AppRadius.card,
+          splashColor: AppColors.primary.withValues(alpha: 0.04),
           child: Ink(
             decoration: BoxDecoration(
-              borderRadius: AppRadius.large,
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.15),
-              ),
+              borderRadius: AppRadius.card,
+              border: Border.all(color: AppColors.border),
             ),
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.s16),
@@ -49,12 +48,13 @@ class RecommendedWorkflowCard extends StatelessWidget {
                       workflow.title,
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTypography.titleMedium.copyWith(
+                      style: AppTypography.titleSmall.copyWith(
+                        fontWeight: FontWeight.w600,
                         height: 1.35,
                       ),
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.s16),
+                  const SizedBox(height: AppSpacing.s12),
                   Row(
                     children: [
                       Expanded(
@@ -76,8 +76,8 @@ class RecommendedWorkflowCard extends StatelessWidget {
                       ),
                       Icon(
                         Icons.arrow_forward_rounded,
-                        size: AppIcons.sizeMd,
-                        color: AppColors.primary.withValues(alpha: 0.7),
+                        size: AppIcons.sizeSm,
+                        color: AppColors.textSecondary,
                       ),
                     ],
                   ),
@@ -107,13 +107,13 @@ class _MetaItem extends StatelessWidget {
       children: [
         Icon(
           icon,
-          size: AppIcons.sizeSm,
-          color: AppColors.primary,
+          size: 12,
+          color: AppColors.textSecondary,
         ),
         const SizedBox(width: AppSpacing.s4),
         Text(
           label,
-          style: AppTypography.labelMedium.copyWith(
+          style: AppTypography.labelSmall.copyWith(
             color: AppColors.textSecondary,
           ),
         ),

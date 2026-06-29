@@ -13,7 +13,7 @@ import 'package:ai_pilot/shared/widgets/skeleton_card.dart';
 class FeaturedShowcaseSection extends ConsumerWidget {
   const FeaturedShowcaseSection({super.key});
 
-  static const double _listHeight = ShowcaseCard.cardHeight;
+  static double get _listHeight => ShowcaseCard.listExtent;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,7 +33,7 @@ class FeaturedShowcaseSection extends ConsumerWidget {
             HomeContentLayout.constrain(
               context: context,
               child: const HomeSectionHeader(
-                title: '🔥 人気の完成作品',
+                title: '人気の完成作品',
               ),
             ),
             SizedBox(

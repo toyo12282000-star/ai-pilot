@@ -31,7 +31,7 @@ class CategoryChipList extends StatelessWidget {
       context: context,
       padding: EdgeInsets.zero,
       child: SizedBox(
-        height: 44,
+        height: 40,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           padding: HomeContentLayout.horizontalPadding(context),
@@ -89,13 +89,9 @@ class _CategoryChip extends StatelessWidget {
         child: Ink(
           decoration: BoxDecoration(
             borderRadius: AppRadius.pill,
-            color: selected
-                ? AppColors.primary.withValues(alpha: 0.1)
-                : Colors.transparent,
+            color: selected ? AppColors.primarySoft : AppColors.surfaceMuted,
             border: Border.all(
-              color: selected
-                  ? AppColors.primary.withValues(alpha: 0.35)
-                  : AppColors.outline.withValues(alpha: 0.55),
+              color: selected ? AppColors.primary.withValues(alpha: 0.25) : AppColors.border,
             ),
           ),
           child: Padding(
@@ -106,7 +102,7 @@ class _CategoryChip extends StatelessWidget {
             child: Text(
               label,
               style: AppTypography.labelLarge.copyWith(
-                color: selected ? AppColors.primary : AppColors.textPrimary,
+                color: selected ? AppColors.primary : AppColors.textSecondary,
                 fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),

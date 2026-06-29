@@ -55,8 +55,8 @@ abstract final class AppTypography {
   static const TextStyle headlineSmall = TextStyle(
     fontSize: 24,
     fontWeight: FontWeight.w600,
-    height: 1.32,
-    letterSpacing: -0.15,
+    height: 1.28,
+    letterSpacing: -0.35,
     color: AppColors.textPrimary,
   );
 
@@ -94,7 +94,8 @@ abstract final class AppTypography {
   static const TextStyle bodyLarge = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w400,
-    height: 1.5,
+    height: 1.55,
+    letterSpacing: -0.1,
     color: AppColors.textPrimary,
   );
 

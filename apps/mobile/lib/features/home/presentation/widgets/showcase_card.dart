@@ -19,79 +19,80 @@ class ShowcaseCard extends StatelessWidget {
   final VoidCallback onTap;
 
   static const double cardWidth = 320;
-  static const double cardHeight = 324;
   static const double imageHeight = cardWidth * 10 / 16;
+
+  /// 横スクロール ListView の高さ目安（2行タイトル + メタ + タグ + CTA を含む）。
+  static double get listExtent => imageHeight + 180;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: cardWidth,
-      height: cardHeight,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: AppRadius.pill,
+          borderRadius: AppRadius.card,
           child: Ink(
             decoration: BoxDecoration(
-              borderRadius: AppRadius.pill,
-              border: Border.all(
-                color: AppColors.outline.withValues(alpha: 0.45),
-              ),
+              color: AppColors.surface,
+              borderRadius: AppRadius.card,
+              border: Border.all(color: AppColors.border),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.max,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(24),
+                    top: Radius.circular(16),
                   ),
                   child: SizedBox(
                     height: imageHeight,
                     child: _ShowcasePreviewImage(showcase: showcase),
                   ),
                 ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.s12,
-                      AppSpacing.s8,
-                      AppSpacing.s12,
-                      AppSpacing.s12,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (showcase.category != null)
-                          Text(
-                            showcase.category!,
-                            style: AppTypography.labelSmall.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        if (showcase.category != null)
-                          const SizedBox(height: AppSpacing.s4),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.s16,
+                    AppSpacing.s12,
+                    AppSpacing.s16,
+                    AppSpacing.s16,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (showcase.category != null)
                         Text(
-                          showcase.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTypography.titleSmall.copyWith(
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.2,
+                          showcase.category!,
+                          style: AppTypography.labelSmall.copyWith(
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.2,
                           ),
                         ),
+                      if (showcase.category != null)
                         const SizedBox(height: AppSpacing.s4),
-                        _ShowcaseMetaRow(showcase: showcase),
-                        if (showcase.tags.isNotEmpty) ...[
-                          const SizedBox(height: AppSpacing.s4),
-                          _ShowcaseTagRow(tags: showcase.tags),
-                        ],
-                        const Spacer(),
-                        _ShowcaseCta(onTap: onTap),
+                      Text(
+                        showcase.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.titleSmall.copyWith(
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.15,
+                          height: 1.35,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.s8),
+                      _ShowcaseMetaRow(showcase: showcase),
+                      if (showcase.tags.isNotEmpty) ...[
+                        const SizedBox(height: AppSpacing.s8),
+                        _ShowcaseTagRow(tags: showcase.tags),
                       ],
-                    ),
+                      const SizedBox(height: AppSpacing.s12),
+                      _ShowcaseCta(onTap: onTap),
+                    ],
                   ),
                 ),
               ],
@@ -127,26 +128,7 @@ class _ShowcasePreviewImage extends StatelessWidget {
         if (loadingProgress == null) {
           return child;
         }
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            _ShowcaseGradientPlaceholder(showcase: showcase),
-            Center(
-              child: SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white.withValues(alpha: 0.8),
-                  value: loadingProgress.expectedTotalBytes != null
-                      ? loadingProgress.cumulativeBytesLoaded /
-                          loadingProgress.expectedTotalBytes!
-                      : null,
-                ),
-              ),
-            ),
-          ],
-        );
+        return _ShowcaseGradientPlaceholder(showcase: showcase);
       },
     );
   }
@@ -159,29 +141,55 @@ class _ShowcaseGradientPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final seed = showcase.id.hashCode.abs();
-    final hue = (seed % 360).toDouble();
-
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            HSLColor.fromAHSL(1, hue, 0.45, 0.18).toColor(),
-            HSLColor.fromAHSL(1, (hue + 40) % 360, 0.55, 0.28).toColor(),
+            AppColors.darkNavy.withValues(alpha: 0.92),
             AppColors.primary.withValues(alpha: 0.35),
+            AppColors.surfaceMuted,
           ],
         ),
       ),
-      child: Center(
-        child: Icon(
-          showcase.previewVideoUrl != null
-              ? Icons.play_circle_outline_rounded
-              : Icons.auto_awesome_rounded,
-          size: 40,
-          color: Colors.white.withValues(alpha: 0.82),
-        ),
+      child: Stack(
+        children: [
+          if (showcase.category != null)
+            Positioned(
+              top: AppSpacing.s12,
+              left: AppSpacing.s12,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.s8,
+                  vertical: AppSpacing.s4,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.pill,
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.18),
+                  ),
+                ),
+                child: Text(
+                  showcase.category!,
+                  style: AppTypography.labelSmall.copyWith(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          Center(
+            child: Icon(
+              showcase.previewVideoUrl != null
+                  ? Icons.play_circle_outline_rounded
+                  : Icons.auto_awesome_outlined,
+              size: 32,
+              color: Colors.white.withValues(alpha: 0.75),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -194,23 +202,23 @@ class _ShowcaseMetaRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final items = <Widget>[];
-
+    final parts = <String>[];
     if (showcase.estimatedTime != null) {
-      items.add(_MetaChip(label: '約${showcase.estimatedTime}分'));
+      parts.add('約${showcase.estimatedTime}分');
     }
     if (showcase.difficulty != null) {
-      items.add(_MetaChip(label: _difficultyLabel(showcase.difficulty!)));
+      parts.add(_difficultyLabel(showcase.difficulty!));
     }
 
-    if (items.isEmpty) {
+    if (parts.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    return Wrap(
-      spacing: AppSpacing.s4,
-      runSpacing: AppSpacing.s4,
-      children: items,
+    return Text(
+      parts.join(' · '),
+      style: AppTypography.labelSmall.copyWith(
+        color: AppColors.textSecondary,
+      ),
     );
   }
 
@@ -226,23 +234,6 @@ class _ShowcaseMetaRow extends StatelessWidget {
   }
 }
 
-class _MetaChip extends StatelessWidget {
-  const _MetaChip({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: AppTypography.labelSmall.copyWith(
-        color: AppColors.textSecondary,
-        fontWeight: FontWeight.w500,
-      ),
-    );
-  }
-}
-
 class _ShowcaseTagRow extends StatelessWidget {
   const _ShowcaseTagRow({required this.tags});
 
@@ -253,12 +244,11 @@ class _ShowcaseTagRow extends StatelessWidget {
     final tagLabels = tags.map((tag) => tag.tag).take(2).toList();
 
     return Text(
-      tagLabels.map((label) => '#$label').join(' '),
+      tagLabels.join(' · '),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       style: AppTypography.labelSmall.copyWith(
-        color: AppColors.primary.withValues(alpha: 0.85),
-        fontWeight: FontWeight.w500,
+        color: AppColors.textSecondary,
       ),
     );
   }
@@ -273,31 +263,20 @@ class _ShowcaseCta extends StatelessWidget {
   Widget build(BuildContext context) {
     return Align(
       alignment: Alignment.centerLeft,
-      child: TextButton(
+      child: FilledButton(
         onPressed: onTap,
-        style: TextButton.styleFrom(
-          padding: EdgeInsets.zero,
-          minimumSize: Size.zero,
+        style: FilledButton.styleFrom(
+          minimumSize: const Size(0, 32),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.s12,
+            vertical: AppSpacing.s4,
+          ),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          textStyle: AppTypography.labelMedium.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '作ってみる',
-              style: AppTypography.labelLarge.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.s4),
-            Icon(
-              Icons.arrow_forward_rounded,
-              size: 16,
-              color: AppColors.primary.withValues(alpha: 0.85),
-            ),
-          ],
-        ),
+        child: const Text('作ってみる'),
       ),
     );
   }

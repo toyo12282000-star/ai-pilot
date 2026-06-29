@@ -18,18 +18,24 @@ class WorkflowCard extends StatelessWidget {
   final Workflow workflow;
   final VoidCallback? onTap;
 
+  static const int maxTags = 3;
+
   @override
   Widget build(BuildContext context) {
+    final visibleTags = workflow.tags.take(maxTags).toList();
+
     return Material(
       color: AppColors.surface,
-      borderRadius: AppRadius.large,
+      borderRadius: AppRadius.card,
       child: InkWell(
         onTap: onTap,
-        borderRadius: AppRadius.large,
+        borderRadius: AppRadius.card,
+        splashColor: AppColors.primary.withValues(alpha: 0.04),
+        highlightColor: AppColors.primarySoft.withValues(alpha: 0.35),
         child: Ink(
           decoration: BoxDecoration(
-            borderRadius: AppRadius.large,
-            border: Border.all(color: AppColors.outline),
+            borderRadius: AppRadius.card,
+            border: Border.all(color: AppColors.border),
           ),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.s16),
@@ -42,13 +48,15 @@ class WorkflowCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         workflow.title,
-                        style: AppTypography.titleMedium,
+                        style: AppTypography.titleSmall.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                     Icon(
                       Icons.chevron_right_rounded,
-                      size: AppIcons.sizeLg,
-                      color: AppColors.textSecondary,
+                      size: AppIcons.sizeMd,
+                      color: AppColors.textSecondary.withValues(alpha: 0.7),
                     ),
                   ],
                 ),
@@ -57,11 +65,12 @@ class WorkflowCard extends StatelessWidget {
                   workflow.description,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTypography.bodyMedium.copyWith(
+                  style: AppTypography.bodySmall.copyWith(
                     color: AppColors.textSecondary,
+                    height: 1.5,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.s16),
+                const SizedBox(height: AppSpacing.s12),
                 Wrap(
                   spacing: AppSpacing.s8,
                   runSpacing: AppSpacing.s8,
@@ -77,22 +86,22 @@ class WorkflowCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (workflow.tags.isNotEmpty) ...[
+                if (visibleTags.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.s12),
                   Wrap(
                     spacing: AppSpacing.s8,
                     runSpacing: AppSpacing.s8,
                     children: [
-                      for (final tag in workflow.tags)
+                      for (final tag in visibleTags)
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.s8,
                             vertical: AppSpacing.s4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.background,
-                            borderRadius: AppRadius.small,
-                            border: Border.all(color: AppColors.outline),
+                            color: AppColors.surfaceMuted,
+                            borderRadius: AppRadius.pill,
+                            border: Border.all(color: AppColors.border),
                           ),
                           child: Text(
                             tag,
@@ -130,18 +139,20 @@ class _MetaBadge extends StatelessWidget {
         vertical: AppSpacing.s4,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.06),
-        borderRadius: AppRadius.small,
+        color: AppColors.surfaceMuted,
+        borderRadius: AppRadius.pill,
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: AppIcons.sizeSm, color: AppColors.primary),
+          Icon(icon, size: 12, color: AppColors.textSecondary),
           const SizedBox(width: AppSpacing.s4),
           Text(
             label,
-            style: AppTypography.labelMedium.copyWith(
+            style: AppTypography.labelSmall.copyWith(
               color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],

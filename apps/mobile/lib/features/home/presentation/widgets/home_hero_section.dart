@@ -24,6 +24,8 @@ class HomeHeroSection extends StatelessWidget {
   final bool showClearButton;
   final VoidCallback onAdvisorTap;
 
+  static const double _controlHeight = 48;
+
   @override
   Widget build(BuildContext context) {
     return HomeContentLayout.constrain(
@@ -36,67 +38,57 @@ class HomeHeroSection extends StatelessWidget {
       ),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          borderRadius: AppRadius.pill,
+          borderRadius: AppRadius.card,
+          color: AppColors.surface,
+          border: Border.all(color: AppColors.border),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
               AppColors.surface,
-              AppColors.primary.withValues(alpha: 0.05),
-              AppColors.secondary.withValues(alpha: 0.07),
+              AppColors.primarySoft.withValues(alpha: 0.35),
             ],
-            stops: const [0.0, 0.55, 1.0],
-          ),
-          border: Border.all(
-            color: AppColors.outline.withValues(alpha: 0.45),
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.s32,
-            AppSpacing.s32,
-            AppSpacing.s32,
-            AppSpacing.s32,
-          ),
+          padding: const EdgeInsets.all(AppSpacing.s24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
                 '今日は何を作りますか？',
                 style: AppTypography.headlineSmall.copyWith(
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.4,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.35,
                 ),
               ),
-              const SizedBox(height: AppSpacing.s12),
+              const SizedBox(height: AppSpacing.s8),
               Text(
-                '完成作品から選ぶだけで、必要なAI・プロンプト・手順までまとめて案内します。',
-                style: AppTypography.bodyLarge.copyWith(
+                '完成作品から選んで、AI・プロンプト・手順まで一気通貫で進められます。',
+                style: AppTypography.bodyMedium.copyWith(
                   color: AppColors.textSecondary,
                   height: 1.55,
                 ),
               ),
               const SizedBox(height: AppSpacing.s24),
-              WorkflowSearchBar(
-                controller: searchController,
-                onChanged: onSearchChanged,
-                onClear: onSearchClear,
-                showClearButton: showClearButton,
-                embedded: true,
+              SizedBox(
+                height: _controlHeight,
+                child: WorkflowSearchBar(
+                  controller: searchController,
+                  onChanged: onSearchChanged,
+                  onClear: onSearchClear,
+                  showClearButton: showClearButton,
+                  embedded: true,
+                ),
               ),
               const SizedBox(height: AppSpacing.s12),
-              OutlinedButton.icon(
-                onPressed: onAdvisorTap,
-                icon: const Icon(Icons.auto_awesome_rounded, size: 18),
-                label: const Text('AIに相談する'),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(48),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: AppRadius.medium,
-                  ),
-                  side: BorderSide(
-                    color: AppColors.outline.withValues(alpha: 0.55),
-                  ),
+              SizedBox(
+                height: _controlHeight,
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: onAdvisorTap,
+                  icon: const Icon(Icons.auto_awesome_outlined, size: 18),
+                  label: const Text('AIに相談する'),
                 ),
               ),
             ],

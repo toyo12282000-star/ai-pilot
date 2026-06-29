@@ -24,18 +24,9 @@ class HomeAdvisorSection extends StatelessWidget {
         children: [
           DecoratedBox(
             decoration: BoxDecoration(
-              borderRadius: AppRadius.pill,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppColors.primary.withValues(alpha: 0.06),
-                  AppColors.secondary.withValues(alpha: 0.08),
-                ],
-              ),
-              border: Border.all(
-                color: AppColors.outline.withValues(alpha: 0.45),
-              ),
+              borderRadius: AppRadius.card,
+              color: AppColors.surface,
+              border: Border.all(color: AppColors.border),
             ),
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.s24),
@@ -45,8 +36,8 @@ class HomeAdvisorSection extends StatelessWidget {
                   Text(
                     '何を作ればいいか迷っていますか？',
                     style: AppTypography.titleSmall.copyWith(
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.15,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.s8),
@@ -60,13 +51,10 @@ class HomeAdvisorSection extends StatelessWidget {
                   const SizedBox(height: AppSpacing.s16),
                   FilledButton.icon(
                     onPressed: onAdvisorTap,
-                    icon: const Icon(Icons.auto_awesome_rounded, size: 18),
+                    icon: const Icon(Icons.auto_awesome_outlined, size: 18),
                     label: const Text('AIに相談する'),
                     style: FilledButton.styleFrom(
                       minimumSize: const Size.fromHeight(44),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppRadius.medium,
-                      ),
                     ),
                   ),
                 ],

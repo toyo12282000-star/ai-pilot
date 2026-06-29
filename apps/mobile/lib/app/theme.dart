@@ -34,10 +34,13 @@ ThemeData _buildAppTheme() {
       elevation: 0,
       height: 72,
       backgroundColor: AppColors.surface,
-      indicatorColor: AppColors.primary.withValues(alpha: 0.12),
+      indicatorColor: AppColors.primarySoft,
       labelTextStyle: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return AppTypography.labelLarge.copyWith(color: AppColors.primary);
+          return AppTypography.labelLarge.copyWith(
+            color: AppColors.primary,
+            fontWeight: FontWeight.w600,
+          );
         }
         return AppTypography.labelMedium;
       }),
@@ -60,19 +63,19 @@ ThemeData _buildAppTheme() {
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: AppRadius.card,
-        side: const BorderSide(color: AppColors.outline),
+        side: const BorderSide(color: AppColors.border),
       ),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.surface,
-        minimumSize: const Size(64, 48),
+        minimumSize: const Size(64, 44),
         padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.s24,
+          horizontal: AppSpacing.s16,
           vertical: AppSpacing.s12,
         ),
-        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.pill),
         textStyle: AppTypography.labelLarge.copyWith(
           fontWeight: FontWeight.w600,
           color: AppColors.surface,
@@ -82,15 +85,17 @@ ThemeData _buildAppTheme() {
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.primary,
-        minimumSize: const Size(64, 48),
+        foregroundColor: AppColors.textPrimary,
+        minimumSize: const Size(64, 44),
         padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.s24,
+          horizontal: AppSpacing.s16,
           vertical: AppSpacing.s12,
         ),
-        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-        side: const BorderSide(color: AppColors.outline),
-        textStyle: AppTypography.labelLarge,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.pill),
+        side: const BorderSide(color: AppColors.border),
+        textStyle: AppTypography.labelLarge.copyWith(
+          fontWeight: FontWeight.w500,
+        ),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
@@ -100,24 +105,24 @@ ThemeData _buildAppTheme() {
       ),
     ),
     chipTheme: ChipThemeData(
-      backgroundColor: AppColors.surface,
-      selectedColor: AppColors.primary.withValues(alpha: 0.12),
+      backgroundColor: AppColors.surfaceMuted,
+      selectedColor: AppColors.primarySoft,
       labelStyle: AppTypography.labelMedium.copyWith(
         color: AppColors.textPrimary,
       ),
       secondaryLabelStyle: AppTypography.labelMedium,
-      shape: const RoundedRectangleBorder(borderRadius: AppRadius.chip),
-      side: const BorderSide(color: AppColors.outline),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.pill),
+      side: const BorderSide(color: AppColors.border),
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s8),
     ),
     searchBarTheme: SearchBarThemeData(
       elevation: const WidgetStatePropertyAll(0),
       backgroundColor: WidgetStatePropertyAll(AppColors.surface),
       side: WidgetStatePropertyAll(
-        BorderSide(color: AppColors.outline),
+        BorderSide(color: AppColors.border),
       ),
       shape: WidgetStatePropertyAll(
-        RoundedRectangleBorder(borderRadius: AppRadius.card),
+        RoundedRectangleBorder(borderRadius: AppRadius.pill),
       ),
       textStyle: WidgetStatePropertyAll(AppTypography.bodyMedium),
       hintStyle: WidgetStatePropertyAll(
@@ -126,14 +131,14 @@ ThemeData _buildAppTheme() {
     ),
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
-      backgroundColor: AppColors.textPrimary,
+      backgroundColor: AppColors.darkNavy,
       contentTextStyle: AppTypography.bodyMedium.copyWith(
         color: AppColors.surface,
       ),
       shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
     ),
     dividerTheme: const DividerThemeData(
-      color: AppColors.outline,
+      color: AppColors.border,
       thickness: 1,
       space: 1,
     ),

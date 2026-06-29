@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/radius.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
@@ -24,28 +25,22 @@ class RecommendationGoalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accentColor = recommendationColorFromHex(recommendation.color);
     final icon = recommendationIconFromName(recommendation.icon);
 
     return SizedBox(
       width: cardWidth,
       height: cardHeight,
       child: Material(
-        color: selected
-            ? accentColor.withValues(alpha: 0.12)
-            : accentColor.withValues(alpha: 0.06),
-        borderRadius: AppRadius.large,
+        color: selected ? AppColors.primarySoft : AppColors.surface,
+        borderRadius: AppRadius.card,
         child: InkWell(
           onTap: onTap,
-          borderRadius: AppRadius.large,
+          borderRadius: AppRadius.card,
           child: Ink(
             decoration: BoxDecoration(
-              borderRadius: AppRadius.large,
+              borderRadius: AppRadius.card,
               border: Border.all(
-                color: selected
-                    ? accentColor.withValues(alpha: 0.45)
-                    : accentColor.withValues(alpha: 0.18),
-                width: selected ? 1.5 : 1,
+                color: selected ? AppColors.primary.withValues(alpha: 0.28) : AppColors.border,
               ),
             ),
             child: Padding(
@@ -54,17 +49,18 @@ class RecommendationGoalCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 40,
-                    height: 40,
+                    width: 36,
+                    height: 36,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: accentColor.withValues(alpha: 0.14),
+                      color: AppColors.surfaceMuted,
+                      border: Border.all(color: AppColors.border),
                     ),
                     child: Icon(
                       icon,
-                      size: 22,
-                      color: accentColor,
+                      size: 18,
+                      color: selected ? AppColors.primary : AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.s12),
@@ -73,7 +69,8 @@ class RecommendationGoalCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: AppTypography.titleSmall.copyWith(
-                      height: 1.3,
+                      height: 1.35,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.s4),
@@ -83,7 +80,8 @@ class RecommendationGoalCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: AppTypography.bodySmall.copyWith(
-                        color: accentColor.withValues(alpha: 0.85),
+                        color: AppColors.textSecondary,
+                        height: 1.45,
                       ),
                     ),
                   ),

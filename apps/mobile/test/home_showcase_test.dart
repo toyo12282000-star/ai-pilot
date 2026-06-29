@@ -64,10 +64,10 @@ void main() {
 
     expect(find.text('今日は何を作りますか？'), findsOneWidget);
     expect(
-      find.text('完成作品から選ぶだけで、必要なAI・プロンプト・手順までまとめて案内します。'),
+      find.text('完成作品から選んで、AI・プロンプト・手順まで一気通貫で進められます。'),
       findsOneWidget,
     );
-    expect(find.text('🔥 人気の完成作品'), findsOneWidget);
+    expect(find.text('人気の完成作品'), findsOneWidget);
     expect(find.text('世界一危険な島3選'), findsOneWidget);
     expect(find.text('作ってみる'), findsWidgets);
   });
@@ -76,8 +76,8 @@ void main() {
       (tester) async {
     await pumpHome(tester);
 
-    await tester.ensureVisible(find.text('🔥 人気の完成作品'));
-    final showcaseOffset = tester.getTopLeft(find.text('🔥 人気の完成作品'));
+    await tester.ensureVisible(find.text('人気の完成作品'));
+    final showcaseOffset = tester.getTopLeft(find.text('人気の完成作品'));
 
     await tester.scrollUntilVisible(
       find.text('こんな人におすすめ'),
@@ -114,7 +114,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pumpAndSettle();
 
-    expect(find.text('🔥 人気の完成作品'), findsNothing);
+    expect(find.text('人気の完成作品'), findsNothing);
     expect(find.text('何を作ればいいか迷っていますか？'), findsNothing);
   });
 }
