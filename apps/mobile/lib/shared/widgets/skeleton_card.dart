@@ -151,6 +151,138 @@ class SkeletonHeroCard extends StatelessWidget {
   }
 }
 
+/// 完成作品カード形状の Skeleton。
+class SkeletonShowcaseCard extends StatelessWidget {
+  const SkeletonShowcaseCard({super.key});
+
+  static const double cardWidth = 300;
+  static const double imageHeight = 168;
+  static const double cardHeight = 420;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: cardWidth,
+      height: SkeletonShowcaseCard.cardHeight,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: AppRadius.large,
+          border: Border.all(color: AppColors.outline.withValues(alpha: 0.7)),
+          color: const Color(0xFF0F172A).withValues(alpha: 0.03),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
+              child: SkeletonBox(
+                height: imageHeight,
+                borderRadius: AppRadius.small,
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.all(AppSpacing.s12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SkeletonBox(
+                    width: 56,
+                    height: 12,
+                    borderRadius: AppRadius.small,
+                  ),
+                  SizedBox(height: AppSpacing.s8),
+                  SkeletonBox(height: 18, borderRadius: AppRadius.small),
+                  SizedBox(height: AppSpacing.s8),
+                  SkeletonBox(height: 14, borderRadius: AppRadius.small),
+                  SizedBox(height: AppSpacing.s8),
+                  SkeletonBox(
+                    width: 180,
+                    height: 14,
+                    borderRadius: AppRadius.small,
+                  ),
+                  SizedBox(height: AppSpacing.s12),
+                  Row(
+                    children: [
+                      SkeletonBox(
+                        width: 52,
+                        height: 22,
+                        borderRadius: AppRadius.pill,
+                      ),
+                      SizedBox(width: AppSpacing.s8),
+                      SkeletonBox(
+                        width: 64,
+                        height: 22,
+                        borderRadius: AppRadius.pill,
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: AppSpacing.s12),
+                  SkeletonBox(
+                    width: 120,
+                    height: 14,
+                    borderRadius: AppRadius.small,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 完成作品セクション形状の Skeleton。
+class SkeletonShowcaseSection extends StatelessWidget {
+  const SkeletonShowcaseSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.s16,
+            0,
+            AppSpacing.s16,
+            AppSpacing.s12,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: SkeletonBox(
+                  width: 160,
+                  height: 18,
+                  borderRadius: AppRadius.small,
+                ),
+              ),
+              SkeletonBox(
+                width: 120,
+                height: 14,
+                borderRadius: AppRadius.small,
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: SkeletonShowcaseCard.cardHeight,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: AppSpacing.pageHorizontal,
+            itemCount: 3,
+            separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.s12),
+            itemBuilder: (_, _) => const SkeletonShowcaseCard(),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.s24),
+      ],
+    );
+  }
+}
+
 /// ホーム Hero セクション形状の Skeleton。
 class SkeletonHomeHero extends StatelessWidget {
   const SkeletonHomeHero({super.key});
@@ -428,6 +560,143 @@ class SkeletonRunStepSection extends StatelessWidget {
             ],
           ),
         ),
+      ],
+    );
+  }
+}
+
+/// Workflow 詳細 Hero 形状の Skeleton。
+class SkeletonWorkflowDetailHero extends StatelessWidget {
+  const SkeletonWorkflowDetailHero({
+    super.key,
+    this.compact = false,
+  });
+
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SkeletonBox(
+          height: compact ? 120 : 220,
+          borderRadius: AppRadius.large,
+        ),
+        SizedBox(height: compact ? AppSpacing.s16 : AppSpacing.s24),
+        const SkeletonBox(height: 14, borderRadius: AppRadius.small),
+        const SizedBox(height: AppSpacing.s8),
+        SkeletonBox(
+          height: compact ? 22 : 28,
+          borderRadius: AppRadius.small,
+        ),
+        const SizedBox(height: AppSpacing.s12),
+        const SkeletonBox(height: 14, borderRadius: AppRadius.small),
+        const SizedBox(height: AppSpacing.s8),
+        SkeletonBox(
+          width: compact ? 200 : double.infinity,
+          height: 14,
+          borderRadius: AppRadius.small,
+        ),
+        const SizedBox(height: AppSpacing.s16),
+        const Row(
+          children: [
+            SkeletonBox(
+              width: 72,
+              height: 24,
+              borderRadius: AppRadius.pill,
+            ),
+            SizedBox(width: AppSpacing.s8),
+            SkeletonBox(
+              width: 88,
+              height: 24,
+              borderRadius: AppRadius.pill,
+            ),
+          ],
+        ),
+        if (!compact) ...[
+          const SizedBox(height: AppSpacing.s24),
+          SkeletonBox(
+            height: 52,
+            borderRadius: AppRadius.medium,
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Workflow 詳細ギャラリー形状の Skeleton。
+class SkeletonWorkflowDetailGallery extends StatelessWidget {
+  const SkeletonWorkflowDetailGallery({super.key});
+
+  static const double _tileWidth = 220;
+  static const double _tileHeight = 280;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: _tileHeight,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: 3,
+        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.s12),
+        itemBuilder: (_, __) => SizedBox(
+          width: _tileWidth,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: AppRadius.large,
+              border: Border.all(color: AppColors.outline.withValues(alpha: 0.55)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: const [
+                Expanded(
+                  child: SkeletonBox(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(AppSpacing.s12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SkeletonBox(
+                        height: 14,
+                        borderRadius: AppRadius.small,
+                      ),
+                      SizedBox(height: AppSpacing.s8),
+                      SkeletonBox(
+                        height: 12,
+                        borderRadius: AppRadius.small,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Workflow 詳細ステップ一覧形状の Skeleton。
+class SkeletonWorkflowDetailSteps extends StatelessWidget {
+  const SkeletonWorkflowDetailSteps({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: const [
+        SkeletonBox(height: 120, borderRadius: AppRadius.large),
+        SizedBox(height: AppSpacing.s12),
+        SkeletonBox(height: 120, borderRadius: AppRadius.large),
+        SizedBox(height: AppSpacing.s12),
+        SkeletonBox(height: 120, borderRadius: AppRadius.large),
       ],
     );
   }

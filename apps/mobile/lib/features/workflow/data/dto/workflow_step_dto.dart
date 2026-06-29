@@ -13,6 +13,11 @@ class WorkflowStepDto {
     this.aiToolId,
     this.promptTemplateId,
     this.notes,
+    this.goal,
+    this.outputExample,
+    this.completionCriteria,
+    this.tips = const [],
+    this.commonMistakes = const [],
   });
 
   factory WorkflowStepDto.fromJson(Map<String, dynamic> json) {
@@ -26,6 +31,11 @@ class WorkflowStepDto {
       aiToolId: parseNullableString(json['ai_tool_id']),
       promptTemplateId: parseNullableString(json['prompt_template_id']),
       notes: parseNullableString(json['notes']),
+      goal: parseNullableString(json['goal']),
+      outputExample: parseNullableString(json['output_example']),
+      completionCriteria: parseNullableString(json['completion_criteria']),
+      tips: parseStringList(json['tips']),
+      commonMistakes: parseStringList(json['common_mistakes']),
     );
   }
 
@@ -38,6 +48,11 @@ class WorkflowStepDto {
   final String? aiToolId;
   final String? promptTemplateId;
   final String? notes;
+  final String? goal;
+  final String? outputExample;
+  final String? completionCriteria;
+  final List<String> tips;
+  final List<String> commonMistakes;
 
   WorkflowStep toEntity() {
     return WorkflowStep(
@@ -50,6 +65,11 @@ class WorkflowStepDto {
       aiToolId: aiToolId,
       promptTemplateId: promptTemplateId,
       notes: notes,
+      goal: goal,
+      outputExample: outputExample,
+      completionCriteria: completionCriteria,
+      tips: tips,
+      commonMistakes: commonMistakes,
     );
   }
 }

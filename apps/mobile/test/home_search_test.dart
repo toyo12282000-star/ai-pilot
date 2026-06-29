@@ -15,6 +15,8 @@ import 'package:ai_pilot/features/workflow/data/repositories/mock_category_repos
 import 'package:ai_pilot/features/workflow/data/repositories/mock_prompt_template_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_run_history_repository.dart';
+import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_showcase_repository.dart';
+import 'package:ai_pilot/features/workflow/presentation/providers/showcase_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_run_history_providers.dart';
 import 'fakes/fake_auth_repository.dart';
@@ -41,9 +43,20 @@ void main() {
               .overrideWithValue(MockWorkflowRunHistoryRepository()),
           userProfileRepositoryProvider
               .overrideWithValue(MockUserProfileRepository()),
+          workflowShowcaseRepositoryProvider
+              .overrideWithValue(MockWorkflowShowcaseRepository()),
         ],
         child: const App(),
       ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> scrollToSearchBar(WidgetTester tester) async {
+    await tester.scrollUntilVisible(
+      find.byType(SearchBar),
+      300,
+      scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
   }
@@ -52,12 +65,13 @@ void main() {
       (tester) async {
     await pumpHome(tester);
 
-    expect(find.text('おすすめWorkflow'), findsOneWidget);
+    expect(find.text('完成作品から選ぶ'), findsOneWidget);
 
+    await scrollToSearchBar(tester);
     await tester.enterText(find.byType(SearchBar), 'a');
     await tester.pump();
 
-    expect(find.text('おすすめWorkflow'), findsOneWidget);
+    expect(find.text('完成作品から選ぶ'), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
@@ -65,22 +79,24 @@ void main() {
       (tester) async {
     await pumpHome(tester);
 
+    await scrollToSearchBar(tester);
     await tester.enterText(find.byType(SearchBar), 'zz');
     await tester.pump(const Duration(milliseconds: 200));
 
-    expect(find.text('おすすめWorkflow'), findsOneWidget);
+    expect(find.text('完成作品から選ぶ'), findsOneWidget);
 
     await tester.pump(const Duration(milliseconds: 250));
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pumpAndSettle();
 
-    expect(find.text('おすすめWorkflow'), findsNothing);
+    expect(find.text('完成作品から選ぶ'), findsNothing);
     expect(find.text('条件に合うワークフローがありません'), findsOneWidget);
   });
 
   testWidgets('Clear button resets search query', (tester) async {
     await pumpHome(tester);
 
+    await scrollToSearchBar(tester);
     await tester.enterText(find.byType(SearchBar), 'zz');
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pump(const Duration(milliseconds: 400));
@@ -89,7 +105,7 @@ void main() {
     await tester.tap(find.byTooltip('クリア'));
     await tester.pumpAndSettle();
 
-    expect(find.text('おすすめWorkflow'), findsOneWidget);
+    expect(find.text('完成作品から選ぶ'), findsOneWidget);
     expect(find.text('条件に合うワークフローがありません'), findsNothing);
   });
 }

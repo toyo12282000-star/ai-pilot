@@ -1,6 +1,27 @@
 import 'package:ai_pilot/features/workflow/data/repositories/mock_seed_data.dart';
+import 'package:ai_pilot/features/workflow/data/repositories/mock_step_enrichment_data.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
+import 'package:ai_pilot/features/workflow/domain/entities/workflow_step.dart';
 import 'package:ai_pilot/features/workflow/domain/repositories/workflow_repository.dart';
+
+Workflow _withStepEnrichment(Workflow workflow) {
+  final enrichedSteps = workflow.steps.map(_enrichStep).toList();
+  return workflow.copyWith(steps: enrichedSteps);
+}
+
+WorkflowStep _enrichStep(WorkflowStep step) {
+  final enrichment = mockStepEnrichmentById[step.id];
+  if (enrichment == null) {
+    return step;
+  }
+  return step.copyWith(
+    goal: enrichment.goal,
+    outputExample: enrichment.outputExample,
+    completionCriteria: enrichment.completionCriteria,
+    tips: enrichment.tips,
+    commonMistakes: enrichment.commonMistakes,
+  );
+}
 
 /// [WorkflowRepository] の Mock 実装。
 ///
@@ -9,7 +30,7 @@ class MockWorkflowRepository implements WorkflowRepository {
   @override
   Future<List<Workflow>> fetchWorkflows() async {
     await Future<void>.delayed(mockNetworkDelay);
-    return List<Workflow>.from(mockWorkflows);
+    return mockWorkflows.map(_withStepEnrichment).toList();
   }
 
   @override
@@ -17,6 +38,7 @@ class MockWorkflowRepository implements WorkflowRepository {
     await Future<void>.delayed(mockNetworkDelay);
     return mockWorkflows
         .where((workflow) => workflow.categoryId == categoryId)
+        .map(_withStepEnrichment)
         .toList();
   }
 
@@ -25,7 +47,7 @@ class MockWorkflowRepository implements WorkflowRepository {
     await Future<void>.delayed(mockNetworkDelay);
     for (final workflow in mockWorkflows) {
       if (workflow.id == id) {
-        return workflow;
+        return _withStepEnrichment(workflow);
       }
     }
     return null;
@@ -48,6 +70,6 @@ class MockWorkflowRepository implements WorkflowRepository {
         (tag) => tag.toLowerCase().contains(normalizedQuery),
       );
       return titleMatch || descriptionMatch || tagMatch;
-    }).toList();
+    }).map(_withStepEnrichment).toList();
   }
 }

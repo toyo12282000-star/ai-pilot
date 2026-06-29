@@ -14,7 +14,7 @@ class WorkflowStartCta extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomActionBar(
-      label: 'このWorkflowを開始する',
+      label: 'この作品を作る',
       onPressed: onPressed,
     );
   }

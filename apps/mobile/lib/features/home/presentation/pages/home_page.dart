@@ -8,6 +8,7 @@ import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/ai_recommendation_section.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/category_chip_list.dart';
+import 'package:ai_pilot/features/home/presentation/widgets/featured_showcase_section.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/home_hero_section.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/home_section_header.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/recent_workflow_section.dart';
@@ -17,6 +18,7 @@ import 'package:ai_pilot/features/recommendation/domain/entities/recommendation.
 import 'package:ai_pilot/features/recommendation/presentation/providers/recommendation_providers.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/category.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
+import 'package:ai_pilot/features/workflow/presentation/providers/showcase_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
 import 'package:ai_pilot/shared/widgets/empty_view.dart';
 import 'package:ai_pilot/shared/widgets/error_view.dart';
@@ -63,6 +65,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     ref.invalidate(categoriesProvider);
     ref.invalidate(workflowsProvider);
     ref.invalidate(recommendationsProvider);
+    ref.invalidate(featuredShowcasesProvider);
     if (_isSearchActive) {
       ref.invalidate(searchWorkflowsProvider(_debouncedSearchQuery));
     }
@@ -74,6 +77,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       ref.read(categoriesProvider.future),
       ref.read(workflowsProvider.future),
       ref.read(recommendationsProvider.future),
+      ref.read(featuredShowcasesProvider.future),
       if (_isSearchActive)
         ref.read(searchWorkflowsProvider(_debouncedSearchQuery).future),
     ]);
@@ -311,7 +315,9 @@ class _HomeLoadingSkeleton extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppSpacing.s32),
       children: const [
         SkeletonHomeHero(),
-        SizedBox(height: AppSpacing.s16),
+        SizedBox(height: AppSpacing.s8),
+        SkeletonShowcaseSection(),
+        SizedBox(height: AppSpacing.s8),
         SkeletonChipRow(),
         SizedBox(height: AppSpacing.s16),
         SkeletonListView(itemCount: 4),
@@ -369,6 +375,9 @@ class _HomeBody extends StatelessWidget {
 
   int get _categorySectionIndex {
     var index = 1;
+    if (showBrowseSections) {
+      index++;
+    }
     if (showAiRecommendations) {
       index++;
     }
@@ -399,9 +408,14 @@ class _HomeBody extends StatelessWidget {
             onAdvisorTap: onAdvisorTap,
           ),
         ),
-        if (showAiRecommendations)
+        if (showBrowseSections)
           FadeSlideIn(
             index: 1,
+            child: const FeaturedShowcaseSection(),
+          ),
+        if (showAiRecommendations)
+          FadeSlideIn(
+            index: showBrowseSections ? 2 : 1,
             child: AiRecommendationSection(
               selectedRecommendationId: selectedRecommendation?.id,
               onRecommendationSelected: onRecommendationSelected,
@@ -409,13 +423,13 @@ class _HomeBody extends StatelessWidget {
           ),
         if (showBrowseSections)
           FadeSlideIn(
-            index: showAiRecommendations ? 2 : 1,
-            child: RecommendedWorkflowSection(workflows: recommendedWorkflows),
+            index: showAiRecommendations ? 3 : 2,
+            child: const RecentWorkflowSection(),
           ),
         if (showBrowseSections)
           FadeSlideIn(
-            index: showAiRecommendations ? 3 : 2,
-            child: const RecentWorkflowSection(),
+            index: showAiRecommendations ? 4 : 3,
+            child: RecommendedWorkflowSection(workflows: recommendedWorkflows),
           ),
         FadeSlideIn(
           index: _categorySectionIndex,
