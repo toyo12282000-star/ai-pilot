@@ -75,7 +75,7 @@ void main() {
 
     expect(find.text('完成作品ギャラリー'), findsOneWidget);
     expect(find.text('このWorkflowで使うAI'), findsOneWidget);
-    expect(find.text('この作品を作る'), findsWidgets);
+    expect(find.text('3ステップでこの作品を作る'), findsWidgets);
     expect(find.text('世界一危険な島3選'), findsWidgets);
 
     final scrollable = find.byType(Scrollable).first;
@@ -92,7 +92,19 @@ void main() {
   testWidgets('Workflow detail step expands with prompt tabs', (tester) async {
     await pumpWorkflowDetail(tester);
 
-    await tester.ensureVisible(find.text('企画を考える').first);
+    final scrollable = find.byType(Scrollable).first;
+    await tester.scrollUntilVisible(
+      find.text('ステップ'),
+      400,
+      scrollable: scrollable,
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('企画を考える'),
+      400,
+      scrollable: scrollable,
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.text('企画を考える').first);
     await tester.pumpAndSettle();
     await tester.pump(const Duration(milliseconds: 400));

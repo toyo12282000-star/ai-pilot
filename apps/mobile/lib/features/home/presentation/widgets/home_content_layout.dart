@@ -6,7 +6,10 @@ import 'package:ai_pilot/design_system/spacing.dart';
 abstract final class HomeContentLayout {
   static const double maxWidth = 1200;
 
-  static const double sectionSpacing = AppSpacing.s32;
+  static const double sectionSpacing = AppSpacing.section;
+
+  /// タブレット以上で Workflow を2列表示するブレークポイント。
+  static const double tabletBreakpoint = 768;
 
   static EdgeInsets horizontalPadding(BuildContext context) {
     return AppSpacing.pageHorizontal;

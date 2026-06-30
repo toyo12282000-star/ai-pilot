@@ -14,6 +14,7 @@ import 'package:ai_pilot/features/workflow/data/repositories/mock_ai_tool_reposi
 import 'package:ai_pilot/features/workflow/data/repositories/mock_category_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_prompt_template_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_repository.dart';
+import 'package:ai_pilot/features/home/presentation/widgets/home_hero_section.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/showcase_card.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_run_history_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_showcase_repository.dart';
@@ -64,12 +65,12 @@ void main() {
 
     expect(find.text('今日は何を作りますか？'), findsOneWidget);
     expect(
-      find.text('完成作品から選んで、AI・プロンプト・手順まで一気通貫で進められます。'),
+      find.text(HomeHeroSection.subtitle),
       findsOneWidget,
     );
     expect(find.text('人気の完成作品'), findsOneWidget);
     expect(find.text('世界一危険な島3選'), findsOneWidget);
-    expect(find.text('作ってみる'), findsWidgets);
+    expect(find.text('3ステップで作る'), findsWidgets);
   });
 
   testWidgets('Featured showcase appears before recommendation section',
@@ -93,7 +94,7 @@ void main() {
   testWidgets('Tapping showcase card navigates to workflow detail', (tester) async {
     await pumpHome(tester);
 
-    final card = find.byType(ShowcaseCard).first;
+    final card = find.widgetWithText(ShowcaseCard, '世界一危険な島3選');
     await tester.scrollUntilVisible(
       card,
       300,

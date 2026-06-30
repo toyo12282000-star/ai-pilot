@@ -31,17 +31,14 @@ class HomeSectionHeader extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: AppTypography.titleMedium.copyWith(
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.2,
-              ),
+              style: AppTypography.sectionTitle,
             ),
           ),
           if (trailing != null)
             Text(
               trailing!,
-              style: AppTypography.labelMedium.copyWith(
-                color: AppColors.textSecondary,
+              style: AppTypography.caption.copyWith(
+                color: AppColors.muted,
               ),
             ),
         ],

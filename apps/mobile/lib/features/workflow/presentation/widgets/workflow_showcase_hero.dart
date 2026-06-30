@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/icons.dart';
@@ -7,11 +8,15 @@ import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow_showcase.dart';
+import 'package:ai_pilot/features/workflow/presentation/providers/showcase_image_providers.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/showcase_cta_copy.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/showcase_image_placeholder.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/showcase_network_image.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_favorite_button.dart';
 import 'package:ai_pilot/shared/widgets/meta_badge.dart';
 
-/// 完成作品 Hero（Workflow 詳細最上部）。
-class WorkflowShowcaseHero extends StatelessWidget {
+/// 完成作品 Hero（Workflow 詳細最上部 · 完成作品を大きく見せる）。
+class WorkflowShowcaseHero extends ConsumerWidget {
   const WorkflowShowcaseHero({
     super.key,
     required this.workflow,
@@ -28,93 +33,137 @@ class WorkflowShowcaseHero extends StatelessWidget {
   final bool compact;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final resolver = ref.watch(showcaseImageResolverProvider);
     final title = showcase?.title ?? workflow.title;
-    final description = showcase?.description ?? workflow.description;
     final category = showcase?.category;
-    final imageUrl =
-        showcase?.previewImageUrl ?? showcase?.thumbnailUrl;
+    final imageUrl = resolver.resolveHeroUrl(
+      showcase,
+      workflowId: workflowId,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ClipRRect(
-          borderRadius: AppRadius.large,
+          borderRadius: AppRadius.hero,
           child: AspectRatio(
-            aspectRatio: compact ? 21 / 9 : 16 / 10,
-            child: _HeroImage(imageUrl: imageUrl),
+            aspectRatio: compact ? 21 / 9 : 16 / 9,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                ShowcaseNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  memCacheWidth: 1440,
+                  placeholder: const ShowcaseImagePlaceholder(
+                    icon: Icons.auto_awesome_rounded,
+                    iconSize: 56,
+                  ),
+                ),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        AppColors.darkNavy.withValues(alpha: 0.55),
+                      ],
+                    ),
+                  ),
+                ),
+                if (category != null)
+                  Positioned(
+                    left: AppSpacing.s16,
+                    bottom: AppSpacing.s16,
+                    right: AppSpacing.s16,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          category,
+                          style: AppTypography.labelLarge.copyWith(
+                            color: Colors.white.withValues(alpha: 0.88),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.s4),
+                        Text(
+                          title,
+                          maxLines: compact ? 1 : 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.headlineSmall.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.35,
+                            height: 1.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
-        SizedBox(height: compact ? AppSpacing.s16 : AppSpacing.s24),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (category != null) ...[
+        if (!compact) ...[
+          const SizedBox(height: AppSpacing.s24),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      category,
-                      style: AppTypography.labelMedium.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.2,
+                      title,
+                      style: AppTypography.headlineSmall.copyWith(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.35,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.s8),
-                  ],
-                  Text(
-                    title,
-                    style: (compact
-                            ? AppTypography.titleLarge
-                            : AppTypography.headlineSmall)
-                        .copyWith(
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.4,
-                      height: 1.2,
+                    Text(
+                      ShowcaseCtaCopy.heroSubtitle(showcase),
+                      style: AppTypography.captionMedium.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            if (!compact)
               WorkflowFavoriteButton(workflowId: workflowId),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.s12),
-        Text(
-          description,
-          style: AppTypography.bodyLarge.copyWith(
-            color: AppColors.textSecondary,
-            height: 1.6,
+            ],
           ),
-        ),
-        const SizedBox(height: AppSpacing.s16),
-        Wrap(
-          spacing: AppSpacing.s8,
-          runSpacing: AppSpacing.s8,
-          children: [
-            if (showcase?.difficulty != null)
+          const SizedBox(height: AppSpacing.s16),
+          Wrap(
+            spacing: AppSpacing.s8,
+            runSpacing: AppSpacing.s8,
+            children: [
+              if (showcase?.difficulty != null)
+                MetaBadge(
+                  icon: Icons.speed_rounded,
+                  label: _difficultyLabel(showcase!.difficulty!),
+                ),
               MetaBadge(
-                icon: Icons.speed_rounded,
-                label: _difficultyLabel(showcase!.difficulty!),
+                icon: AppIcons.schedule,
+                label: '約${_resolveMinutes()}分',
               ),
-            MetaBadge(
-              icon: AppIcons.schedule,
-              label: '約${_resolveMinutes()}分',
-            ),
-          ],
-        ),
-        if (!compact) ...[
+            ],
+          ),
           const SizedBox(height: AppSpacing.s24),
           FilledButton(
             onPressed: onStart,
             style: FilledButton.styleFrom(
               minimumSize: const Size.fromHeight(52),
-              shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
             ),
-            child: const Text('この作品を作る'),
+            child: Text(
+              ShowcaseCtaCopy.heroLabel(
+                showcase: showcase,
+                workflow: workflow,
+              ),
+            ),
           ),
         ],
       ],
@@ -134,50 +183,5 @@ class WorkflowShowcaseHero extends StatelessWidget {
       case ShowcaseDifficulty.hard:
         return 'むずかしい';
     }
-  }
-}
-
-class _HeroImage extends StatelessWidget {
-  const _HeroImage({this.imageUrl});
-
-  final String? imageUrl;
-
-  @override
-  Widget build(BuildContext context) {
-    if (imageUrl != null && imageUrl!.isNotEmpty) {
-      return Image.network(
-        imageUrl!,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => const _HeroPlaceholder(),
-      );
-    }
-    return const _HeroPlaceholder();
-  }
-}
-
-class _HeroPlaceholder extends StatelessWidget {
-  const _HeroPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.primary.withValues(alpha: 0.18),
-            const Color(0xFF0F172A).withValues(alpha: 0.92),
-          ],
-        ),
-      ),
-      child: Center(
-        child: Icon(
-          Icons.auto_awesome_rounded,
-          size: 56,
-          color: Colors.white.withValues(alpha: 0.75),
-        ),
-      ),
-    );
   }
 }

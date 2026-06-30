@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/radius.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
-import 'package:ai_pilot/features/workflow/domain/entities/showcase_asset.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow_showcase.dart';
+import 'package:ai_pilot/features/workflow/presentation/providers/showcase_image_providers.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/showcase_network_image.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_showcase_lightbox.dart';
+import 'package:ai_pilot/shared/widgets/hover_scale_surface.dart';
 
-/// 同 Workflow の完成作品ギャラリー（横スクロール）。
-class WorkflowShowcaseGallery extends StatelessWidget {
+/// 同 Workflow の完成作品ギャラリー（グリッド · 眺めたくなるレイアウト）。
+class WorkflowShowcaseGallery extends ConsumerWidget {
   const WorkflowShowcaseGallery({
     super.key,
     required this.showcases,
@@ -17,73 +20,44 @@ class WorkflowShowcaseGallery extends StatelessWidget {
 
   final List<WorkflowShowcase> showcases;
 
-  static const double tileWidth = 220;
-  static const double tileHeight = 280;
-
   @override
-  Widget build(BuildContext context) {
-    final items = _collectGalleryItems(showcases);
-    if (items.isEmpty) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final resolver = ref.watch(showcaseImageResolverProvider);
+    if (showcases.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    return SizedBox(
-      height: tileHeight,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: items.length,
-        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.s12),
-        itemBuilder: (context, index) {
-          final item = items[index];
-          return _GalleryTile(
-            item: item,
-            onTap: () => WorkflowShowcaseLightbox.show(context, item),
-          );
-        },
-      ),
-    );
-  }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final crossAxisCount = width >= 900 ? 3 : (width >= 560 ? 2 : 1);
+        const spacing = AppSpacing.s16;
+        final tileWidth =
+            (width - spacing * (crossAxisCount - 1)) / crossAxisCount;
 
-  static List<WorkflowGalleryItem> _collectGalleryItems(
-    List<WorkflowShowcase> showcases,
-  ) {
-    final items = <WorkflowGalleryItem>[];
-
-    for (final showcase in showcases) {
-      if (showcase.assets.isNotEmpty) {
-        for (final asset in showcase.assets) {
-          items.add(
-            WorkflowGalleryItem(
-              showcase: showcase,
-              asset: asset,
-              previewUrl: _resolvePreviewUrl(showcase, asset),
-            ),
-          );
-        }
-      } else {
-        items.add(
-          WorkflowGalleryItem(
-            showcase: showcase,
-            previewUrl: showcase.previewImageUrl ?? showcase.thumbnailUrl,
-          ),
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            for (final showcase in showcases)
+              SizedBox(
+                width: tileWidth,
+                child: _GalleryTile(
+                  showcase: showcase,
+                  previewUrl: resolver.resolvePreviewUrl(showcase),
+                  onTap: () => WorkflowShowcaseLightbox.show(
+                    context,
+                    WorkflowGalleryItem(
+                      showcase: showcase,
+                      previewUrl: resolver.resolvePreviewUrl(showcase),
+                    ),
+                  ),
+                ),
+              ),
+          ],
         );
-      }
-    }
-
-    return items;
-  }
-
-  static String? _resolvePreviewUrl(
-    WorkflowShowcase showcase,
-    ShowcaseAsset asset,
-  ) {
-    if (asset.assetType == ShowcaseAssetType.image) {
-      return asset.url ?? showcase.previewImageUrl ?? showcase.thumbnailUrl;
-    }
-    if (asset.assetType == ShowcaseAssetType.video) {
-      return showcase.previewImageUrl ?? showcase.thumbnailUrl;
-    }
-    return showcase.previewImageUrl ?? showcase.thumbnailUrl;
+      },
+    );
   }
 }
 
@@ -95,194 +69,119 @@ class WorkflowGalleryItem {
   });
 
   final WorkflowShowcase showcase;
-  final ShowcaseAsset? asset;
+  final dynamic asset;
   final String? previewUrl;
 
-  ShowcaseAssetType get type =>
-      asset?.assetType ??
-      (showcase.previewVideoUrl != null
-          ? ShowcaseAssetType.video
-          : ShowcaseAssetType.image);
+  String get title => showcase.title;
 
-  String get title =>
-      asset?.title ?? showcase.title;
-
-  String? get contentUrl => asset?.url ?? showcase.previewVideoUrl;
+  String? get contentUrl => showcase.previewVideoUrl;
 }
 
 class _GalleryTile extends StatelessWidget {
   const _GalleryTile({
-    required this.item,
+    required this.showcase,
+    required this.previewUrl,
     required this.onTap,
   });
 
-  final WorkflowGalleryItem item;
+  final WorkflowShowcase showcase;
+  final String? previewUrl;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: WorkflowShowcaseGallery.tileWidth,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: AppRadius.large,
-          child: Ink(
-            decoration: BoxDecoration(
-              borderRadius: AppRadius.large,
-              border: Border.all(
-                color: AppColors.outline.withValues(alpha: 0.55),
+    return HoverScaleSurface(
+      onTap: onTap,
+      padding: EdgeInsets.zero,
+      borderRadius: AppRadius.card,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AspectRatio(
+            aspectRatio: 16 / 10,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(AppRadius.r16),
+              ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ShowcaseNetworkImage(
+                    imageUrl: previewUrl,
+                    fit: BoxFit.cover,
+                    memCacheWidth: 720,
+                  ),
+                  Positioned(
+                    right: AppSpacing.s12,
+                    bottom: AppSpacing.s12,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.92),
+                        borderRadius: AppRadius.pill,
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: const Padding(
+                        padding: EdgeInsets.all(AppSpacing.s8),
+                        child: Icon(
+                          Icons.zoom_out_map_rounded,
+                          size: 16,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.s16),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(16),
+                if (showcase.category != null)
+                  Text(
+                    showcase.category!,
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.muted,
+                      fontWeight: FontWeight.w600,
                     ),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        _PreviewImage(url: item.previewUrl),
-                        Center(
-                          child: Icon(
-                            _typeIcon(item.type),
-                            size: 40,
-                            color: Colors.white.withValues(alpha: 0.88),
-                          ),
-                        ),
-                        Positioned(
-                          top: AppSpacing.s8,
-                          left: AppSpacing.s8,
-                          child: _TypeChip(type: item.type),
-                        ),
-                      ],
-                    ),
+                  ),
+                if (showcase.category != null)
+                  const SizedBox(height: AppSpacing.s4),
+                Text(
+                  showcase.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.titleSmall.copyWith(
+                    height: 1.35,
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(AppSpacing.s12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.showcase.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTypography.labelLarge.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.s4),
-                      Text(
-                        item.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
-                          height: 1.4,
-                        ),
-                      ),
-                    ],
-                  ),
+                const SizedBox(height: AppSpacing.s8),
+                Text(
+                  _metaLabel(showcase),
+                  style: AppTypography.caption,
                 ),
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  static IconData _typeIcon(ShowcaseAssetType type) {
-    switch (type) {
-      case ShowcaseAssetType.image:
-        return Icons.image_outlined;
-      case ShowcaseAssetType.video:
-        return Icons.play_circle_outline_rounded;
-      case ShowcaseAssetType.article:
-        return Icons.article_outlined;
-      case ShowcaseAssetType.slide:
-        return Icons.slideshow_outlined;
-      case ShowcaseAssetType.prompt:
-        return Icons.description_outlined;
+  static String _metaLabel(WorkflowShowcase showcase) {
+    final parts = <String>[];
+    if (showcase.estimatedTime != null) {
+      parts.add('約${showcase.estimatedTime}分');
     }
-  }
-}
-
-class _PreviewImage extends StatelessWidget {
-  const _PreviewImage({this.url});
-
-  final String? url;
-
-  @override
-  Widget build(BuildContext context) {
-    if (url == null || url!.isEmpty) {
-      return DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              AppColors.primary.withValues(alpha: 0.25),
-              const Color(0xFF0F172A),
-            ],
-          ),
-        ),
-      );
+    if (showcase.difficulty != null) {
+      parts.add(switch (showcase.difficulty!) {
+        ShowcaseDifficulty.easy => 'かんたん',
+        ShowcaseDifficulty.normal => 'ふつう',
+        ShowcaseDifficulty.hard => 'むずかしい',
+      });
     }
-
-    return Image.network(
-      url!,
-      fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => DecoratedBox(
-        decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.12),
-        ),
-      ),
-    );
-  }
-}
-
-class _TypeChip extends StatelessWidget {
-  const _TypeChip({required this.type});
-
-  final ShowcaseAssetType type;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.s8,
-        vertical: AppSpacing.s4,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.55),
-        borderRadius: AppRadius.pill,
-      ),
-      child: Text(
-        _label(type),
-        style: AppTypography.labelSmall.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
-  static String _label(ShowcaseAssetType type) {
-    switch (type) {
-      case ShowcaseAssetType.image:
-        return '画像';
-      case ShowcaseAssetType.video:
-        return '動画';
-      case ShowcaseAssetType.article:
-        return '記事';
-      case ShowcaseAssetType.slide:
-        return 'スライド';
-      case ShowcaseAssetType.prompt:
-        return 'プロンプト';
-    }
+    return parts.join(' · ');
   }
 }

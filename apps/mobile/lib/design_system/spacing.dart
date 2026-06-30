@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// AI Pilot スペーシングスケール。
+/// AI Pilot スペーシングスケール（Sprint 13.1）。
 abstract final class AppSpacing {
   static const double s4 = 4;
   static const double s8 = 8;
@@ -18,10 +18,19 @@ abstract final class AppSpacing {
   static const double lg = s24;
   static const double xl = s32;
 
+  /// Hero 上下余白。
+  static const double hero = s64;
+
+  /// セクション間隔。
+  static const double section = s48;
+
+  /// カード内余白。
+  static const double card = s24;
+
   static const double listItemGap = s12;
 
   static const EdgeInsets page = EdgeInsets.all(s16);
   static const EdgeInsets pageHorizontal = EdgeInsets.symmetric(horizontal: s16);
-  static const EdgeInsets card = EdgeInsets.all(s16);
-  static const EdgeInsets section = EdgeInsets.symmetric(horizontal: s16);
+  static const EdgeInsets cardPadding = EdgeInsets.all(card);
+  static const EdgeInsets sectionPadding = EdgeInsets.symmetric(horizontal: s16);
 }

@@ -176,7 +176,7 @@ class _AiToolCardState extends ConsumerState<_AiToolCard> {
                 padding: EdgeInsets.only(top: AppSpacing.s8),
                 child: SkeletonBox(height: 48, borderRadius: AppRadius.small),
               ),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (_, _) => const SizedBox.shrink(),
               data: (alternatives) => _AlternativesList(
                 alternatives: alternatives,
               ),

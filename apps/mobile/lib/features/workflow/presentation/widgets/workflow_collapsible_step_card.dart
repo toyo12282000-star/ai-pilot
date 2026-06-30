@@ -173,7 +173,7 @@ class _WorkflowCollapsibleStepCardState
                       height: 120,
                       borderRadius: AppRadius.medium,
                     ),
-                    error: (_, __) => Text(
+                    error: (_, _) => Text(
                       'プロンプトの読み込みに失敗しました',
                       style: AppTypography.bodySmall.copyWith(
                         color: AppColors.textSecondary,

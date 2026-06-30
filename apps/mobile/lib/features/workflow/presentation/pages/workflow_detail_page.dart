@@ -147,7 +147,7 @@ class _WorkflowDetailBody extends ConsumerWidget {
                   context: context,
                   child: showcaseAsync.when(
                     loading: () => const SkeletonWorkflowDetailHero(),
-                    error: (_, __) => WorkflowShowcaseHero(
+                    error: (_, _) => WorkflowShowcaseHero(
                       workflow: workflow,
                       workflowId: workflowId,
                       showcase: null,
@@ -177,7 +177,7 @@ class _WorkflowDetailBody extends ConsumerWidget {
                       const SizedBox(height: AppSpacing.s16),
                       showcasesAsync.when(
                         loading: () => const SkeletonWorkflowDetailGallery(),
-                        error: (_, __) => const SizedBox.shrink(),
+                        error: (_, _) => const SizedBox.shrink(),
                         data: (showcases) => FadeSlideIn(
                           index: 1,
                           child: WorkflowShowcaseGallery(showcases: showcases),
@@ -246,7 +246,7 @@ class _WorkflowDetailBody extends ConsumerWidget {
                         loading: () => const SkeletonWorkflowDetailHero(
                           compact: true,
                         ),
-                        error: (_, __) => WorkflowShowcaseHero(
+                        error: (_, _) => WorkflowShowcaseHero(
                           workflow: workflow,
                           workflowId: workflowId,
                           showcase: null,

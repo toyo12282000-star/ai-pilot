@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/icons.dart';
@@ -6,9 +7,13 @@ import 'package:ai_pilot/design_system/radius.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
+import 'package:ai_pilot/features/workflow/presentation/providers/showcase_image_providers.dart';
+import 'package:ai_pilot/features/workflow/presentation/providers/showcase_providers.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/showcase_network_image.dart';
+import 'package:ai_pilot/shared/widgets/hover_scale_surface.dart';
 
 /// ワークフロー一覧のカード表示。
-class WorkflowCard extends StatelessWidget {
+class WorkflowCard extends ConsumerWidget {
   const WorkflowCard({
     super.key,
     required this.workflow,
@@ -18,57 +23,47 @@ class WorkflowCard extends StatelessWidget {
   final Workflow workflow;
   final VoidCallback? onTap;
 
-  static const int maxTags = 3;
+  static const double thumbnailSize = 88;
 
   @override
-  Widget build(BuildContext context) {
-    final visibleTags = workflow.tags.take(maxTags).toList();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final showcasesAsync = ref.watch(workflowShowcasesProvider(workflow.id));
+    final showcases = showcasesAsync.valueOrNull;
+    final primaryShowcase =
+        showcases != null && showcases.isNotEmpty ? showcases.first : null;
+    final resolver = ref.watch(showcaseImageResolverProvider);
+    final thumbnailUrl = primaryShowcase == null
+        ? resolver.resolveHeroUrl(null, workflowId: workflow.id)
+        : resolver.resolveThumbnailUrl(primaryShowcase) ??
+            resolver.resolvePreviewUrl(primaryShowcase);
 
-    return Material(
-      color: AppColors.surface,
-      borderRadius: AppRadius.card,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: AppRadius.card,
-        splashColor: AppColors.primary.withValues(alpha: 0.04),
-        highlightColor: AppColors.primarySoft.withValues(alpha: 0.35),
-        child: Ink(
-          decoration: BoxDecoration(
-            borderRadius: AppRadius.card,
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.s16),
+    return HoverScaleSurface(
+      onTap: onTap,
+      padding: const EdgeInsets.all(AppSpacing.s16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _WorkflowThumbnail(imageUrl: thumbnailUrl),
+          const SizedBox(width: AppSpacing.s16),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        workflow.title,
-                        style: AppTypography.titleSmall.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      size: AppIcons.sizeMd,
-                      color: AppColors.textSecondary.withValues(alpha: 0.7),
-                    ),
-                  ],
+                Text(
+                  workflow.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.titleMedium.copyWith(
+                    letterSpacing: -0.1,
+                  ),
                 ),
-                const SizedBox(height: AppSpacing.s8),
+                const SizedBox(height: AppSpacing.s4),
                 Text(
                   workflow.description,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    height: 1.5,
-                  ),
+                  style: AppTypography.caption.copyWith(height: 1.5),
                 ),
                 const SizedBox(height: AppSpacing.s12),
                 Wrap(
@@ -81,41 +76,74 @@ class WorkflowCard extends StatelessWidget {
                         label: '約${workflow.estimatedMinutes}分',
                       ),
                     _MetaBadge(
-                      icon: AppIcons.steps,
-                      label: '${workflow.steps.length}ステップ',
+                      icon: Icons.speed_outlined,
+                      label: _difficultyLabel(workflow),
                     ),
                   ],
                 ),
-                if (visibleTags.isNotEmpty) ...[
-                  const SizedBox(height: AppSpacing.s12),
-                  Wrap(
-                    spacing: AppSpacing.s8,
-                    runSpacing: AppSpacing.s8,
-                    children: [
-                      for (final tag in visibleTags)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.s8,
-                            vertical: AppSpacing.s4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceMuted,
-                            borderRadius: AppRadius.pill,
-                            border: Border.all(color: AppColors.border),
-                          ),
-                          child: Text(
-                            tag,
-                            style: AppTypography.labelSmall.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  static String _difficultyLabel(Workflow workflow) {
+    final stepCount = workflow.steps.length;
+    final minutes = workflow.estimatedMinutes ?? 0;
+
+    if (stepCount <= 2 && minutes <= 40) {
+      return 'かんたん';
+    }
+    if (stepCount <= 3 && minutes <= 60) {
+      return 'ふつう';
+    }
+    return 'ステップ多め';
+  }
+}
+
+class _WorkflowThumbnail extends StatelessWidget {
+  const _WorkflowThumbnail({this.imageUrl});
+
+  final String? imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: AppRadius.medium,
+      child: SizedBox(
+        width: WorkflowCard.thumbnailSize,
+        height: WorkflowCard.thumbnailSize * 10 / 16,
+        child: imageUrl != null && imageUrl!.isNotEmpty
+            ? ShowcaseNetworkImage(
+                imageUrl: imageUrl,
+                fit: BoxFit.cover,
+                memCacheWidth: 176,
+                placeholder: const _ThumbnailPlaceholder(),
+              )
+            : const _ThumbnailPlaceholder(),
+      ),
+    );
+  }
+}
+
+class _ThumbnailPlaceholder extends StatelessWidget {
+  const _ThumbnailPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceMuted,
+        border: Border.all(color: AppColors.border),
+        borderRadius: AppRadius.medium,
+      ),
+      child: const Center(
+        child: Icon(
+          Icons.image_outlined,
+          size: 22,
+          color: AppColors.muted,
         ),
       ),
     );
@@ -146,7 +174,7 @@ class _MetaBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: AppColors.textSecondary),
+          Icon(icon, size: 12, color: AppColors.muted),
           const SizedBox(width: AppSpacing.s4),
           Text(
             label,

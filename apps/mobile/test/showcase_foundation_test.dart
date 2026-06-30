@@ -5,6 +5,7 @@ import 'package:ai_pilot/features/workflow/data/dto/showcase_asset_dto.dart';
 import 'package:ai_pilot/features/workflow/data/dto/showcase_tag_dto.dart';
 import 'package:ai_pilot/features/workflow/data/dto/workflow_showcase_dto.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_showcase_seed_data.dart';
+import 'package:ai_pilot/features/workflow/data/repositories/showcase_library_catalog.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_showcase_repository.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/showcase_asset.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow_showcase.dart';
@@ -13,11 +14,12 @@ import 'package:ai_pilot/features/workflow/presentation/providers/showcase_provi
 void main() {
   group('WorkflowShowcase entity', () {
     test('holds showcase metadata with nested tags and assets', () {
-      final showcase = mockWorkflowShowcases.first;
+      final entry = showcaseLibraryCatalog.first;
+      final showcase = mockWorkflowShowcases.firstWhere((s) => s.id == entry.id);
 
-      expect(showcase.title, contains('危険な島'));
+      expect(showcase.title, entry.title);
       expect(showcase.tags, isNotEmpty);
-      expect(showcase.assets, isNotEmpty);
+      expect(showcase.assets, isEmpty);
       expect(showcase.isFeatured, isTrue);
     });
   });
@@ -86,17 +88,17 @@ void main() {
   });
 
   group('Mock repository', () {
-    test('Sprint 12.4 seed counts', () {
-      expect(mockWorkflowShowcases, hasLength(9));
-      expect(mockShowcaseTags, hasLength(27));
-      expect(mockShowcaseAssets, hasLength(18));
+    test('Sprint 13.3 library counts', () {
+      expect(mockWorkflowShowcases, hasLength(30));
+      expect(mockShowcaseTags, hasLength(60));
+      expect(mockShowcaseAssets, isEmpty);
     });
 
     test('fetchShowcases returns all showcases sorted', () async {
       final repository = MockWorkflowShowcaseRepository();
       final showcases = await repository.fetchShowcases();
 
-      expect(showcases, hasLength(9));
+      expect(showcases, hasLength(30));
       expect(showcases.first.sortOrder, lessThanOrEqualTo(showcases.last.sortOrder));
     });
 
@@ -113,7 +115,7 @@ void main() {
       final showcases =
           await repository.fetchByWorkflow('wf_youtube_short');
 
-      expect(showcases, hasLength(3));
+      expect(showcases, hasLength(10));
       expect(showcases.every((s) => s.workflowId == 'wf_youtube_short'), isTrue);
     });
   });
@@ -132,7 +134,6 @@ void main() {
       final showcases = await container.read(featuredShowcasesProvider.future);
 
       expect(showcases, hasLength(3));
-      expect(showcases.first.title, mockWorkflowShowcases.first.title);
     });
 
     test('workflowShowcasesProvider resolves mock data', () async {
@@ -149,7 +150,7 @@ void main() {
         workflowShowcasesProvider('wf_blog').future,
       );
 
-      expect(showcases, hasLength(3));
+      expect(showcases, hasLength(10));
       expect(showcases.first.workflowId, 'wf_blog');
     });
   });

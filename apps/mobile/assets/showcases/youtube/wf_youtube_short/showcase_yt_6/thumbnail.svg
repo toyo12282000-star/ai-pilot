@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="711" viewBox="0 0 400 711">
+  <rect fill="#F8F9FB" width="400" height="711"/>
+  <rect x="24" y="24" width="352" height="663" rx="28" fill="#FFFFFF" stroke="#E7EAF0" stroke-width="2"/>
+  <rect x="52" y="52" width="96" height="28" rx="14" fill="#F8F9FB" stroke="#E7EAF0"/>
+  <text x="68" y="72" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#6B7280">ゲーム</text>
+  <rect x="56" y="104" width="288" height="278.46" rx="16" fill="#F8F9FB" stroke="#E7EAF0"/><polygon points="182,219.0 228,243.0 182,267.0" fill="#4F46E5" opacity="0.35"/>
+  <text x="56" y="435.06" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="600" fill="#111827">令和に遊びたい神ゲー3選</text>
+
+  <circle cx="340" cy="66" r="6" fill="#4F46E5" opacity="0.85"/>
+</svg>

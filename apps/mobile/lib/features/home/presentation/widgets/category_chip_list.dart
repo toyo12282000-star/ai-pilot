@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:ai_pilot/design_system/animations.dart';
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/radius.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
@@ -8,7 +9,7 @@ import 'package:ai_pilot/features/home/presentation/widgets/home_browse_category
 import 'package:ai_pilot/features/home/presentation/widgets/home_content_layout.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/category.dart';
 
-/// カテゴリ横スクロールチップ一覧。
+/// カテゴリ横スクロールチップ一覧（Apple 風）。
 class CategoryChipList extends StatelessWidget {
   const CategoryChipList({
     super.key,
@@ -23,6 +24,8 @@ class CategoryChipList extends StatelessWidget {
   final String? selectedCategoryId;
   final ValueChanged<String?> onSelected;
 
+  static const double chipHeight = 40;
+
   @override
   Widget build(BuildContext context) {
     final browseChips = chips ?? const <HomeBrowseCategory>[];
@@ -31,7 +34,7 @@ class CategoryChipList extends StatelessWidget {
       context: context,
       padding: EdgeInsets.zero,
       child: SizedBox(
-        height: 40,
+        height: chipHeight,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           padding: HomeContentLayout.horizontalPadding(context),
@@ -68,7 +71,7 @@ class CategoryChipList extends StatelessWidget {
   }
 }
 
-class _CategoryChip extends StatelessWidget {
+class _CategoryChip extends StatefulWidget {
   const _CategoryChip({
     required this.label,
     required this.selected,
@@ -80,30 +83,48 @@ class _CategoryChip extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
+  State<_CategoryChip> createState() => _CategoryChipState();
+}
+
+class _CategoryChipState extends State<_CategoryChip> {
+  bool _hovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: AppRadius.pill,
-        child: Ink(
-          decoration: BoxDecoration(
-            borderRadius: AppRadius.pill,
-            color: selected ? AppColors.primarySoft : AppColors.surfaceMuted,
-            border: Border.all(
-              color: selected ? AppColors.primary.withValues(alpha: 0.25) : AppColors.border,
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.s16,
-              vertical: AppSpacing.s8,
+    final backgroundColor = widget.selected
+        ? AppColors.primarySoft
+        : _hovered
+            ? AppColors.surfaceMuted
+            : AppColors.surface;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: widget.onTap,
+          borderRadius: AppRadius.pill,
+          child: AnimatedContainer(
+            duration: AppAnimations.interactive,
+            curve: AppAnimations.easeOut,
+            height: CategoryChipList.chipHeight,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: AppRadius.pill,
+              color: backgroundColor,
+              border: Border.all(
+                color: widget.selected
+                    ? AppColors.primary.withValues(alpha: 0.2)
+                    : AppColors.border,
+              ),
             ),
             child: Text(
-              label,
+              widget.label,
               style: AppTypography.labelLarge.copyWith(
-                color: selected ? AppColors.primary : AppColors.textSecondary,
-                fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                color: widget.selected ? AppColors.primary : AppColors.textSecondary,
+                fontWeight: widget.selected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),
           ),

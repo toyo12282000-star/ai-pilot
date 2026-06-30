@@ -157,7 +157,7 @@ class SkeletonShowcaseCard extends StatelessWidget {
 
   static const double cardWidth = 320;
   static const double imageHeight = cardWidth * 10 / 16;
-  static const double bodyExtent = 180;
+  static const double bodyExtent = 152;
 
   /// [ShowcaseCard.listExtent] と同じ高さ。
   static double get listExtent => imageHeight + bodyExtent;
@@ -196,7 +196,7 @@ class SkeletonShowcaseCard extends StatelessWidget {
                     borderRadius: AppRadius.small,
                   ),
                   SizedBox(height: AppSpacing.s8),
-                  SkeletonBox(height: 16, borderRadius: AppRadius.small),
+                  SkeletonBox(height: 14, borderRadius: AppRadius.small),
                   SizedBox(height: AppSpacing.s8),
                   SkeletonBox(height: 16, borderRadius: AppRadius.small),
                   SizedBox(height: AppSpacing.s8),
@@ -253,7 +253,7 @@ class SkeletonShowcaseSection extends StatelessWidget {
             itemBuilder: (_, _) => const SkeletonShowcaseCard(),
           ),
         ),
-        const SizedBox(height: AppSpacing.s32),
+        const SizedBox(height: AppSpacing.section),
       ],
     );
   }
@@ -268,26 +268,28 @@ class SkeletonHomeHero extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.s16,
-        AppSpacing.s24,
+        AppSpacing.hero,
         AppSpacing.s16,
-        AppSpacing.s16,
+        AppSpacing.section,
       ),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          borderRadius: AppRadius.card,
+          borderRadius: AppRadius.hero,
           border: Border.all(color: AppColors.border),
           color: AppColors.surface,
         ),
         child: const Padding(
-          padding: EdgeInsets.all(AppSpacing.s24),
+          padding: EdgeInsets.all(AppSpacing.card),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SkeletonBox(
                 width: 260,
-                height: 28,
+                height: 32,
                 borderRadius: AppRadius.small,
               ),
+              SizedBox(height: AppSpacing.s12),
+              SkeletonBox(height: 14, borderRadius: AppRadius.small),
               SizedBox(height: AppSpacing.s8),
               SkeletonBox(height: 14, borderRadius: AppRadius.small),
               SizedBox(height: AppSpacing.s24),
@@ -366,7 +368,7 @@ class SkeletonChipRow extends StatelessWidget {
             if (index > 0) const SizedBox(width: AppSpacing.s8),
             SkeletonBox(
               width: index == 0 ? 56 : 64 + index * 6.0,
-              height: 36,
+              height: 40,
               borderRadius: AppRadius.pill,
             ),
           ],
@@ -415,11 +417,12 @@ class SkeletonHomeAdvisorSection extends StatelessWidget {
       padding: AppSpacing.pageHorizontal,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          borderRadius: AppRadius.pill,
-          border: Border.all(color: AppColors.outline.withValues(alpha: 0.45)),
+          borderRadius: AppRadius.card,
+          border: Border.all(color: AppColors.border),
+          color: AppColors.surface,
         ),
         child: const Padding(
-          padding: EdgeInsets.all(AppSpacing.s24),
+          padding: EdgeInsets.all(AppSpacing.card),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -427,7 +430,7 @@ class SkeletonHomeAdvisorSection extends StatelessWidget {
               SizedBox(height: AppSpacing.s8),
               SkeletonBox(height: 14, borderRadius: AppRadius.small),
               SizedBox(height: AppSpacing.s16),
-              SkeletonBox(height: 44, borderRadius: AppRadius.medium),
+              SkeletonBox(height: 44, borderRadius: AppRadius.pill),
             ],
           ),
         ),
@@ -731,8 +734,8 @@ class SkeletonWorkflowDetailGallery extends StatelessWidget {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: 3,
-        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.s12),
-        itemBuilder: (_, __) => SizedBox(
+        separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.s12),
+        itemBuilder: (_, _) => SizedBox(
           width: _tileWidth,
           child: DecoratedBox(
             decoration: BoxDecoration(

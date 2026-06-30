@@ -43,14 +43,14 @@ class WorkflowSearchBar extends StatelessWidget {
       backgroundColor: WidgetStatePropertyAll(AppColors.surface),
       elevation: const WidgetStatePropertyAll(0),
       side: WidgetStatePropertyAll(
-        BorderSide(color: AppColors.outline),
+        BorderSide(color: AppColors.border),
       ),
       shape: WidgetStatePropertyAll(
-        RoundedRectangleBorder(borderRadius: AppRadius.medium),
+        RoundedRectangleBorder(borderRadius: AppRadius.pill),
       ),
-      textStyle: WidgetStatePropertyAll(AppTypography.bodyMedium),
+      textStyle: WidgetStatePropertyAll(AppTypography.bodyLarge),
       hintStyle: WidgetStatePropertyAll(
-        AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
+        AppTypography.bodyLarge.copyWith(color: AppColors.muted),
       ),
       padding: const WidgetStatePropertyAll(
         EdgeInsets.symmetric(horizontal: AppSpacing.s12),

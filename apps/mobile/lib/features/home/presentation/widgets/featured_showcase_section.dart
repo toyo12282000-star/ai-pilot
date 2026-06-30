@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -41,7 +42,8 @@ class FeaturedShowcaseSection extends ConsumerWidget {
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: HomeContentLayout.horizontalPadding(context),
-                cacheExtent: ShowcaseCard.cardWidth * 2,
+                scrollCacheExtent:
+                    ScrollCacheExtent.pixels(ShowcaseCard.cardWidth * 2),
                 itemCount: showcases.length,
                 itemBuilder: (context, index) {
                   final showcase = showcases[index];

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -66,7 +67,7 @@ class RecentWorkflowSection extends ConsumerWidget {
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: HomeContentLayout.horizontalPadding(context),
-                cacheExtent: 360,
+                scrollCacheExtent: ScrollCacheExtent.pixels(360),
                 itemCount: workflows.length,
                 itemBuilder: (context, index) {
                   final workflow = workflows[index];

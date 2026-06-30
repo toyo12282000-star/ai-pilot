@@ -451,20 +451,38 @@ class _HomeBody extends StatelessWidget {
                 ),
               ),
             ),
-            for (var index = 0; index < workflows.length; index++) ...[
-              if (index > 0) const SizedBox(height: AppSpacing.s12),
-              HomeContentLayout.constrain(
-                context: context,
-                child: FadeSlideIn(
-                  index: (showDiscoverySections ? 7 : 4) + index,
-                  child: WorkflowCard(
-                    workflow: workflows[index],
-                    onTap: () =>
-                        context.push('/workflows/${workflows[index].id}'),
-                  ),
-                ),
+            HomeContentLayout.constrain(
+              context: context,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final twoColumns =
+                      constraints.maxWidth >= HomeContentLayout.tabletBreakpoint;
+                  final cardWidth = twoColumns
+                      ? (constraints.maxWidth - AppSpacing.s12) / 2
+                      : constraints.maxWidth;
+
+                  return Wrap(
+                    spacing: AppSpacing.s12,
+                    runSpacing: AppSpacing.s12,
+                    children: [
+                      for (var index = 0; index < workflows.length; index++)
+                        SizedBox(
+                          width: cardWidth,
+                          child: FadeSlideIn(
+                            index: (showDiscoverySections ? 7 : 4) + index,
+                            child: WorkflowCard(
+                              workflow: workflows[index],
+                              onTap: () => context.push(
+                                '/workflows/${workflows[index].id}',
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
               ),
-            ],
+            ),
           ],
         ],
       ),

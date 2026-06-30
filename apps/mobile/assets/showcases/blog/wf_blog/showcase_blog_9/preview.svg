@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect fill="#F8F9FB" width="1200" height="630"/>
+  <rect x="50" y="50" width="1100" height="530" rx="28" fill="#FFFFFF" stroke="#E7EAF0" stroke-width="2"/>
+  <rect x="78" y="78" width="96" height="28" rx="14" fill="#F8F9FB" stroke="#E7EAF0"/>
+  <text x="94" y="98" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#6B7280">プログラミング</text>
+  <rect x="82" y="130" width="1036" height="222.6" rx="12" fill="#F8F9FB" stroke="#E7EAF0"/><rect x="106" y="158" width="569.8000000000001" height="12" rx="6" fill="#E7EAF0"/><rect x="106" y="182" width="777.0" height="10" rx="5" fill="#E7EAF0" opacity="0.7"/><rect x="106" y="202" width="673.4" height="10" rx="5" fill="#E7EAF0" opacity="0.5"/>
+  <text x="82" y="378.6" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="600" fill="#111827">Python入門30日プラン</text>
+
+  <circle cx="1114" cy="92" r="6" fill="#4F46E5" opacity="0.85"/>
+</svg>

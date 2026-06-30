@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:ai_pilot/design_system/spacing.dart';
@@ -54,7 +55,7 @@ class AiRecommendationSection extends ConsumerWidget {
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: HomeContentLayout.horizontalPadding(context),
-                cacheExtent: 360,
+                scrollCacheExtent: ScrollCacheExtent.pixels(360),
                 itemCount: recommendations.length,
                 itemBuilder: (context, index) {
                   final recommendation = recommendations[index];

@@ -30,7 +30,7 @@ class _FadeSlideInState extends State<FadeSlideIn>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: AppAnimations.normal,
+      duration: AppAnimations.interactive,
     );
     final curve = CurvedAnimation(
       parent: _controller,
