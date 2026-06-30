@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/home_content_layout.dart';
@@ -40,9 +41,16 @@ class HomeAdvisorSection extends StatelessWidget {
                 const SizedBox(height: AppSpacing.s16),
                 OutlinedButton.icon(
                   onPressed: onAdvisorTap,
-                  icon: const Icon(Icons.auto_awesome_outlined, size: 18),
+                  icon: const Icon(
+                    Icons.auto_awesome_outlined,
+                    size: 18,
+                    color: AppColors.primary,
+                  ),
                   label: const Text('AIに相談する'),
                   style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.charcoal,
+                    side: const BorderSide(color: AppColors.primary),
+                    backgroundColor: AppColors.surface,
                     minimumSize: const Size.fromHeight(44),
                   ),
                 ),

@@ -6,7 +6,7 @@ import 'package:ai_pilot/design_system/colors.dart';
 abstract final class AppShadows {
   static List<BoxShadow> get small => [
         BoxShadow(
-          color: AppColors.darkNavy.withValues(alpha: 0.02),
+          color: AppColors.charcoal.withValues(alpha: 0.03),
           blurRadius: 2,
           offset: const Offset(0, 1),
         ),
@@ -14,7 +14,7 @@ abstract final class AppShadows {
 
   static List<BoxShadow> get medium => [
         BoxShadow(
-          color: AppColors.darkNavy.withValues(alpha: 0.025),
+          color: AppColors.charcoal.withValues(alpha: 0.04),
           blurRadius: 6,
           offset: const Offset(0, 2),
         ),
@@ -22,7 +22,7 @@ abstract final class AppShadows {
 
   static List<BoxShadow> get large => [
         BoxShadow(
-          color: AppColors.darkNavy.withValues(alpha: 0.03),
+          color: AppColors.charcoal.withValues(alpha: 0.05),
           blurRadius: 12,
           offset: const Offset(0, 3),
         ),

@@ -4,7 +4,7 @@ import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/radius.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 
-/// 白ベース + Primary/Secondary グラデーションの Hero コンテナ。
+/// Warm White / Beige ベースの Hero コンテナ。
 class HeroGradientCard extends StatelessWidget {
   const HeroGradientCard({
     super.key,
@@ -24,18 +24,9 @@ class HeroGradientCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        borderRadius: AppRadius.pill,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.surface,
-            AppColors.primary.withValues(alpha: 0.06),
-            AppColors.secondary.withValues(alpha: 0.08),
-          ],
-          stops: const [0.0, 0.55, 1.0],
-        ),
-        border: Border.all(color: AppColors.outline),
+        borderRadius: AppRadius.hero,
+        color: AppColors.surfaceMuted,
+        border: Border.all(color: AppColors.border),
       ),
       child: Padding(
         padding: padding,

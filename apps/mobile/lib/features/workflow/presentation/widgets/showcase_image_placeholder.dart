@@ -20,21 +20,14 @@ class ShowcaseImagePlaceholder extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: borderRadius,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.darkNavy.withValues(alpha: 0.88),
-            AppColors.primary.withValues(alpha: 0.28),
-            AppColors.surfaceMuted,
-          ],
-        ),
+        color: AppColors.surfaceMuted,
+        border: Border.all(color: AppColors.border),
       ),
       child: Center(
         child: Icon(
           icon,
           size: iconSize,
-          color: Colors.white.withValues(alpha: 0.72),
+          color: AppColors.primary.withValues(alpha: 0.55),
         ),
       ),
     );

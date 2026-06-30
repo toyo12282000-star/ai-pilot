@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:ai_pilot/app/app_sidebar.dart';
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/icons.dart';
 
@@ -12,6 +13,8 @@ class MainShell extends StatelessWidget {
   });
 
   final StatefulNavigationShell navigationShell;
+
+  static const double _sidebarBreakpoint = 900;
 
   static const _destinations = [
     NavigationDestination(
@@ -40,6 +43,27 @@ class MainShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final useSidebar =
+        MediaQuery.sizeOf(context).width >= _sidebarBreakpoint;
+
+    if (useSidebar) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: Row(
+          children: [
+            SizedBox(
+              width: AppSidebar.width,
+              child: AppSidebar(
+                selectedIndex: navigationShell.currentIndex,
+                onDestinationSelected: _onDestinationSelected,
+              ),
+            ),
+            Expanded(child: navigationShell),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: navigationShell,

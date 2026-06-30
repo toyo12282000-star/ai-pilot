@@ -30,13 +30,13 @@ class WorkflowSearchBar extends StatelessWidget {
     final searchBar = SearchBar(
       controller: controller,
       hintText: 'ワークフローを検索',
-      leading: const Icon(AppIcons.search, size: AppIcons.sizeMd),
+      leading: const Icon(AppIcons.search, size: AppIcons.sizeMd, color: AppColors.muted),
       trailing: [
         if (showClearButton)
           IconButton(
             onPressed: onClear,
             tooltip: 'クリア',
-            icon: const Icon(AppIcons.clear, size: AppIcons.sizeMd),
+            icon: const Icon(AppIcons.clear, size: AppIcons.sizeMd, color: AppColors.muted),
           ),
       ],
       onChanged: onChanged,
@@ -46,7 +46,7 @@ class WorkflowSearchBar extends StatelessWidget {
         BorderSide(color: AppColors.border),
       ),
       shape: WidgetStatePropertyAll(
-        RoundedRectangleBorder(borderRadius: AppRadius.pill),
+        RoundedRectangleBorder(borderRadius: AppRadius.search),
       ),
       textStyle: WidgetStatePropertyAll(AppTypography.bodyLarge),
       hintStyle: WidgetStatePropertyAll(

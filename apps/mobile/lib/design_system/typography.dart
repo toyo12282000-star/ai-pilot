@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 
-/// AI Pilot タイポグラフィスケール（Sprint 13.1）。
+/// AI Pilot タイポグラフィスケール（Sprint 13.4）。
 abstract final class AppTypography {
   // ---------------------------------------------------------------------------
   // Display
@@ -28,7 +28,7 @@ abstract final class AppTypography {
     fontSize: 36,
     fontWeight: FontWeight.w700,
     height: 1.2,
-    letterSpacing: -0.3,
+    letterSpacing: -0.35,
     color: AppColors.textPrimary,
   );
 
@@ -37,6 +37,14 @@ abstract final class AppTypography {
   // ---------------------------------------------------------------------------
 
   static const TextStyle headlineLarge = TextStyle(
+    fontSize: 40,
+    fontWeight: FontWeight.w700,
+    height: 1.18,
+    letterSpacing: -0.45,
+    color: AppColors.textPrimary,
+  );
+
+  static const TextStyle headlineMedium = TextStyle(
     fontSize: 36,
     fontWeight: FontWeight.w700,
     height: 1.2,
@@ -44,7 +52,7 @@ abstract final class AppTypography {
     color: AppColors.textPrimary,
   );
 
-  static const TextStyle headlineMedium = TextStyle(
+  static const TextStyle headlineSmall = TextStyle(
     fontSize: 32,
     fontWeight: FontWeight.w700,
     height: 1.22,
@@ -52,23 +60,15 @@ abstract final class AppTypography {
     color: AppColors.textPrimary,
   );
 
-  static const TextStyle headlineSmall = TextStyle(
-    fontSize: 28,
-    fontWeight: FontWeight.w700,
-    height: 1.24,
-    letterSpacing: -0.3,
-    color: AppColors.textPrimary,
-  );
+  /// Hero 見出し。
+  static const TextStyle heroTitle = headlineSmall;
 
-  /// Hero 見出し（PC では 36、モバイルでは 32 相当）。
-  static const TextStyle heroTitle = headlineMedium;
-
-  /// セクション見出し（24, w600）。
+  /// セクション見出し（22–24, w600）。
   static const TextStyle sectionTitle = TextStyle(
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: FontWeight.w600,
-    height: 1.28,
-    letterSpacing: -0.25,
+    height: 1.3,
+    letterSpacing: -0.2,
     color: AppColors.textPrimary,
   );
 
@@ -77,10 +77,10 @@ abstract final class AppTypography {
   // ---------------------------------------------------------------------------
 
   static const TextStyle titleLarge = TextStyle(
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: FontWeight.w600,
     height: 1.3,
-    letterSpacing: -0.1,
+    letterSpacing: -0.15,
     color: AppColors.textPrimary,
   );
 
@@ -100,46 +100,46 @@ abstract final class AppTypography {
   );
 
   // ---------------------------------------------------------------------------
-  // Body (16)
+  // Body (15–16)
   // ---------------------------------------------------------------------------
 
   static const TextStyle bodyLarge = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w400,
     height: 1.55,
-    letterSpacing: -0.1,
+    letterSpacing: -0.08,
     color: AppColors.textPrimary,
   );
 
   static const TextStyle bodyMedium = TextStyle(
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: FontWeight.w400,
-    height: 1.5,
+    height: 1.52,
     color: AppColors.textPrimary,
   );
 
   static const TextStyle bodySmall = TextStyle(
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: FontWeight.w400,
     height: 1.5,
     color: AppColors.textSecondary,
   );
 
   // ---------------------------------------------------------------------------
-  // Caption (13–14)
+  // Caption (12–13)
   // ---------------------------------------------------------------------------
 
   static const TextStyle caption = TextStyle(
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: FontWeight.w400,
     height: 1.45,
     color: AppColors.textSecondary,
   );
 
   static const TextStyle captionMedium = TextStyle(
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: FontWeight.w400,
-    height: 1.45,
+    height: 1.5,
     color: AppColors.textSecondary,
   );
 
@@ -151,7 +151,7 @@ abstract final class AppTypography {
     fontSize: 14,
     fontWeight: FontWeight.w500,
     height: 1.42,
-    letterSpacing: 0.05,
+    letterSpacing: 0.02,
     color: AppColors.textPrimary,
   );
 
@@ -159,7 +159,7 @@ abstract final class AppTypography {
     fontSize: 12,
     fontWeight: FontWeight.w500,
     height: 1.45,
-    letterSpacing: 0.1,
+    letterSpacing: 0.05,
     color: AppColors.textSecondary,
   );
 
@@ -167,7 +167,7 @@ abstract final class AppTypography {
     fontSize: 11,
     fontWeight: FontWeight.w500,
     height: 1.45,
-    letterSpacing: 0.2,
+    letterSpacing: 0.15,
     color: AppColors.muted,
   );
 

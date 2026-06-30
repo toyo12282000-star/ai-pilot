@@ -155,9 +155,9 @@ class SkeletonHeroCard extends StatelessWidget {
 class SkeletonShowcaseCard extends StatelessWidget {
   const SkeletonShowcaseCard({super.key});
 
-  static const double cardWidth = 320;
+  static const double cardWidth = 340;
   static const double imageHeight = cardWidth * 10 / 16;
-  static const double bodyExtent = 152;
+  static const double bodyExtent = 220;
 
   /// [ShowcaseCard.listExtent] と同じ高さ。
   static double get listExtent => imageHeight + bodyExtent;
@@ -178,7 +178,7 @@ class SkeletonShowcaseCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
+                top: Radius.circular(AppRadius.r20),
               ),
               child: SkeletonBox(
                 height: imageHeight,

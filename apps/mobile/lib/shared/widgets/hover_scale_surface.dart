@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:ai_pilot/design_system/animations.dart';
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/radius.dart';
+import 'package:ai_pilot/design_system/shadows.dart';
 
 /// Border 主体のカード面 + 控えめな hover scale。
 class HoverScaleSurface extends StatefulWidget {
@@ -41,6 +42,7 @@ class _HoverScaleSurfaceState extends State<HoverScaleSurface> {
           color: widget.backgroundColor,
           borderRadius: widget.borderRadius,
           border: Border.all(color: widget.borderColor),
+          boxShadow: AppShadows.none,
         ),
         child: widget.padding != null
             ? Padding(padding: widget.padding!, child: widget.child)
@@ -58,8 +60,8 @@ class _HoverScaleSurfaceState extends State<HoverScaleSurface> {
               child: InkWell(
                 onTap: widget.onTap,
                 borderRadius: widget.borderRadius,
-                splashColor: AppColors.primary.withValues(alpha: 0.04),
-                highlightColor: AppColors.primarySoft.withValues(alpha: 0.35),
+                splashColor: AppColors.primary.withValues(alpha: 0.05),
+                highlightColor: AppColors.primarySoft.withValues(alpha: 0.45),
                 child: content,
               ),
             ),

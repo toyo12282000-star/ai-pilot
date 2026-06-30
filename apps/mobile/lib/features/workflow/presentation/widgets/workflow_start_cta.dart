@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_product_cta.dart';
 import 'package:ai_pilot/shared/widgets/bottom_action_bar.dart';
 
 /// ワークフロー詳細画面の開始 CTA。
@@ -14,7 +15,7 @@ class WorkflowStartCta extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomActionBar(
-      label: 'この作品を作る',
+      label: WorkflowProductCta.label,
       onPressed: onPressed,
     );
   }

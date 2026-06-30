@@ -104,7 +104,8 @@ void main() {
     await tester.pumpAndSettle(const Duration(seconds: 2));
 
     expect(find.text('世界一危険な島3選'), findsWidgets);
-    expect(find.text('完成作品ギャラリー'), findsOneWidget);
+    expect(find.text('人気作品'), findsOneWidget);
+    expect(find.text('無料でこの作品を作る'), findsWidgets);
   });
 
   testWidgets('Search hides discovery sections', (tester) async {

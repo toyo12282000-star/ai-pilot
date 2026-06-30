@@ -17,18 +17,16 @@ import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_repos
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_run_history_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_showcase_repository.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/showcase_providers.dart';
-import 'package:ai_pilot/features/workflow/presentation/providers/workflow_detail_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_run_history_providers.dart';
-import 'package:ai_pilot/features/workflow/domain/entities/prompt_variant.dart';
-import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_collapsible_step_card.dart';
-import 'fakes/fake_auth_repository.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_sticky_progress.dart';
 import 'helpers/workflow_detail_overrides.dart';
+import 'fakes/fake_auth_repository.dart';
 
 void main() {
   setUpAll(TestWidgetsFlutterBinding.ensureInitialized);
 
-  List<Override> workflowDetailOverrides() {
+  List<Override> runPageOverrides() {
     return [
       authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
       canAccessAppProvider.overrideWith((ref) => true),
@@ -50,13 +48,13 @@ void main() {
     ];
   }
 
-  Future<void> pumpWorkflowDetail(WidgetTester tester) async {
-    await tester.binding.setSurfaceSize(const Size(800, 4200));
+  Future<void> pumpRunPage(WidgetTester tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 2400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: workflowDetailOverrides(),
+        overrides: runPageOverrides(),
         child: const App(),
       ),
     );
@@ -68,106 +66,48 @@ void main() {
     await tester.pumpAndSettle();
     await tester.pump(const Duration(milliseconds: 600));
     await tester.pumpAndSettle();
-  }
 
-  testWidgets('Workflow detail shows showcase-first sections', (tester) async {
-    await pumpWorkflowDetail(tester);
-
-    expect(find.text('完成作品ギャラリー'), findsOneWidget);
-    expect(find.text('このWorkflowで使うAI'), findsOneWidget);
-    expect(find.text('無料でこの作品を作る'), findsWidgets);
-    expect(find.text('世界一危険な島3選'), findsWidgets);
-    expect(find.text('人気作品'), findsOneWidget);
-    expect(find.text('最近作られた作品'), findsOneWidget);
-    expect(find.text('このWorkflowで完成すると'), findsOneWidget);
-    expect(find.text('Before → After'), findsOneWidget);
-
-    final scrollable = find.byType(Scrollable).first;
-    await tester.scrollUntilVisible(
-      find.text('ステップ'),
-      400,
-      scrollable: scrollable,
-    );
+    await tester.tap(find.text('無料でこの作品を作る').first);
+    await tester.pumpAndSettle();
     await tester.pump(const Duration(milliseconds: 600));
     await tester.pumpAndSettle();
-    expect(find.text('ステップ'), findsOneWidget);
-  });
+  }
 
-  testWidgets('Workflow detail step expands with prompt tabs', (tester) async {
-    await pumpWorkflowDetail(tester);
+  testWidgets('Run page shows AI companion layout', (tester) async {
+    await pumpRunPage(tester);
 
-    final scrollable = find.byType(Scrollable).first;
-    await tester.scrollUntilVisible(
-      find.text('ステップ'),
-      400,
-      scrollable: scrollable,
-    );
-    await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.text('企画を考える'),
-      400,
-      scrollable: scrollable,
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('企画を考える').first);
-    await tester.pumpAndSettle();
-    await tester.pump(const Duration(milliseconds: 400));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Output Example'), findsOneWidget);
-    expect(find.text('Completion Criteria'), findsOneWidget);
+    expect(find.text('完成まで'), findsOneWidget);
+    expect(find.text('AI Pilot'), findsOneWidget);
+    expect(find.text('Goal'), findsOneWidget);
+    expect(find.text('完成条件'), findsOneWidget);
     expect(find.text('Tips'), findsOneWidget);
-    expect(find.text('Common Mistakes'), findsOneWidget);
+    expect(find.text('ChatGPTを開く'), findsOneWidget);
+    expect(find.text('Prompt'), findsOneWidget);
     expect(find.text('初心者'), findsOneWidget);
     expect(find.text('高品質'), findsOneWidget);
     expect(find.text('時短'), findsOneWidget);
+    expect(find.byType(WorkflowRunStickyProgress), findsOneWidget);
   });
 
-  group('workflow detail providers', () {
-    test('workflowPrimaryShowcaseProvider returns featured showcase', () async {
-      final container = ProviderContainer(
-        overrides: workflowDetailOverrides(),
-      );
-      addTearDown(container.dispose);
+  testWidgets('Run page shows completion screen after finish', (tester) async {
+    await pumpRunPage(tester);
 
-      final showcase = await container.read(
-        workflowPrimaryShowcaseProvider('wf_youtube_short').future,
-      );
+    final nextButton = find.text('次へ');
+    while (nextButton.evaluate().isNotEmpty) {
+      await tester.tap(nextButton);
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 300));
+    }
 
-      expect(showcase, isNotNull);
-      expect(showcase!.isFeatured, isTrue);
-    });
+    await tester.tap(find.text('完了'));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pumpAndSettle();
 
-    test('workflowAiToolsProvider aggregates unique tools', () async {
-      final container = ProviderContainer(
-        overrides: workflowDetailOverrides(),
-      );
-      addTearDown(container.dispose);
-
-      final tools = await container.read(
-        workflowAiToolsProvider('wf_youtube_short').future,
-      );
-
-      expect(tools, isNotEmpty);
-      expect(
-        tools.where((entry) => entry.isRecommended),
-        isNotEmpty,
-      );
-    });
-  });
-
-  test('prompt tab variants include beginner highQuality shortTime', () {
-    expect(
-      WorkflowCollapsibleStepCard.tabVariants,
-      contains(PromptVariantType.beginner),
-    );
-    expect(
-      WorkflowCollapsibleStepCard.tabVariants,
-      contains(PromptVariantType.highQuality),
-    );
-    expect(
-      WorkflowCollapsibleStepCard.tabVariants,
-      contains(PromptVariantType.shortTime),
-    );
+    expect(find.text('完成しました！'), findsOneWidget);
+    expect(find.text('保存'), findsOneWidget);
+    expect(find.text('完成作品を見る'), findsOneWidget);
+    expect(find.text('もう一作品作る'), findsOneWidget);
+    expect(find.text('Homeへ戻る'), findsOneWidget);
   });
 }

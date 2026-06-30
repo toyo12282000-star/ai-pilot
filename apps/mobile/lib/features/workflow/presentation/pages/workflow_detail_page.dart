@@ -10,8 +10,13 @@ import 'package:ai_pilot/features/workflow/presentation/providers/showcase_provi
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_detail_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_ai_tools_section.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_before_after_section.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_collapsible_step_card.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_detail_layout.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_outcome_benefits_section.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_product_cta_section.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_product_stats_panel.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_recent_creations_section.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_showcase_gallery.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_showcase_hero.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_start_cta.dart';
@@ -164,6 +169,55 @@ class _WorkflowDetailBody extends ConsumerWidget {
                     ),
                   ),
                 ),
+                const SizedBox(height: AppSpacing.s24),
+                WorkflowDetailLayout.constrain(
+                  context: context,
+                  child: FadeSlideIn(
+                    index: 1,
+                    child: WorkflowProductStatsPanel(workflowId: workflowId),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.s48),
+                WorkflowDetailLayout.constrain(
+                  context: context,
+                  child: FadeSlideIn(
+                    index: 2,
+                    child: WorkflowRecentCreationsSection(
+                      workflowId: workflowId,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.s48),
+                WorkflowDetailLayout.constrain(
+                  context: context,
+                  child: FadeSlideIn(
+                    index: 3,
+                    child: WorkflowOutcomeBenefitsSection(
+                      workflowId: workflowId,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.s48),
+                WorkflowDetailLayout.constrain(
+                  context: context,
+                  child: FadeSlideIn(
+                    index: 4,
+                    child: WorkflowBeforeAfterSection(
+                      workflowId: workflowId,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.s48),
+                WorkflowDetailLayout.constrain(
+                  context: context,
+                  child: FadeSlideIn(
+                    index: 5,
+                    child: WorkflowProductCtaSection(
+                      onPressed: onStartWorkflow,
+                      subtitle: 'ステップを見る前に、まず無料で始められます',
+                    ),
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.s48),
                 WorkflowDetailLayout.constrain(
                   context: context,
@@ -179,7 +233,7 @@ class _WorkflowDetailBody extends ConsumerWidget {
                         loading: () => const SkeletonWorkflowDetailGallery(),
                         error: (_, _) => const SizedBox.shrink(),
                         data: (showcases) => FadeSlideIn(
-                          index: 1,
+                          index: 6,
                           child: WorkflowShowcaseGallery(showcases: showcases),
                         ),
                       ),
@@ -198,7 +252,7 @@ class _WorkflowDetailBody extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.s16),
                       FadeSlideIn(
-                        index: 2,
+                        index: 7,
                         child: WorkflowAiToolsSection(workflowId: workflowId),
                       ),
                     ],
@@ -221,7 +275,7 @@ class _WorkflowDetailBody extends ConsumerWidget {
                         for (var i = 0; i < sortedSteps.length; i++) ...[
                           if (i > 0) const SizedBox(height: AppSpacing.s12),
                           FadeSlideIn(
-                            index: i + 3,
+                            index: i + 8,
                             child: WorkflowCollapsibleStepCard(
                               step: sortedSteps[i],
                               index: i,
@@ -234,37 +288,12 @@ class _WorkflowDetailBody extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.s48),
                 WorkflowDetailLayout.constrain(
                   context: context,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const WorkflowDetailSectionHeader(
-                        title: '完了後に得られる成果',
-                        subtitle: 'この Workflow を完了すると、こんな作品ができます',
-                      ),
-                      const SizedBox(height: AppSpacing.s16),
-                      showcaseAsync.when(
-                        loading: () => const SkeletonWorkflowDetailHero(
-                          compact: true,
-                        ),
-                        error: (_, _) => WorkflowShowcaseHero(
-                          workflow: workflow,
-                          workflowId: workflowId,
-                          showcase: null,
-                          onStart: onStartWorkflow,
-                          compact: true,
-                        ),
-                        data: (showcase) => FadeSlideIn(
-                          index: sortedSteps.length + 4,
-                          child: WorkflowShowcaseHero(
-                            workflow: workflow,
-                            workflowId: workflowId,
-                            showcase: showcase,
-                            onStart: onStartWorkflow,
-                            compact: true,
-                          ),
-                        ),
-                      ),
-                    ],
+                  child: FadeSlideIn(
+                    index: sortedSteps.length + 8,
+                    child: WorkflowProductCtaSection(
+                      onPressed: onStartWorkflow,
+                      subtitle: '準備ができたら、無料でこの作品を作りましょう',
+                    ),
                   ),
                 ),
               ],

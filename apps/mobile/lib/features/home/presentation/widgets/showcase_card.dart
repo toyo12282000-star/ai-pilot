@@ -23,9 +23,9 @@ class ShowcaseCard extends StatelessWidget {
   final WorkflowShowcase showcase;
   final VoidCallback onTap;
 
-  static const double cardWidth = 320;
+  static const double cardWidth = 340;
   static const double imageHeight = cardWidth * 10 / 16;
-  static const double bodyExtent = 152;
+  static const double bodyExtent = 220;
 
   /// 横スクロール ListView の高さ目安。
   static double get listExtent => imageHeight + bodyExtent;
@@ -44,7 +44,7 @@ class ShowcaseCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(AppRadius.r16),
+                top: Radius.circular(AppRadius.r20),
               ),
               child: SizedBox(
                 height: imageHeight,
@@ -57,17 +57,23 @@ class ShowcaseCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (showcase.category != null)
-                    Text(
-                      showcase.category!,
-                      style: AppTypography.labelSmall.copyWith(
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (showcase.category != null)
+                        Flexible(
+                          child: _CategoryPill(label: showcase.category!),
+                        ),
+                      const Spacer(),
+                      Icon(
+                        Icons.bookmark_border_rounded,
+                        size: 20,
                         color: AppColors.muted,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.15,
                       ),
-                    ),
+                    ],
+                  ),
                   if (showcase.category != null)
-                    const SizedBox(height: AppSpacing.s4),
+                    const SizedBox(height: AppSpacing.s12),
                   Text(
                     showcase.title,
                     maxLines: 2,
@@ -77,10 +83,39 @@ class ShowcaseCard extends StatelessWidget {
                       height: 1.35,
                     ),
                   ),
+                  if (showcase.description != null &&
+                      showcase.description!.isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.s8),
+                    Text(
+                      showcase.description!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: AppSpacing.s8),
                   _ShowcaseMetaRow(showcase: showcase),
                   const SizedBox(height: AppSpacing.s12),
-                  _ShowcaseCta(showcase: showcase, onTap: onTap),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: FilledButton(
+                      onPressed: onTap,
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(0, 36),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.s12,
+                          vertical: AppSpacing.s4,
+                        ),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        textStyle: AppTypography.labelLarge.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      child: Text(ShowcaseCtaCopy.cardLabel(showcase)),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -104,11 +139,43 @@ class _ShowcasePreviewImage extends ConsumerWidget {
     return ShowcaseNetworkImage(
       imageUrl: imageUrl,
       fit: BoxFit.cover,
-      memCacheWidth: 640,
+      memCacheWidth: 680,
       placeholder: ShowcaseImagePlaceholder(
         icon: showcase.previewVideoUrl != null
             ? Icons.play_circle_outline_rounded
             : Icons.auto_awesome_outlined,
+      ),
+    );
+  }
+}
+
+class _CategoryPill extends StatelessWidget {
+  const _CategoryPill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.s12,
+        vertical: AppSpacing.s4,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.primarySoft,
+        borderRadius: AppRadius.pill,
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.22),
+        ),
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: AppTypography.labelSmall.copyWith(
+          color: AppColors.primary,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -128,6 +195,10 @@ class _ShowcaseMetaRow extends StatelessWidget {
     if (showcase.difficulty != null) {
       parts.add(_difficultyLabel(showcase.difficulty!));
     }
+    final aiCount = _aiToolCountHint(showcase.workflowId);
+    if (aiCount != null) {
+      parts.add('AI $aiCount種類');
+    }
 
     if (parts.isEmpty) {
       return const SizedBox.shrink();
@@ -135,7 +206,9 @@ class _ShowcaseMetaRow extends StatelessWidget {
 
     return Text(
       parts.join(' · '),
-      style: AppTypography.caption,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: AppTypography.caption.copyWith(color: AppColors.muted),
     );
   }
 
@@ -149,36 +222,13 @@ class _ShowcaseMetaRow extends StatelessWidget {
         return 'むずかしい';
     }
   }
-}
 
-class _ShowcaseCta extends StatelessWidget {
-  const _ShowcaseCta({
-    required this.showcase,
-    required this.onTap,
-  });
-
-  final WorkflowShowcase showcase;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: FilledButton(
-        onPressed: onTap,
-        style: FilledButton.styleFrom(
-          minimumSize: const Size(0, 32),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.s12,
-            vertical: AppSpacing.s4,
-          ),
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          textStyle: AppTypography.labelLarge.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        child: Text(ShowcaseCtaCopy.cardLabel(showcase)),
-      ),
-    );
+  static int? _aiToolCountHint(String workflowId) {
+    return switch (workflowId) {
+      'wf_youtube_short' => 4,
+      'wf_blog' => 3,
+      'wf_sns' => 3,
+      _ => null,
+    };
   }
 }

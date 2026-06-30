@@ -97,7 +97,8 @@ void main() {
   testWidgets('Recent history tap refills query', (tester) async {
     await pumpAdvisorPage(tester, buildRouter(), userId: 'user-1');
 
-    await tester.tap(find.text('1件のWorkflowを提案'));
+    await tester.ensureVisible(find.text('YouTubeを始めたい').last);
+    await tester.tap(find.text('YouTubeを始めたい').last);
     await tester.pump();
 
     final textField = tester.widget<TextField>(find.byType(TextField));

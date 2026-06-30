@@ -7,7 +7,7 @@ import 'package:ai_pilot/features/recommendation/domain/entities/recommendation.
 import 'package:ai_pilot/features/recommendation/presentation/widgets/recommendation_icon.dart';
 import 'package:ai_pilot/shared/widgets/hover_scale_surface.dart';
 
-/// AI おすすめ目的の横スクロールカード。
+/// AI おすすめ目的の横スクロールカード（白背景 · Gold アクセント）。
 class RecommendationGoalCard extends StatelessWidget {
   const RecommendationGoalCard({
     super.key,
@@ -26,16 +26,15 @@ class RecommendationGoalCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final icon = recommendationIconFromName(recommendation.icon);
-    final accentColor = recommendationColorFromHex(recommendation.color);
 
     return SizedBox(
       width: cardWidth,
       height: cardHeight,
       child: HoverScaleSurface(
         onTap: onTap,
-        backgroundColor: selected ? AppColors.primarySoft : AppColors.surface,
+        backgroundColor: AppColors.surface,
         borderColor: selected
-            ? AppColors.primary.withValues(alpha: 0.22)
+            ? AppColors.primary
             : AppColors.border,
         padding: const EdgeInsets.all(AppSpacing.s16),
         child: Column(
@@ -47,13 +46,17 @@ class RecommendationGoalCard extends StatelessWidget {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.surfaceMuted,
-                border: Border.all(color: AppColors.border),
+                color: selected ? AppColors.primarySoft : AppColors.surfaceMuted,
+                border: Border.all(
+                  color: selected
+                      ? AppColors.primary.withValues(alpha: 0.35)
+                      : AppColors.border,
+                ),
               ),
               child: Icon(
                 icon,
                 size: 18,
-                color: accentColor.withValues(alpha: 0.85),
+                color: selected ? AppColors.primary : AppColors.charcoal,
               ),
             ),
             const SizedBox(height: AppSpacing.s12),
@@ -63,6 +66,7 @@ class RecommendationGoalCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: AppTypography.titleSmall.copyWith(
                 height: 1.35,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: AppSpacing.s4),

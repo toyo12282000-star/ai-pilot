@@ -5,7 +5,7 @@ import 'package:ai_pilot/design_system/radius.dart';
 
 /// 控えめなパルスアニメーション付きのプレースホルダー矩形。
 ///
-/// 派手な shimmer ではなく、opacity のみをゆっくり変化させる。
+/// Warm Gray 系 · 派手な shimmer なし。
 class SkeletonBox extends StatefulWidget {
   const SkeletonBox({
     super.key,
@@ -34,7 +34,7 @@ class _SkeletonBoxState extends State<SkeletonBox>
       vsync: this,
       duration: const Duration(milliseconds: 1400),
     )..repeat(reverse: true);
-    _opacity = Tween<double>(begin: 0.32, end: 0.52).animate(
+    _opacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
   }
@@ -54,8 +54,15 @@ class _SkeletonBoxState extends State<SkeletonBox>
           width: widget.width,
           height: widget.height,
           decoration: BoxDecoration(
-            color: AppColors.outline.withValues(alpha: _opacity.value),
+            color: Color.lerp(
+              AppColors.surfaceMuted,
+              AppColors.surface,
+              _opacity.value,
+            ),
             borderRadius: widget.borderRadius,
+            border: Border.all(
+              color: AppColors.border.withValues(alpha: 0.85),
+            ),
           ),
         );
       },

@@ -1,15 +1,14 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/radius.dart';
+import 'package:ai_pilot/design_system/shadows.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/home_content_layout.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_search_bar.dart';
 
-/// ホーム上部の Hero セクション（Linear 風 · 検索 + AI相談）。
+/// ホーム上部の Hero セクション（Warm White / Beige · 検索 + AI相談）。
 class HomeHeroSection extends StatelessWidget {
   const HomeHeroSection({
     super.key,
@@ -43,76 +42,192 @@ class HomeHeroSection extends StatelessWidget {
         AppSpacing.s16,
         AppSpacing.section,
       ),
-      child: ClipRRect(
-        borderRadius: AppRadius.hero,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppColors.surface,
-                AppColors.primarySoft.withValues(alpha: 0.4),
-                const Color(0xFFEFF6FF).withValues(alpha: 0.55),
-              ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= HomeContentLayout.tabletBreakpoint;
+
+          return ClipRRect(
+            borderRadius: AppRadius.hero,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: AppColors.surfaceMuted,
+                border: Border.all(color: AppColors.border),
+                boxShadow: AppShadows.small,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.card),
+                child: isWide
+                    ? Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: _HeroContent(
+                              searchController: searchController,
+                              onSearchChanged: onSearchChanged,
+                              onSearchClear: onSearchClear,
+                              showClearButton: showClearButton,
+                              onAdvisorTap: onAdvisorTap,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.s32),
+                          const SizedBox(
+                            width: 260,
+                            child: _HeroVisual(),
+                          ),
+                        ],
+                      )
+                    : _HeroContent(
+                        searchController: searchController,
+                        onSearchChanged: onSearchChanged,
+                        onSearchClear: onSearchClear,
+                        showClearButton: showClearButton,
+                        onAdvisorTap: onAdvisorTap,
+                      ),
+              ),
             ),
-            border: Border.all(color: AppColors.border),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _HeroContent extends StatelessWidget {
+  const _HeroContent({
+    required this.searchController,
+    required this.onSearchChanged,
+    required this.onSearchClear,
+    required this.showClearButton,
+    required this.onAdvisorTap,
+  });
+
+  final TextEditingController searchController;
+  final ValueChanged<String> onSearchChanged;
+  final VoidCallback onSearchClear;
+  final bool showClearButton;
+  final VoidCallback onAdvisorTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          '今日は何を作りますか？',
+          style: AppTypography.heroTitle.copyWith(
+            letterSpacing: -0.45,
           ),
-          child: ClipRRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: DecoratedBox(
+        ),
+        const SizedBox(height: AppSpacing.s12),
+        Text(
+          HomeHeroSection.subtitle,
+          style: AppTypography.bodyMedium.copyWith(
+            color: AppColors.textSecondary,
+            height: 1.65,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.s24),
+        SizedBox(
+          height: HomeHeroSection._controlHeight,
+          child: WorkflowSearchBar(
+            controller: searchController,
+            onChanged: onSearchChanged,
+            onClear: onSearchClear,
+            showClearButton: showClearButton,
+            embedded: true,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.s12),
+        SizedBox(
+          height: HomeHeroSection._controlHeight,
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: onAdvisorTap,
+            icon: const Icon(
+              Icons.auto_awesome_outlined,
+              size: 18,
+              color: AppColors.primary,
+            ),
+            label: const Text('AIに相談する'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.charcoal,
+              side: const BorderSide(color: AppColors.primary),
+              backgroundColor: AppColors.surface,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HeroVisual extends StatelessWidget {
+  const _HeroVisual();
+
+  @override
+  Widget build(BuildContext context) {
+    return AspectRatio(
+      aspectRatio: 1,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: AppRadius.xLarge,
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              right: -12,
+              top: -12,
+              child: Container(
+                width: 88,
+                height: 88,
                 decoration: BoxDecoration(
-                  color: AppColors.surface.withValues(alpha: 0.82),
-                  border: Border.all(
-                    color: AppColors.border.withValues(alpha: 0.7),
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.card),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        '今日は何を作りますか？',
-                        style: AppTypography.heroTitle.copyWith(
-                          letterSpacing: -0.4,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.s12),
-                      Text(
-                        subtitle,
-                        style: AppTypography.captionMedium.copyWith(
-                          height: 1.65,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.s24),
-                      SizedBox(
-                        height: _controlHeight,
-                        child: WorkflowSearchBar(
-                          controller: searchController,
-                          onChanged: onSearchChanged,
-                          onClear: onSearchClear,
-                          showClearButton: showClearButton,
-                          embedded: true,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.s12),
-                      SizedBox(
-                        height: _controlHeight,
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: onAdvisorTap,
-                          icon: const Icon(Icons.auto_awesome_outlined, size: 18),
-                          label: const Text('AIに相談する'),
-                        ),
-                      ),
-                    ],
-                  ),
+                  shape: BoxShape.circle,
+                  color: AppColors.primarySoft.withValues(alpha: 0.85),
                 ),
               ),
             ),
-          ),
+            Positioned(
+              left: 20,
+              bottom: 24,
+              child: Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  borderRadius: AppRadius.large,
+                  color: AppColors.primarySoft,
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.2),
+                  ),
+                ),
+                child: Icon(
+                  Icons.auto_awesome_outlined,
+                  color: AppColors.primary.withValues(alpha: 0.75),
+                  size: 28,
+                ),
+              ),
+            ),
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.layers_outlined,
+                    size: 36,
+                    color: AppColors.primary.withValues(alpha: 0.55),
+                  ),
+                  const SizedBox(height: AppSpacing.s8),
+                  Text(
+                    '完成作品ライブラリ',
+                    style: AppTypography.labelMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

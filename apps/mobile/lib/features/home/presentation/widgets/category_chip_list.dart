@@ -9,7 +9,7 @@ import 'package:ai_pilot/features/home/presentation/widgets/home_browse_category
 import 'package:ai_pilot/features/home/presentation/widgets/home_content_layout.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/category.dart';
 
-/// カテゴリ横スクロールチップ一覧（Apple 風）。
+/// カテゴリ横スクロールチップ一覧。
 class CategoryChipList extends StatelessWidget {
   const CategoryChipList({
     super.key,
@@ -116,14 +116,16 @@ class _CategoryChipState extends State<_CategoryChip> {
               color: backgroundColor,
               border: Border.all(
                 color: widget.selected
-                    ? AppColors.primary.withValues(alpha: 0.2)
+                    ? AppColors.primary
                     : AppColors.border,
               ),
             ),
             child: Text(
               widget.label,
               style: AppTypography.labelLarge.copyWith(
-                color: widget.selected ? AppColors.primary : AppColors.textSecondary,
+                color: widget.selected
+                    ? AppColors.primary
+                    : AppColors.charcoal,
                 fontWeight: widget.selected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),

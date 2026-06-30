@@ -6,7 +6,7 @@ import 'package:ai_pilot/design_system/radius.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
 
-/// Primary 淡色背景のメタ情報バッジ。
+/// Beige / Gold 系のメタ情報バッジ。
 class MetaBadge extends StatelessWidget {
   const MetaBadge({
     super.key,
@@ -25,8 +25,11 @@ class MetaBadge extends StatelessWidget {
         vertical: AppSpacing.s4,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.06),
+        color: AppColors.primarySoft,
         borderRadius: AppRadius.small,
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.18),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

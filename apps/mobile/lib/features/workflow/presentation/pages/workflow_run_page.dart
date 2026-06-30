@@ -12,15 +12,21 @@ import 'package:ai_pilot/features/workflow/domain/entities/workflow_step.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_run_history_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_run_providers.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_ai_companion.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_ai_tool_cta.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_companion_mock_data.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_completion_screen.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_controls.dart';
-import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_header.dart';
-import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_step_card.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_current_step_panel.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_prompt_panel.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_sticky_progress.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_upcoming_steps.dart';
 import 'package:ai_pilot/shared/widgets/empty_view.dart';
 import 'package:ai_pilot/shared/widgets/error_view.dart';
 import 'package:ai_pilot/shared/widgets/fade_slide_in.dart';
 import 'package:ai_pilot/shared/widgets/skeleton_card.dart';
 
-/// ワークフロー実行画面。
+/// ワークフロー実行画面（Sprint 14.1 · AI Companion UI）。
 class WorkflowRunPage extends ConsumerWidget {
   const WorkflowRunPage({
     super.key,
@@ -36,7 +42,10 @@ class WorkflowRunPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Workflow実行'),
+        title: workflowAsync.maybeWhen(
+          data: (workflow) => Text(workflow?.title ?? '制作中'),
+          orElse: () => const Text('制作中'),
+        ),
         backgroundColor: AppColors.background,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -97,6 +106,7 @@ class _WorkflowRunBody extends ConsumerStatefulWidget {
 
 class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
   bool _historyStarted = false;
+  bool _showCompletion = false;
 
   @override
   void initState() {
@@ -141,32 +151,37 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
     }
   }
 
-  Future<void> _completeWorkflow() async {
+  Future<bool> _persistWorkflowCompletion() async {
     final userId = ref.read(authenticatedUserIdProvider);
-    if (userId != null) {
-      try {
-        final repository = ref.read(workflowRunHistoryRepositoryProvider);
-        await repository.completeWorkflow(userId, widget.workflow.id);
-        invalidateWorkflowRunHistoryForWorkflow(ref, widget.workflow.id);
-      } catch (_) {
-        if (!mounted) {
-          return;
-        }
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('完了状態の保存に失敗しました。もう一度お試しください'),
-          ),
-        );
-        return;
-      }
+    if (userId == null) {
+      return true;
     }
 
-    final isAuthenticated = ref.read(isAuthenticatedProvider);
+    try {
+      final repository = ref.read(workflowRunHistoryRepositoryProvider);
+      await repository.completeWorkflow(userId, widget.workflow.id);
+      invalidateWorkflowRunHistoryForWorkflow(ref, widget.workflow.id);
+      return true;
+    } catch (_) {
+      if (!mounted) {
+        return false;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('完了状態の保存に失敗しました。もう一度お試しください'),
+        ),
+      );
+      return false;
+    }
+  }
 
-    if (!mounted) {
+  Future<void> _onCompletePressed() async {
+    final saved = await _persistWorkflowCompletion();
+    if (!saved || !mounted) {
       return;
     }
 
+    final isAuthenticated = ref.read(isAuthenticatedProvider);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -176,7 +191,8 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
         ),
       ),
     );
-    context.go('/');
+
+    setState(() => _showCompletion = true);
   }
 
   void _retryResources() {
@@ -184,7 +200,7 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
     ref.invalidate(promptTemplatesProvider);
   }
 
-  String? _resolveAiToolName(
+  AITool? _resolveAiTool(
     WorkflowStep step,
     Map<String, AITool> toolsById,
   ) {
@@ -192,7 +208,7 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
     if (aiToolId == null) {
       return null;
     }
-    return toolsById[aiToolId]?.name ?? 'AIツール情報を取得できませんでした';
+    return toolsById[aiToolId];
   }
 
   String? _resolvePromptContent(
@@ -203,12 +219,27 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
     if (promptTemplateId == null) {
       return null;
     }
-    return templatesById[promptTemplateId]?.content ??
-        'プロンプト情報を取得できませんでした';
+    return templatesById[promptTemplateId]?.content;
+  }
+
+  void _mockAction(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_showCompletion) {
+      return WorkflowRunCompletionScreen(
+        workflowTitle: widget.workflow.title,
+        onSave: () => _mockAction('作品を保存しました（Mock）'),
+        onViewOutcome: () => _mockAction('完成作品ギャラリーを表示します（Mock）'),
+        onCreateAnother: () => context.go('/'),
+        onGoHome: () => context.go('/'),
+      );
+    }
+
     final aiToolsAsync = ref.watch(aiToolsProvider);
     final promptTemplatesAsync = ref.watch(promptTemplatesProvider);
     final stepIndex = ref.watch(workflowRunStepIndexProvider(widget.workflow.id));
@@ -216,6 +247,10 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
     final currentStep = widget.steps[stepIndex.clamp(0, lastIndex)];
     final runNotifier =
         ref.read(workflowRunStepIndexProvider(widget.workflow.id).notifier);
+    final companionMessages = WorkflowRunCompanionMockData.messagesFor(
+      currentStep,
+      stepIndex,
+    );
 
     return aiToolsAsync.when(
       loading: () => ListView(
@@ -262,39 +297,58 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
           final templatesById = {
             for (final template in promptTemplates) template.id: template,
           };
-
-          final progress = (stepIndex + 1) / widget.steps.length;
+          final currentAiTool = _resolveAiTool(currentStep, toolsById);
+          final fallbackPrompt =
+              _resolvePromptContent(currentStep, templatesById);
 
           return Column(
             children: [
+              WorkflowRunStickyProgress(
+                currentStepIndex: stepIndex,
+                totalSteps: widget.steps.length,
+              ),
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(
                     AppSpacing.s16,
-                    AppSpacing.s8,
+                    AppSpacing.s24,
                     AppSpacing.s16,
                     AppSpacing.s16,
                   ),
                   children: [
                     FadeSlideIn(
                       index: 0,
-                      child: WorkflowRunHeader(
-                        workflowTitle: widget.workflow.title,
-                        currentStepNumber: currentStep.order,
-                        totalSteps: widget.steps.length,
-                        progress: progress,
+                      key: ValueKey('companion-${currentStep.id}'),
+                      child: WorkflowRunAiCompanion(
+                        messages: companionMessages,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.s24),
                     FadeSlideIn(
                       index: 1,
-                      key: ValueKey(currentStep.id),
-                      child: WorkflowRunStepCard(
-                        step: currentStep,
-                        aiToolId: currentStep.aiToolId,
-                        aiToolName: _resolveAiToolName(currentStep, toolsById),
-                        promptContent:
-                            _resolvePromptContent(currentStep, templatesById),
+                      key: ValueKey('step-${currentStep.id}'),
+                      child: WorkflowRunCurrentStepPanel(step: currentStep),
+                    ),
+                    const SizedBox(height: AppSpacing.s24),
+                    FadeSlideIn(
+                      index: 2,
+                      child: WorkflowRunAiToolCta(aiTool: currentAiTool),
+                    ),
+                    const SizedBox(height: AppSpacing.s24),
+                    FadeSlideIn(
+                      index: 3,
+                      key: ValueKey('prompt-${currentStep.id}'),
+                      child: WorkflowRunPromptPanel(
+                        stepId: currentStep.id,
+                        fallbackContent: fallbackPrompt,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.s24),
+                    FadeSlideIn(
+                      index: 4,
+                      child: WorkflowRunUpcomingSteps(
+                        steps: widget.steps,
+                        currentStepIndex: stepIndex,
                       ),
                     ),
                   ],
@@ -316,7 +370,7 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
                     ref.read(workflowRunStepIndexProvider(widget.workflow.id)),
                   );
                 },
-                onComplete: _completeWorkflow,
+                onComplete: _onCompletePressed,
               ),
             ],
           );

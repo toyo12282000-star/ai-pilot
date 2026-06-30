@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
-import 'package:ai_pilot/design_system/icons.dart';
 import 'package:ai_pilot/design_system/radius.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
@@ -13,9 +12,9 @@ import 'package:ai_pilot/features/workflow/presentation/widgets/showcase_cta_cop
 import 'package:ai_pilot/features/workflow/presentation/widgets/showcase_image_placeholder.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/showcase_network_image.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_favorite_button.dart';
-import 'package:ai_pilot/shared/widgets/meta_badge.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_product_cta.dart';
 
-/// 完成作品 Hero（Workflow 詳細最上部 · 完成作品を大きく見せる）。
+/// 完成作品 Hero（Workflow 詳細最上部 · 作品紹介ページ）。
 class WorkflowShowcaseHero extends ConsumerWidget {
   const WorkflowShowcaseHero({
     super.key,
@@ -68,7 +67,7 @@ class WorkflowShowcaseHero extends ConsumerWidget {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        AppColors.darkNavy.withValues(alpha: 0.55),
+                        AppColors.charcoal.withValues(alpha: 0.62),
                       ],
                     ),
                   ),
@@ -84,7 +83,7 @@ class WorkflowShowcaseHero extends ConsumerWidget {
                         Text(
                           category,
                           style: AppTypography.labelLarge.copyWith(
-                            color: Colors.white.withValues(alpha: 0.88),
+                            color: AppColors.primarySoft.withValues(alpha: 0.95),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -136,52 +135,10 @@ class WorkflowShowcaseHero extends ConsumerWidget {
               WorkflowFavoriteButton(workflowId: workflowId),
             ],
           ),
-          const SizedBox(height: AppSpacing.s16),
-          Wrap(
-            spacing: AppSpacing.s8,
-            runSpacing: AppSpacing.s8,
-            children: [
-              if (showcase?.difficulty != null)
-                MetaBadge(
-                  icon: Icons.speed_rounded,
-                  label: _difficultyLabel(showcase!.difficulty!),
-                ),
-              MetaBadge(
-                icon: AppIcons.schedule,
-                label: '約${_resolveMinutes()}分',
-              ),
-            ],
-          ),
           const SizedBox(height: AppSpacing.s24),
-          FilledButton(
-            onPressed: onStart,
-            style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(52),
-            ),
-            child: Text(
-              ShowcaseCtaCopy.heroLabel(
-                showcase: showcase,
-                workflow: workflow,
-              ),
-            ),
-          ),
+          WorkflowProductCta(onPressed: onStart),
         ],
       ],
     );
-  }
-
-  int _resolveMinutes() {
-    return showcase?.estimatedTime ?? workflow.estimatedMinutes ?? 30;
-  }
-
-  static String _difficultyLabel(ShowcaseDifficulty difficulty) {
-    switch (difficulty) {
-      case ShowcaseDifficulty.easy:
-        return 'かんたん';
-      case ShowcaseDifficulty.normal:
-        return 'ふつう';
-      case ShowcaseDifficulty.hard:
-        return 'むずかしい';
-    }
   }
 }
