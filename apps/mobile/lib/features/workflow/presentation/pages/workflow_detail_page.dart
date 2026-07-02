@@ -12,6 +12,7 @@ import 'package:ai_pilot/features/workflow/domain/entities/workflow_step.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/showcase_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_detail_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
+import 'package:ai_pilot/features/workflow/presentation/providers/workflow_social_proof_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_ai_tools_section.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_before_after_section.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_collapsible_step_card.dart';
@@ -46,9 +47,12 @@ class WorkflowDetailPage extends ConsumerWidget {
     ref.invalidate(workflowShowcasesProvider(workflowId));
     ref.invalidate(workflowPrimaryShowcaseProvider(workflowId));
     ref.invalidate(workflowAiToolsProvider(workflowId));
+    invalidateWorkflowSocialProof(ref, workflowId);
     await Future.wait([
       ref.read(workflowByIdProvider(workflowId).future),
       ref.read(workflowShowcasesProvider(workflowId).future),
+      ref.read(workflowProductStatsProvider(workflowId).future),
+      ref.read(workflowRecentCreationsProvider(workflowId).future),
     ]);
   }
 

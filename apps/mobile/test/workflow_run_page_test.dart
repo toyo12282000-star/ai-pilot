@@ -4,8 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:ai_pilot/app/app.dart';
 import 'package:ai_pilot/features/auth/presentation/providers/auth_providers.dart';
-import 'package:ai_pilot/features/favorite/data/repositories/mock_favorite_repository.dart';
-import 'package:ai_pilot/features/favorite/presentation/providers/favorite_providers.dart';
 import 'package:ai_pilot/features/profile/data/repositories/mock_user_profile_repository.dart';
 import 'package:ai_pilot/features/profile/presentation/providers/profile_providers.dart';
 import 'package:ai_pilot/features/recommendation/data/repositories/mock_recommendation_repository.dart';
@@ -14,13 +12,11 @@ import 'package:ai_pilot/features/workflow/data/repositories/mock_ai_tool_reposi
 import 'package:ai_pilot/features/workflow/data/repositories/mock_category_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_prompt_template_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_repository.dart';
-import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_run_history_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_showcase_repository.dart';
 import 'package:ai_pilot/features/workflow/data/services/mock_showcase_image_storage.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/showcase_image_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/showcase_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
-import 'package:ai_pilot/features/workflow/presentation/providers/workflow_run_history_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_mini_showcase.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_sticky_progress.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_step_checklist.dart';
@@ -41,9 +37,6 @@ void main() {
           .overrideWithValue(MockPromptTemplateRepository()),
       recommendationRepositoryProvider
           .overrideWithValue(MockRecommendationRepository()),
-      favoriteRepositoryProvider.overrideWithValue(MockFavoriteRepository()),
-      workflowRunHistoryRepositoryProvider
-          .overrideWithValue(MockWorkflowRunHistoryRepository()),
       userProfileRepositoryProvider
           .overrideWithValue(MockUserProfileRepository()),
       workflowShowcaseRepositoryProvider

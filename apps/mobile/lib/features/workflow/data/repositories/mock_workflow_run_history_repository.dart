@@ -1,4 +1,5 @@
 import 'package:ai_pilot/features/workflow/data/repositories/mock_seed_data.dart';
+import 'package:ai_pilot/features/workflow/data/repositories/mock_social_proof_data_store.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow_run_history.dart';
 import 'package:ai_pilot/features/workflow/domain/repositories/workflow_run_history_repository.dart';
 
@@ -6,11 +7,13 @@ import 'package:ai_pilot/features/workflow/domain/repositories/workflow_run_hist
 ///
 /// メモリ上で実行履歴を保持する。UI 開発用。
 class MockWorkflowRunHistoryRepository implements WorkflowRunHistoryRepository {
-  final List<WorkflowRunHistory> _histories = [];
-  int _nextId = 1;
+  MockWorkflowRunHistoryRepository([MockSocialProofDataStore? store])
+      : _store = store ?? MockSocialProofDataStore();
+
+  final MockSocialProofDataStore _store;
 
   int _indexOf(String userId, String workflowId) {
-    return _histories.indexWhere(
+    return _store.runHistories.indexWhere(
       (history) =>
           history.userId == userId && history.workflowId == workflowId,
     );
@@ -20,7 +23,7 @@ class MockWorkflowRunHistoryRepository implements WorkflowRunHistoryRepository {
   Future<List<WorkflowRunHistory>> fetchRecentHistories(String userId) async {
     await Future<void>.delayed(mockNetworkDelay);
     final results =
-        _histories.where((history) => history.userId == userId).toList()
+        _store.runHistories.where((history) => history.userId == userId).toList()
           ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     return results;
   }
@@ -35,7 +38,7 @@ class MockWorkflowRunHistoryRepository implements WorkflowRunHistoryRepository {
     if (index < 0) {
       return null;
     }
-    return _histories[index];
+    return _store.runHistories[index];
   }
 
   @override
@@ -48,19 +51,19 @@ class MockWorkflowRunHistoryRepository implements WorkflowRunHistoryRepository {
     final index = _indexOf(userId, workflowId);
 
     if (index >= 0) {
-      final restarted = _histories[index].copyWith(
+      final restarted = _store.runHistories[index].copyWith(
         lastStepIndex: 0,
         isCompleted: false,
         startedAt: now,
         updatedAt: now,
         clearCompletedAt: true,
       );
-      _histories[index] = restarted;
+      _store.runHistories[index] = restarted;
       return restarted;
     }
 
     final history = WorkflowRunHistory(
-      id: 'run-history-$_nextId',
+      id: 'run-history-${_store.nextRunHistoryId}',
       userId: userId,
       workflowId: workflowId,
       lastStepIndex: 0,
@@ -68,8 +71,8 @@ class MockWorkflowRunHistoryRepository implements WorkflowRunHistoryRepository {
       startedAt: now,
       updatedAt: now,
     );
-    _nextId++;
-    _histories.add(history);
+    _store.nextRunHistoryId++;
+    _store.runHistories.add(history);
     return history;
   }
 
@@ -85,7 +88,7 @@ class MockWorkflowRunHistoryRepository implements WorkflowRunHistoryRepository {
       return;
     }
 
-    _histories[index] = _histories[index].copyWith(
+    _store.runHistories[index] = _store.runHistories[index].copyWith(
       lastStepIndex: stepIndex,
       updatedAt: DateTime.now(),
     );
@@ -94,13 +97,17 @@ class MockWorkflowRunHistoryRepository implements WorkflowRunHistoryRepository {
   @override
   Future<void> completeWorkflow(String userId, String workflowId) async {
     await Future<void>.delayed(mockNetworkDelay);
-    final index = _indexOf(userId, workflowId);
+    var index = _indexOf(userId, workflowId);
+    if (index < 0) {
+      await startWorkflow(userId, workflowId);
+      index = _indexOf(userId, workflowId);
+    }
     if (index < 0) {
       return;
     }
 
     final now = DateTime.now();
-    _histories[index] = _histories[index].copyWith(
+    _store.runHistories[index] = _store.runHistories[index].copyWith(
       isCompleted: true,
       completedAt: now,
       updatedAt: now,

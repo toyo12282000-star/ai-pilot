@@ -5,6 +5,7 @@ import 'package:ai_pilot/features/favorite/domain/entities/favorite.dart';
 import 'package:ai_pilot/features/favorite/domain/repositories/favorite_repository.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
+import 'package:ai_pilot/features/workflow/presentation/providers/workflow_social_proof_providers.dart';
 import 'package:ai_pilot/shared/providers/authenticated_user_provider.dart';
 
 // ---------------------------------------------------------------------------
@@ -81,4 +82,5 @@ void invalidateFavoriteForWorkflow(WidgetRef ref, String workflowId) {
 
   invalidateFavorites(ref);
   ref.invalidate(isFavoriteProvider(workflowId));
+  invalidateWorkflowSocialProof(ref, workflowId);
 }

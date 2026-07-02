@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/radius.dart';
 import 'package:ai_pilot/design_system/responsive.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
-import 'package:ai_pilot/features/workflow/presentation/mock/workflow_product_page_mock_data.dart';
+import 'package:ai_pilot/features/workflow/domain/entities/workflow_product_stats.dart';
+import 'package:ai_pilot/features/workflow/presentation/providers/workflow_social_proof_providers.dart';
+import 'package:ai_pilot/shared/widgets/error_view.dart';
+import 'package:ai_pilot/shared/widgets/skeleton_box.dart';
 
 /// Hero 直下の人気・メタ情報パネル。
-class WorkflowProductStatsPanel extends StatelessWidget {
+class WorkflowProductStatsPanel extends ConsumerWidget {
   const WorkflowProductStatsPanel({
     super.key,
     required this.workflowId,
@@ -17,8 +21,34 @@ class WorkflowProductStatsPanel extends StatelessWidget {
   final String workflowId;
 
   @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final statsAsync = ref.watch(workflowProductStatsProvider(workflowId));
+
+    return statsAsync.when(
+      loading: () => const _WorkflowProductStatsSkeleton(),
+      error: (error, _) => ErrorView(
+        title: '人気情報の読み込みに失敗しました',
+        description: '通信状況を確認して、もう一度お試しください',
+        onRetry: () => ref.invalidate(workflowProductStatsProvider(workflowId)),
+        debugDetails: error,
+      ),
+      data: (stats) {
+        if (stats == null) {
+          return const SizedBox.shrink();
+        }
+        return _WorkflowProductStatsContent(stats: stats);
+      },
+    );
+  }
+}
+
+class _WorkflowProductStatsContent extends StatelessWidget {
+  const _WorkflowProductStatsContent({required this.stats});
+
+  final WorkflowProductStats stats;
+
+  @override
   Widget build(BuildContext context) {
-    final stats = productStatsForWorkflow(workflowId);
     final isMobile = context.isMobile;
     final items = [
       _StatItem(label: '保存数', value: _formatCount(stats.saveCount)),
@@ -126,6 +156,45 @@ class WorkflowProductStatsPanel extends StatelessWidget {
           RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
           (match) => '${match[1]},',
         );
+  }
+}
+
+class _WorkflowProductStatsSkeleton extends StatelessWidget {
+  const _WorkflowProductStatsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = context.isMobile;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppRadius.card,
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(
+          isMobile ? AppSpacing.s12 : AppSpacing.s16,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SkeletonBox(width: 160, height: 20),
+            SizedBox(height: isMobile ? AppSpacing.s12 : AppSpacing.s16),
+            Wrap(
+              spacing: AppSpacing.s8,
+              runSpacing: AppSpacing.s8,
+              children: const [
+                SkeletonBox(width: 150, height: 56),
+                SkeletonBox(width: 150, height: 56),
+                SkeletonBox(width: 150, height: 56),
+                SkeletonBox(width: 150, height: 56),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

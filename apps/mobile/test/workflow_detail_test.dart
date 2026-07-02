@@ -4,8 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:ai_pilot/app/app.dart';
 import 'package:ai_pilot/features/auth/presentation/providers/auth_providers.dart';
-import 'package:ai_pilot/features/favorite/data/repositories/mock_favorite_repository.dart';
-import 'package:ai_pilot/features/favorite/presentation/providers/favorite_providers.dart';
 import 'package:ai_pilot/features/profile/data/repositories/mock_user_profile_repository.dart';
 import 'package:ai_pilot/features/profile/presentation/providers/profile_providers.dart';
 import 'package:ai_pilot/features/recommendation/data/repositories/mock_recommendation_repository.dart';
@@ -14,12 +12,11 @@ import 'package:ai_pilot/features/workflow/data/repositories/mock_ai_tool_reposi
 import 'package:ai_pilot/features/workflow/data/repositories/mock_category_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_prompt_template_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_repository.dart';
-import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_run_history_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_showcase_repository.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/showcase_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_detail_providers.dart';
+import 'package:ai_pilot/features/workflow/presentation/providers/workflow_social_proof_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
-import 'package:ai_pilot/features/workflow/presentation/providers/workflow_run_history_providers.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/prompt_variant.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_collapsible_step_card.dart';
 import 'fakes/fake_auth_repository.dart';
@@ -39,9 +36,6 @@ void main() {
           .overrideWithValue(MockPromptTemplateRepository()),
       recommendationRepositoryProvider
           .overrideWithValue(MockRecommendationRepository()),
-      favoriteRepositoryProvider.overrideWithValue(MockFavoriteRepository()),
-      workflowRunHistoryRepositoryProvider
-          .overrideWithValue(MockWorkflowRunHistoryRepository()),
       userProfileRepositoryProvider
           .overrideWithValue(MockUserProfileRepository()),
       workflowShowcaseRepositoryProvider
@@ -79,6 +73,7 @@ void main() {
     expect(find.text('世界一危険な島3選'), findsWidgets);
     expect(find.text('人気作品'), findsOneWidget);
     expect(find.text('最近作られた作品'), findsOneWidget);
+    expect(find.text('ゆうきさん'), findsOneWidget);
     expect(find.text('このWorkflowで完成すると'), findsOneWidget);
     expect(find.text('Before → After'), findsOneWidget);
 
@@ -153,6 +148,36 @@ void main() {
         tools.where((entry) => entry.isRecommended),
         isNotEmpty,
       );
+    });
+
+    test('workflowProductStatsProvider assembles stats from social proof', () async {
+      final container = ProviderContainer(
+        overrides: workflowDetailOverrides(),
+      );
+      addTearDown(container.dispose);
+
+      final stats = await container.read(
+        workflowProductStatsProvider('wf_youtube_short').future,
+      );
+
+      expect(stats, isNotNull);
+      expect(stats!.saveCount, 9);
+      expect(stats.userCount, 4);
+      expect(stats.estimatedMinutes, 45);
+    });
+
+    test('workflowRecentCreationsProvider returns seeded creations', () async {
+      final container = ProviderContainer(
+        overrides: workflowDetailOverrides(),
+      );
+      addTearDown(container.dispose);
+
+      final creations = await container.read(
+        workflowRecentCreationsProvider('wf_youtube_short').future,
+      );
+
+      expect(creations, isNotEmpty);
+      expect(creations.first.userLabel, 'ゆうきさん');
     });
   });
 
