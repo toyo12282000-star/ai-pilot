@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'package:ai_pilot/design_system/animations.dart';
+import 'package:ai_pilot/design_system/responsive.dart';
 
-/// 画面表示時の軽い Fade + Slide アニメーション。
+/// 画面表示時の軽い Fade + Slide アニメーション（モバイルでは無効）。
 class FadeSlideIn extends StatefulWidget {
   const FadeSlideIn({
     super.key,
@@ -21,24 +22,30 @@ class FadeSlideIn extends StatefulWidget {
 
 class _FadeSlideInState extends State<FadeSlideIn>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _opacity;
-  late final Animation<Offset> _slide;
+  AnimationController? _controller;
+  Animation<double>? _opacity;
+  Animation<Offset>? _slide;
+  var _started = false;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (context.isMobile || _started) {
+      return;
+    }
+    _started = true;
+
     _controller = AnimationController(
       vsync: this,
-      duration: AppAnimations.interactive,
+      duration: AppAnimations.fast,
     );
     final curve = CurvedAnimation(
-      parent: _controller,
+      parent: _controller!,
       curve: AppAnimations.easeOut,
     );
     _opacity = curve;
     _slide = Tween<Offset>(
-      begin: const Offset(0, 0.04),
+      begin: const Offset(0, 0.03),
       end: Offset.zero,
     ).animate(curve);
 
@@ -46,7 +53,7 @@ class _FadeSlideInState extends State<FadeSlideIn>
       Duration(milliseconds: widget.delayPerIndex * widget.index),
       () {
         if (mounted) {
-          _controller.forward();
+          _controller?.forward();
         }
       },
     );
@@ -54,16 +61,20 @@ class _FadeSlideInState extends State<FadeSlideIn>
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (context.isMobile) {
+      return widget.child;
+    }
+
     return FadeTransition(
-      opacity: _opacity,
+      opacity: _opacity ?? const AlwaysStoppedAnimation(1),
       child: SlideTransition(
-        position: _slide,
+        position: _slide ?? const AlwaysStoppedAnimation(Offset.zero),
         child: widget.child,
       ),
     );

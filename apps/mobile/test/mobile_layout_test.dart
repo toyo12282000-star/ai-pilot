@@ -101,6 +101,30 @@ void main() {
     expect(find.text('Before → After'), findsOneWidget);
   });
 
+  testWidgets('Workflow detail gallery at 390px uses 2 column grid', (tester) async {
+    await pumpMobileApp(tester);
+    await openWorkflowDetail(tester);
+
+    final scrollable = find.byType(Scrollable).first;
+    await tester.scrollUntilVisible(
+      find.text('完成作品ギャラリー'),
+      400,
+      scrollable: scrollable,
+    );
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(GridView), findsWidgets);
+
+    final gridFinder = find.byType(GridView).last;
+    final grid = tester.widget<GridView>(gridFinder);
+    final delegate =
+        grid.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
+    expect(delegate.crossAxisCount, 2);
+  });
+
   testWidgets('Run page at 390px has no overflow', (tester) async {
     await pumpMobileApp(tester);
     await openWorkflowDetail(tester);

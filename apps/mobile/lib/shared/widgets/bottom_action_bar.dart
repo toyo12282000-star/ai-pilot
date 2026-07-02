@@ -18,26 +18,32 @@ class BottomActionBar extends StatelessWidget {
   final VoidCallback onPressed;
   final IconData? icon;
 
-  static const double _buttonHeight = 52;
+  static double buttonHeight(BuildContext context) =>
+      context.isMobile ? 48 : 52;
 
   /// ListView 等の末尾に確保する bottom padding。
   static double contentBottomInset(BuildContext context) {
     final safeBottom = MediaQuery.paddingOf(context).bottom;
-    const verticalPadding = AppSpacing.s8 * 2;
-    return _buttonHeight + verticalPadding + safeBottom;
+    final verticalPadding = context.isMobile
+        ? AppSpacing.s4 * 2
+        : AppSpacing.s8 * 2;
+    return buttonHeight(context) + verticalPadding + safeBottom;
   }
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = context.isMobile;
+    final height = buttonHeight(context);
+
     final buttonStyle = FilledButton.styleFrom(
-      minimumSize: Size.fromHeight(_buttonHeight),
-      padding: const EdgeInsets.symmetric(
+      minimumSize: Size.fromHeight(height),
+      padding: EdgeInsets.symmetric(
         horizontal: AppSpacing.s16,
-        vertical: AppSpacing.s12,
+        vertical: isMobile ? AppSpacing.s8 : AppSpacing.s12,
       ),
       textStyle: AppTypography.labelLarge.copyWith(
         fontWeight: FontWeight.w600,
-        fontSize: context.isMobile ? 15 : 16,
+        fontSize: isMobile ? 15 : 16,
         color: AppColors.surface,
       ),
       backgroundColor: AppColors.primary,
@@ -47,20 +53,20 @@ class BottomActionBar extends StatelessWidget {
     );
 
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        border: Border(
+      decoration: BoxDecoration(
+        color: isMobile ? AppColors.surface : AppColors.background,
+        border: const Border(
           top: BorderSide(color: AppColors.border),
         ),
       ),
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(
+          padding: EdgeInsets.fromLTRB(
             AppSpacing.s16,
-            AppSpacing.s8,
+            isMobile ? AppSpacing.s4 : AppSpacing.s8,
             AppSpacing.s16,
-            AppSpacing.s8,
+            isMobile ? AppSpacing.s4 : AppSpacing.s8,
           ),
           child: SizedBox(
             width: double.infinity,

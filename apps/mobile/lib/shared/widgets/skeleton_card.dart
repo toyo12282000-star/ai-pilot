@@ -724,19 +724,59 @@ class SkeletonWorkflowDetailHero extends StatelessWidget {
 class SkeletonWorkflowDetailGallery extends StatelessWidget {
   const SkeletonWorkflowDetailGallery({super.key});
 
-  static const double _tileWidth = 220;
-  static const double _tileHeight = 280;
-
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.sizeOf(context).width < 600;
+    if (isMobile) {
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: AppSpacing.s12,
+          mainAxisSpacing: AppSpacing.s12,
+          childAspectRatio: 0.92,
+        ),
+        itemCount: 4,
+        itemBuilder: (_, _) => DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.medium,
+            border: Border.all(color: AppColors.outline.withValues(alpha: 0.45)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: const [
+              Expanded(
+                child: SkeletonBox(
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(12),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(AppSpacing.s8),
+                child: SkeletonBox(
+                  height: 12,
+                  borderRadius: AppRadius.small,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    const tileWidth = 220.0;
+    const tileHeight = 280.0;
+
     return SizedBox(
-      height: _tileHeight,
+      height: tileHeight,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: 3,
         separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.s12),
         itemBuilder: (_, _) => SizedBox(
-          width: _tileWidth,
+          width: tileWidth,
           child: DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: AppRadius.large,

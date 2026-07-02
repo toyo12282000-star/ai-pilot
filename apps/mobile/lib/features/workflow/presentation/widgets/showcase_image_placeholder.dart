@@ -11,6 +11,7 @@ class ShowcaseImagePlaceholder extends StatelessWidget {
     this.iconSize,
     this.borderRadius,
     this.compact = false,
+    this.minimal = false,
   });
 
   final IconData icon;
@@ -18,22 +19,40 @@ class ShowcaseImagePlaceholder extends StatelessWidget {
   final BorderRadius? borderRadius;
   final bool compact;
 
+  /// ギャラリー等の小さなタイル向け（より薄い背景 · 小さなアイコン）。
+  final bool minimal;
+
   @override
   Widget build(BuildContext context) {
     final resolvedIconSize = iconSize ??
-        (compact || context.isMobile ? 24 : 32);
+        switch ((minimal, compact, context.isMobile)) {
+          (true, _, _) => 16.0,
+          (_, true, true) => 18.0,
+          (_, true, false) => 24.0,
+          _ => context.isMobile ? 28.0 : 32.0,
+        };
+
+    final backgroundColor = minimal
+        ? AppColors.surfaceMuted.withValues(alpha: 0.55)
+        : AppColors.surfaceMuted;
+
+    final iconAlpha = minimal ? 0.28 : (compact ? 0.35 : 0.45);
 
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: borderRadius,
-        color: AppColors.surfaceMuted,
-        border: Border.all(color: AppColors.border),
+        color: backgroundColor,
+        border: minimal
+            ? null
+            : Border.all(
+                color: AppColors.border.withValues(alpha: compact ? 0.65 : 1),
+              ),
       ),
       child: Center(
         child: Icon(
           icon,
           size: resolvedIconSize,
-          color: AppColors.primary.withValues(alpha: 0.45),
+          color: AppColors.primary.withValues(alpha: iconAlpha),
         ),
       ),
     );

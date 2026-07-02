@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import 'package:ai_pilot/design_system/responsive.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/showcase_image_placeholder.dart';
 
 /// Storage / アセット解決済み URL を Lazy Load + Cache 付きで表示する。
@@ -31,6 +32,10 @@ class ShowcaseNetworkImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fadeDuration = context.isMobile
+        ? const Duration(milliseconds: 140)
+        : const Duration(milliseconds: 200);
+
     final fallback = placeholder ??
         ShowcaseImagePlaceholder(
           borderRadius: borderRadius,
@@ -46,8 +51,8 @@ class ShowcaseNetworkImage extends StatelessWidget {
         SvgPicture.asset(
           assetPath,
           fit: fit,
-          width: width,
-          height: height,
+          width: width ?? memCacheWidth?.toDouble(),
+          height: height ?? memCacheHeight?.toDouble(),
           placeholderBuilder: (_) => fallback,
         ),
       );
@@ -61,7 +66,7 @@ class ShowcaseNetworkImage extends StatelessWidget {
         height: height,
         memCacheWidth: memCacheWidth,
         memCacheHeight: memCacheHeight,
-        fadeInDuration: const Duration(milliseconds: 200),
+        fadeInDuration: fadeDuration,
         placeholder: (_, _) => fallback,
         errorWidget: (_, _, _) => fallback,
       ),
