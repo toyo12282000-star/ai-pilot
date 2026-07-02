@@ -1,3 +1,4 @@
+import 'package:ai_pilot/features/home/domain/entities/recent_workflow_activity.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_seed_data.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_social_proof_data_store.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow_run_history.dart';
@@ -17,6 +18,17 @@ class MockWorkflowRunHistoryRepository implements WorkflowRunHistoryRepository {
       (history) =>
           history.userId == userId && history.workflowId == workflowId,
     );
+  }
+
+  @override
+  Future<List<RecentWorkflowActivity>> fetchRecentActivities(
+    String userId, {
+    int limit = 6,
+  }) async {
+    await Future<void>.delayed(mockNetworkDelay);
+    final histories =
+        _store.runHistories.where((history) => history.userId == userId).toList();
+    return RecentWorkflowActivity.dedupeAndSort(histories, limit: limit);
   }
 
   @override

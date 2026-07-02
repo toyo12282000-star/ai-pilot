@@ -1,4 +1,6 @@
 import 'package:ai_pilot/features/advisor/domain/entities/advisor_history.dart';
+import 'package:ai_pilot/features/advisor/domain/entities/advisor_session_save_input.dart';
+import 'package:ai_pilot/features/advisor/domain/entities/advisor_session_suggestion.dart';
 import 'package:ai_pilot/features/advisor/domain/repositories/advisor_history_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_seed_data.dart';
 
@@ -12,7 +14,14 @@ class MockAdvisorHistoryRepository implements AdvisorHistoryRepository {
       id: 'adv_hist_1',
       userId: 'user-1',
       query: 'YouTubeを始めたい',
-      suggestedWorkflowIds: ['wf_youtube_short'],
+      path: 'youtube',
+      selectedAnswers: const [
+        'YouTube動画を作りたい',
+        '美容',
+        '30分',
+      ],
+      primaryWorkflowId: 'wf_youtube_short',
+      suggestedWorkflowIds: const ['wf_youtube_short'],
       createdAt: mockBaseDate,
     ),
   ];
@@ -20,13 +29,47 @@ class MockAdvisorHistoryRepository implements AdvisorHistoryRepository {
   final List<AdvisorHistory> _histories;
   int _nextId = 100;
 
+  static const _fetchLimit = 10;
+
   @override
   Future<List<AdvisorHistory>> fetchRecentHistories(String userId) async {
     await Future<void>.delayed(mockNetworkDelay);
-    return _histories
+    final results = _histories
         .where((history) => history.userId == userId)
         .toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    if (results.length > _fetchLimit) {
+      return results.sublist(0, _fetchLimit);
+    }
+    return results;
+  }
+
+  @override
+  Future<void> saveSession(AdvisorSessionSaveInput input) async {
+    await Future<void>.delayed(mockNetworkDelay);
+    final id = 'adv_hist_$_nextId';
+    _nextId++;
+    final suggestions = [
+      for (var i = 0; i < input.suggestedWorkflowIds.length; i++)
+        AdvisorSessionSuggestion(
+          sessionId: id,
+          workflowId: input.suggestedWorkflowIds[i],
+          rank: i + 1,
+        ),
+    ];
+    _histories.insert(
+      0,
+      AdvisorHistory(
+        id: id,
+        userId: input.userId,
+        query: input.query,
+        path: input.path,
+        selectedAnswers: List<String>.from(input.selectedAnswers),
+        primaryWorkflowId: input.primaryWorkflowId,
+        suggestions: suggestions,
+        createdAt: DateTime.now(),
+      ),
+    );
   }
 
   @override
@@ -34,19 +77,15 @@ class MockAdvisorHistoryRepository implements AdvisorHistoryRepository {
     String userId,
     String query,
     List<String> workflowIds,
-  ) async {
-    await Future<void>.delayed(mockNetworkDelay);
-    _histories.insert(
-      0,
-      AdvisorHistory(
-        id: 'adv_hist_$_nextId',
+  ) {
+    return saveSession(
+      AdvisorSessionSaveInput(
         userId: userId,
         query: query,
-        suggestedWorkflowIds: List<String>.from(workflowIds),
-        createdAt: DateTime.now(),
+        selectedAnswers: const [],
+        suggestedWorkflowIds: workflowIds,
       ),
     );
-    _nextId++;
   }
 
   @override

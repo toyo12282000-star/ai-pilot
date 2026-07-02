@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:ai_pilot/features/home/domain/entities/recent_workflow_activity.dart';
 import 'package:ai_pilot/features/workflow/data/dto/workflow_run_history_dto.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow_run_history.dart';
 import 'package:ai_pilot/features/workflow/domain/repositories/workflow_run_history_repository.dart';
@@ -13,6 +14,28 @@ class SupabaseWorkflowRunHistoryRepository
   final SupabaseClient _client;
 
   static const _recentHistoryLimit = 10;
+  static const _recentActivitiesLimit = 20;
+
+  @override
+  Future<List<RecentWorkflowActivity>> fetchRecentActivities(
+    String userId, {
+    int limit = 6,
+  }) async {
+    final response = await _client
+        .from('workflow_run_histories')
+        .select()
+        .eq('user_id', userId)
+        .order('updated_at', ascending: false)
+        .limit(_recentActivitiesLimit);
+
+    final histories = (response as List<dynamic>)
+        .cast<Map<String, dynamic>>()
+        .map(WorkflowRunHistoryDto.fromJson)
+        .map((dto) => dto.toEntity())
+        .toList();
+
+    return RecentWorkflowActivity.dedupeAndSort(histories, limit: limit);
+  }
 
   @override
   Future<List<WorkflowRunHistory>> fetchRecentHistories(String userId) async {

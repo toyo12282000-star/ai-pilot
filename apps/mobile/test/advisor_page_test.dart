@@ -58,7 +58,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     if (userId != null) {
-      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump(const Duration(milliseconds: 700));
       await tester.pumpAndSettle();
     }
   }
@@ -128,6 +128,20 @@ void main() {
 
     expect(find.text('最近の相談'), findsOneWidget);
     expect(find.text('YouTubeを始めたい'), findsWidgets);
+    expect(find.text('YouTube'), findsWidgets);
+    expect(find.text('YouTubeショートを作る'), findsOneWidget);
+  });
+
+  testWidgets('Authenticated user with no history sees empty state',
+      (tester) async {
+    await pumpAdvisorPage(tester, buildRouter(), userId: 'user-2');
+
+    expect(find.text('最近の相談'), findsOneWidget);
+    expect(find.text('まだ相談履歴がありません'), findsOneWidget);
+    expect(
+      find.text('AI Pilot に作りたいものを相談してみましょう'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('Recent history tap triggers recommendation', (tester) async {
@@ -146,12 +160,13 @@ void main() {
   testWidgets('Recent history delete removes item', (tester) async {
     await pumpAdvisorPage(tester, buildRouter(), userId: 'user-1');
 
-    expect(find.text('1件のWorkflowを提案'), findsOneWidget);
+    expect(find.text('YouTubeショートを作る'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('削除'));
+    await tester.tap(find.byTooltip('削除').first);
     await tester.pumpAndSettle(const Duration(milliseconds: 400));
 
     expect(find.text('1件のWorkflowを提案'), findsNothing);
+    expect(find.text('まだ相談履歴がありません'), findsOneWidget);
   });
 
   testWidgets('Quick reply conversation shows typing then recommendation',

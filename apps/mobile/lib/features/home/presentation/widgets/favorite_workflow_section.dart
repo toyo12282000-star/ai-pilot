@@ -6,9 +6,9 @@ import 'package:ai_pilot/features/home/presentation/providers/home_providers.dar
 import 'package:ai_pilot/features/home/presentation/widgets/home_workflow_carousel_section.dart';
 import 'package:ai_pilot/shared/providers/authenticated_user_provider.dart';
 
-/// 最近使った Workflow 横スクロールセクション（ログイン時のみ）。
-class RecentWorkflowSection extends ConsumerWidget {
-  const RecentWorkflowSection({super.key});
+/// お気に入り Workflow 横スクロールセクション（ログイン時のみ）。
+class FavoriteWorkflowSection extends ConsumerWidget {
+  const FavoriteWorkflowSection({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -16,11 +16,11 @@ class RecentWorkflowSection extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final workflowsAsync = ref.watch(recentHomeWorkflowsProvider);
+    final favoritesAsync = ref.watch(favoriteHomeWorkflowsProvider);
 
-    return workflowsAsync.when(
+    return favoritesAsync.when(
       loading: () => HomeWorkflowCarouselSection(
-        title: '最近使った',
+        title: 'お気に入り',
         workflows: const [],
         isLoading: true,
         emptyTitle: '',
@@ -29,10 +29,10 @@ class RecentWorkflowSection extends ConsumerWidget {
       ),
       error: (_, _) => const SizedBox.shrink(),
       data: (workflows) => HomeWorkflowCarouselSection(
-        title: '最近使った',
+        title: 'お気に入り',
         workflows: workflows,
-        emptyTitle: 'まだWorkflowを使っていません',
-        emptySubtitle: '気になる作品を開いてみましょう',
+        emptyTitle: 'まだ保存したWorkflowがありません',
+        emptySubtitle: '気になる作品を保存しておくと、ここに並びます',
         onWorkflowTap: (workflow) => context.push('/workflows/${workflow.id}'),
       ),
     );

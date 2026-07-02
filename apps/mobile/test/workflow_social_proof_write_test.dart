@@ -5,7 +5,8 @@ import 'package:ai_pilot/features/workflow/presentation/providers/workflow_socia
 import 'helpers/workflow_detail_overrides.dart';
 
 void main() {
-  const workflowId = 'wf_research';
+  const favoriteWorkflowId = 'wf_sns';
+  const runWorkflowId = 'wf_flutter_app';
   const userId = 'user-1';
   final seedNow = DateTime(2026, 6, 28, 12);
 
@@ -24,25 +25,25 @@ void main() {
   });
 
   Future<int> readFavoriteCount() async {
-    container.invalidate(workflowSocialProofCountsProvider(workflowId));
+    container.invalidate(workflowSocialProofCountsProvider(favoriteWorkflowId));
     final stats = await container.read(
-      workflowSocialProofCountsProvider(workflowId).future,
+      workflowSocialProofCountsProvider(favoriteWorkflowId).future,
     );
     return stats.favoriteCount;
   }
 
   Future<int> readStartedUserCount() async {
-    container.invalidate(workflowSocialProofCountsProvider(workflowId));
+    container.invalidate(workflowSocialProofCountsProvider(runWorkflowId));
     final stats = await container.read(
-      workflowSocialProofCountsProvider(workflowId).future,
+      workflowSocialProofCountsProvider(runWorkflowId).future,
     );
     return stats.startedUserCount;
   }
 
   Future<int> readCompletedUserCount() async {
-    container.invalidate(workflowSocialProofCountsProvider(workflowId));
+    container.invalidate(workflowSocialProofCountsProvider(runWorkflowId));
     final stats = await container.read(
-      workflowSocialProofCountsProvider(workflowId).future,
+      workflowSocialProofCountsProvider(runWorkflowId).future,
     );
     return stats.completedUserCount;
   }
@@ -50,14 +51,14 @@ void main() {
   test('favorite add/remove updates social proof favorite count', () async {
     final before = await readFavoriteCount();
 
-    await fixtures.favoriteRepository.addFavorite(userId, workflowId);
-    invalidateWorkflowSocialProofForContainer(container, workflowId);
+    await fixtures.favoriteRepository.addFavorite(userId, favoriteWorkflowId);
+    invalidateWorkflowSocialProofForContainer(container, favoriteWorkflowId);
 
     final afterAdd = await readFavoriteCount();
     expect(afterAdd, before + 1);
 
-    await fixtures.favoriteRepository.removeFavorite(userId, workflowId);
-    invalidateWorkflowSocialProofForContainer(container, workflowId);
+    await fixtures.favoriteRepository.removeFavorite(userId, favoriteWorkflowId);
+    invalidateWorkflowSocialProofForContainer(container, favoriteWorkflowId);
 
     final afterRemove = await readFavoriteCount();
     expect(afterRemove, before);
@@ -67,21 +68,21 @@ void main() {
     final startedBefore = await readStartedUserCount();
     final completedBefore = await readCompletedUserCount();
 
-    await fixtures.runHistoryRepository.startWorkflow(userId, workflowId);
-    invalidateWorkflowSocialProofForContainer(container, workflowId);
+    await fixtures.runHistoryRepository.startWorkflow(userId, runWorkflowId);
+    invalidateWorkflowSocialProofForContainer(container, runWorkflowId);
 
     final startedAfterStart = await readStartedUserCount();
     expect(startedAfterStart, startedBefore + 1);
 
-    await fixtures.runHistoryRepository.completeWorkflow(userId, workflowId);
-    invalidateWorkflowSocialProofForContainer(container, workflowId);
+    await fixtures.runHistoryRepository.completeWorkflow(userId, runWorkflowId);
+    invalidateWorkflowSocialProofForContainer(container, runWorkflowId);
 
     final completedAfterComplete = await readCompletedUserCount();
     expect(completedAfterComplete, completedBefore + 1);
 
-    container.invalidate(workflowRecentCreationsProvider(workflowId));
+    container.invalidate(workflowRecentCreationsProvider(runWorkflowId));
     final creations = await container.read(
-      workflowRecentCreationsProvider(workflowId).future,
+      workflowRecentCreationsProvider(runWorkflowId).future,
     );
     expect(
       creations.any((creation) => creation.userId == userId),

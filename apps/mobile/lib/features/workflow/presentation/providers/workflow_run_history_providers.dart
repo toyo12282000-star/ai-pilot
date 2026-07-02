@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/supabase_workflow_run_history_repository.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow_run_history.dart';
 import 'package:ai_pilot/features/workflow/domain/repositories/workflow_run_history_repository.dart';
+import 'package:ai_pilot/features/home/presentation/providers/home_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_social_proof_providers.dart';
 import 'package:ai_pilot/shared/providers/authenticated_user_provider.dart';
 
@@ -54,4 +55,6 @@ void invalidateWorkflowRunHistoryForWorkflow(
   invalidateWorkflowRunHistory(ref);
   ref.invalidate(workflowRunHistoryProvider(workflowId));
   invalidateWorkflowSocialProof(ref, workflowId);
+  invalidateHomeRecentWorkflows(ref);
+  invalidateHomePopularWorkflows(ref);
 }

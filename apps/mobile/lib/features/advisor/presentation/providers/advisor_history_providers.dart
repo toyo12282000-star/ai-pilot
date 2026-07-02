@@ -17,6 +17,9 @@ final advisorHistoriesProvider =
       );
 });
 
+/// Home 等からも使える recent sessions エイリアス。
+final advisorRecentSessionsProvider = advisorHistoriesProvider;
+
 /// 相談履歴 Provider を再取得する。
 void invalidateAdvisorHistories(WidgetRef ref, String userId) {
   ref.invalidate(advisorHistoriesProvider(userId));

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
+import 'package:ai_pilot/features/home/presentation/providers/home_providers.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/ai_recommendation_section.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/featured_showcase_section.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/home_advisor_section.dart';
@@ -13,6 +14,7 @@ import 'package:ai_pilot/features/home/presentation/widgets/home_category_sectio
 import 'package:ai_pilot/features/home/presentation/widgets/home_content_layout.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/home_hero_section.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/home_section_header.dart';
+import 'package:ai_pilot/features/home/presentation/widgets/favorite_workflow_section.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/recent_workflow_section.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/workflow_card.dart';
 import 'package:ai_pilot/features/recommendation/domain/entities/recommendation.dart';
@@ -68,6 +70,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     ref.invalidate(workflowsProvider);
     ref.invalidate(recommendationsProvider);
     ref.invalidate(featuredShowcasesProvider);
+    invalidateHomeDashboard(ref);
     if (_isSearchActive) {
       ref.invalidate(searchWorkflowsProvider(_debouncedSearchQuery));
     }
@@ -80,6 +83,11 @@ class _HomePageState extends ConsumerState<HomePage> {
       ref.read(workflowsProvider.future),
       ref.read(recommendationsProvider.future),
       ref.read(featuredShowcasesProvider.future),
+      if (_showDiscoverySections &&
+          _selectedCategoryId == null &&
+          _selectedRecommendation == null &&
+          !_isSearchActive)
+        ref.read(popularHomeWorkflowsProvider.future),
       if (_isSearchActive)
         ref.read(searchWorkflowsProvider(_debouncedSearchQuery).future),
     ]);
@@ -167,11 +175,15 @@ class _HomePageState extends ConsumerState<HomePage> {
     bool showInlineSearchLoading,
   }) _resolveWorkflowList({
     required AsyncValue<List<Workflow>> allWorkflowsAsync,
+    required AsyncValue<List<Workflow>>? popularWorkflowsAsync,
     required AsyncValue<List<Workflow>>? searchAsync,
   }) {
     if (!_isSearchActive) {
+      final source = _usePopularWorkflowOrder && popularWorkflowsAsync != null
+          ? popularWorkflowsAsync
+          : allWorkflowsAsync;
       return (
-        workflows: allWorkflowsAsync.valueOrNull ?? const [],
+        workflows: source.valueOrNull ?? allWorkflowsAsync.valueOrNull ?? const [],
         showSearchError: false,
         showInlineSearchLoading: false,
       );
@@ -201,15 +213,23 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
+  bool get _usePopularWorkflowOrder =>
+      !_isSearchActive &&
+      _selectedCategoryId == null &&
+      _selectedRecommendation == null;
+
   @override
   Widget build(BuildContext context) {
     final categoriesAsync = ref.watch(categoriesProvider);
     final allWorkflowsAsync = ref.watch(workflowsProvider);
+    final popularWorkflowsAsync =
+        _usePopularWorkflowOrder ? ref.watch(popularHomeWorkflowsProvider) : null;
     final searchAsync = _isSearchActive
         ? ref.watch(searchWorkflowsProvider(_debouncedSearchQuery))
         : null;
     final resolved = _resolveWorkflowList(
       allWorkflowsAsync: allWorkflowsAsync,
+      popularWorkflowsAsync: popularWorkflowsAsync,
       searchAsync: searchAsync,
     );
     final filteredWorkflows = _filterWorkflows(resolved.workflows);
@@ -257,6 +277,18 @@ class _HomePageState extends ConsumerState<HomePage> {
             debugDetails: allWorkflowsAsync.error,
           ),
         ),
+      );
+    }
+
+    if (!_isSearchActive &&
+        _usePopularWorkflowOrder &&
+        popularWorkflowsAsync != null &&
+        popularWorkflowsAsync.isLoading &&
+        !popularWorkflowsAsync.hasValue &&
+        allWorkflowsAsync.hasValue) {
+      return const Scaffold(
+        backgroundColor: AppColors.background,
+        body: SafeArea(child: _HomeLoadingSkeleton()),
       );
     }
 
@@ -415,6 +447,11 @@ class _HomeBody extends StatelessWidget {
               index: 5,
               child: RecentWorkflowSection(),
             ),
+          if (showDiscoverySections)
+            const FadeSlideIn(
+              index: 6,
+              child: FavoriteWorkflowSection(),
+            ),
           if (showSearchError)
             HomeContentLayout.constrain(
               context: context,
@@ -440,7 +477,7 @@ class _HomeBody extends StatelessWidget {
             )
           else ...[
             FadeSlideIn(
-              index: showDiscoverySections ? 6 : 3,
+              index: showDiscoverySections ? 7 : 3,
               child: HomeContentLayout.constrain(
                 context: context,
                 child: HomeSectionHeader(
@@ -469,7 +506,7 @@ class _HomeBody extends StatelessWidget {
                         SizedBox(
                           width: cardWidth,
                           child: FadeSlideIn(
-                            index: (showDiscoverySections ? 7 : 4) + index,
+                            index: (showDiscoverySections ? 8 : 4) + index,
                             child: WorkflowCard(
                               workflow: workflows[index],
                               onTap: () => context.push(

@@ -66,6 +66,14 @@ List<WorkflowRunHistory> buildMockSocialProofRunHistories(DateTime now) {
 
   return [
     history(
+      id: 'run-demo-user-1',
+      userId: 'user-1',
+      workflowId: 'wf_research',
+      startedAt: now.subtract(const Duration(hours: 3)),
+      isCompleted: true,
+      completedAt: now.subtract(const Duration(hours: 1)),
+    ),
+    history(
       id: 'run-sp-yt-1',
       userId: 'user-sp-1',
       workflowId: 'wf_youtube_short',

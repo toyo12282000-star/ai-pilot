@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
+import 'package:ai_pilot/features/advisor/domain/entities/advisor_session_save_input.dart';
 import 'package:ai_pilot/features/advisor/domain/entities/advisor_suggestion.dart';
 import 'package:ai_pilot/features/advisor/presentation/controllers/advisor_chat_controller.dart';
 import 'package:ai_pilot/features/advisor/presentation/providers/advisor_history_providers.dart';
@@ -142,10 +143,15 @@ class _AdvisorPageState extends ConsumerState<AdvisorPage> {
     }
 
     try {
-      await ref.read(advisorHistoryRepositoryProvider).addHistory(
-            userId,
-            query,
-            suggestions.map((item) => item.workflow.id).toList(),
+      await ref.read(advisorHistoryRepositoryProvider).saveSession(
+            AdvisorSessionSaveInput(
+              userId: userId,
+              query: query,
+              path: _chat.path?.name,
+              selectedAnswers: List<String>.from(_chat.selectedAnswers),
+              suggestedWorkflowIds:
+                  suggestions.map((item) => item.workflow.id).toList(),
+            ),
           );
       invalidateAdvisorHistories(ref, userId);
     } catch (_) {

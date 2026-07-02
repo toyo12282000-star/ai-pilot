@@ -4,8 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:ai_pilot/app/app.dart';
 import 'package:ai_pilot/features/auth/presentation/providers/auth_providers.dart';
-import 'package:ai_pilot/features/favorite/data/repositories/mock_favorite_repository.dart';
-import 'package:ai_pilot/features/favorite/presentation/providers/favorite_providers.dart';
 import 'package:ai_pilot/features/profile/data/repositories/mock_user_profile_repository.dart';
 import 'package:ai_pilot/features/profile/presentation/providers/profile_providers.dart';
 import 'package:ai_pilot/features/recommendation/data/repositories/mock_recommendation_repository.dart';
@@ -14,12 +12,10 @@ import 'package:ai_pilot/features/workflow/data/repositories/mock_ai_tool_reposi
 import 'package:ai_pilot/features/workflow/data/repositories/mock_category_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_prompt_template_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_repository.dart';
-import 'package:ai_pilot/features/home/presentation/widgets/showcase_card.dart';
-import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_run_history_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_showcase_repository.dart';
+import 'package:ai_pilot/features/home/presentation/widgets/showcase_card.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/showcase_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
-import 'package:ai_pilot/features/workflow/presentation/providers/workflow_run_history_providers.dart';
 import 'helpers/workflow_detail_overrides.dart';
 import 'fakes/fake_auth_repository.dart';
 
@@ -42,10 +38,6 @@ void main() {
               .overrideWithValue(MockPromptTemplateRepository()),
           recommendationRepositoryProvider
               .overrideWithValue(MockRecommendationRepository()),
-          favoriteRepositoryProvider
-              .overrideWithValue(MockFavoriteRepository()),
-          workflowRunHistoryRepositoryProvider
-              .overrideWithValue(MockWorkflowRunHistoryRepository()),
           userProfileRepositoryProvider
               .overrideWithValue(MockUserProfileRepository()),
           workflowShowcaseRepositoryProvider
