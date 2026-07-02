@@ -44,10 +44,22 @@ void main() {
     expect(find.text(showcase.title), findsOneWidget);
   });
 
-  test('ShowcaseCard listExtent covers image and content', () {
-    expect(
-      ShowcaseCard.listExtent,
-      greaterThan(ShowcaseCard.imageHeight),
+  testWidgets('ShowcaseCard listExtent covers image and content', (tester) async {
+    late double listExtent;
+    late double imageHeight;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) {
+            listExtent = ShowcaseCard.listExtent(context);
+            imageHeight = ShowcaseCard.imageHeight(context);
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
     );
+
+    expect(listExtent, greaterThan(imageHeight));
   });
 }

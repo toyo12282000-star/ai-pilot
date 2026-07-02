@@ -57,7 +57,7 @@ class HomeAdvisorSection extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: HomeContentLayout.sectionSpacing),
+          SizedBox(height: HomeContentLayout.sectionSpacing(context)),
         ],
       ),
     );

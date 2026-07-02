@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/radius.dart';
+import 'package:ai_pilot/design_system/responsive.dart';
 import 'package:ai_pilot/design_system/shadows.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
@@ -25,29 +26,35 @@ class HomeHeroSection extends StatelessWidget {
   final bool showClearButton;
   final VoidCallback onAdvisorTap;
 
-  static const double _controlHeight = 48;
+  static const double _controlHeight = 46;
 
-  static const String subtitle =
+  static const String subtitleDesktop =
       '完成作品から選ぶだけで\n'
       '必要なAI・プロンプト・手順まで\n'
       'まとめて案内します。';
 
+  static const String subtitleMobile =
+      '完成作品から選ぶだけで、AI・プロンプト・手順まで案内します。';
+
   @override
   Widget build(BuildContext context) {
+    final isMobile = context.isMobile;
+
     return HomeContentLayout.constrain(
       context: context,
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.s16,
-        AppSpacing.hero,
-        AppSpacing.s16,
-        AppSpacing.section,
+      padding: EdgeInsets.fromLTRB(
+        AppResponsiveSpacing.pageHorizontal(context),
+        AppResponsiveSpacing.heroVertical(context),
+        AppResponsiveSpacing.pageHorizontal(context),
+        AppResponsiveSpacing.section(context),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final isWide = constraints.maxWidth >= HomeContentLayout.tabletBreakpoint;
+          final isWide =
+              constraints.maxWidth >= HomeContentLayout.desktopBreakpoint;
 
           return ClipRRect(
-            borderRadius: AppRadius.hero,
+            borderRadius: isMobile ? AppRadius.xLarge : AppRadius.hero,
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: AppColors.surfaceMuted,
@@ -55,7 +62,7 @@ class HomeHeroSection extends StatelessWidget {
                 boxShadow: AppShadows.small,
               ),
               child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.card),
+                padding: EdgeInsets.all(AppResponsiveSpacing.card(context)),
                 child: isWide
                     ? Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -67,6 +74,7 @@ class HomeHeroSection extends StatelessWidget {
                               onSearchClear: onSearchClear,
                               showClearButton: showClearButton,
                               onAdvisorTap: onAdvisorTap,
+                              compact: false,
                             ),
                           ),
                           const SizedBox(width: AppSpacing.s32),
@@ -82,6 +90,7 @@ class HomeHeroSection extends StatelessWidget {
                         onSearchClear: onSearchClear,
                         showClearButton: showClearButton,
                         onAdvisorTap: onAdvisorTap,
+                        compact: isMobile,
                       ),
               ),
             ),
@@ -99,6 +108,7 @@ class _HeroContent extends StatelessWidget {
     required this.onSearchClear,
     required this.showClearButton,
     required this.onAdvisorTap,
+    required this.compact,
   });
 
   final TextEditingController searchController;
@@ -106,6 +116,7 @@ class _HeroContent extends StatelessWidget {
   final VoidCallback onSearchClear;
   final bool showClearButton;
   final VoidCallback onAdvisorTap;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -114,19 +125,20 @@ class _HeroContent extends StatelessWidget {
       children: [
         Text(
           '今日は何を作りますか？',
-          style: AppTypography.heroTitle.copyWith(
-            letterSpacing: -0.45,
-          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: AppResponsiveTypography.heroTitle(context),
         ),
-        const SizedBox(height: AppSpacing.s12),
+        SizedBox(height: compact ? AppSpacing.s8 : AppSpacing.s12),
         Text(
-          HomeHeroSection.subtitle,
-          style: AppTypography.bodyMedium.copyWith(
+          compact ? HomeHeroSection.subtitleMobile : HomeHeroSection.subtitleDesktop,
+          maxLines: compact ? 3 : null,
+          style: AppResponsiveTypography.body(context).copyWith(
             color: AppColors.textSecondary,
-            height: 1.65,
+            height: compact ? 1.5 : 1.65,
           ),
         ),
-        const SizedBox(height: AppSpacing.s24),
+        SizedBox(height: compact ? AppSpacing.s16 : AppSpacing.s24),
         SizedBox(
           height: HomeHeroSection._controlHeight,
           child: WorkflowSearchBar(

@@ -14,11 +14,11 @@ import 'package:ai_pilot/shared/widgets/skeleton_card.dart';
 class FeaturedShowcaseSection extends ConsumerWidget {
   const FeaturedShowcaseSection({super.key});
 
-  static double get _listHeight => ShowcaseCard.listExtent;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final showcasesAsync = ref.watch(featuredShowcasesProvider);
+    final listHeight = ShowcaseCard.listExtent(context);
+    final cardWidth = ShowcaseCard.cardWidth(context);
 
     return showcasesAsync.when(
       loading: () => const SkeletonShowcaseSection(),
@@ -38,12 +38,11 @@ class FeaturedShowcaseSection extends ConsumerWidget {
               ),
             ),
             SizedBox(
-              height: _listHeight,
+              height: listHeight,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: HomeContentLayout.horizontalPadding(context),
-                scrollCacheExtent:
-                    ScrollCacheExtent.pixels(ShowcaseCard.cardWidth * 2),
+                scrollCacheExtent: ScrollCacheExtent.pixels(cardWidth * 2),
                 itemCount: showcases.length,
                 itemBuilder: (context, index) {
                   final showcase = showcases[index];
@@ -60,7 +59,7 @@ class FeaturedShowcaseSection extends ConsumerWidget {
                 },
               ),
             ),
-            const SizedBox(height: HomeContentLayout.sectionSpacing),
+            SizedBox(height: HomeContentLayout.sectionSpacing(context)),
           ],
         );
       },

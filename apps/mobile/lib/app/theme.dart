@@ -95,6 +95,12 @@ ThemeData _buildAppTheme() {
           }
           return AppColors.primary;
         }),
+        foregroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return AppColors.surface.withValues(alpha: 0.85);
+          }
+          return AppColors.surface;
+        }),
         overlayColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.pressed)) {
             return AppColors.surface.withValues(alpha: 0.12);
@@ -123,6 +129,12 @@ ThemeData _buildAppTheme() {
         ),
         elevation: 0,
       ).copyWith(
+        foregroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return AppColors.muted;
+          }
+          return AppColors.primary;
+        }),
         backgroundColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.hovered) ||
               states.contains(WidgetState.pressed)) {

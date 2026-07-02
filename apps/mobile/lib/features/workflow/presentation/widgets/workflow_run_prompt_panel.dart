@@ -8,6 +8,7 @@ import 'package:ai_pilot/design_system/radius.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/prompt_variant.dart';
+import 'package:ai_pilot/features/workflow/presentation/mock/workflow_run_ui_mock_data.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/outcome_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_collapsible_step_card.dart';
 import 'package:ai_pilot/shared/widgets/skeleton_box.dart';
@@ -32,6 +33,7 @@ class _WorkflowRunPromptPanelState extends ConsumerState<WorkflowRunPromptPanel>
   PromptVariantType _selectedVariant = PromptVariantType.beginner;
   bool _isEditing = false;
   bool _isFavorite = false;
+  bool _hasCopied = false;
   late TextEditingController _editController;
   String? _editedContent;
 
@@ -53,6 +55,7 @@ class _WorkflowRunPromptPanelState extends ConsumerState<WorkflowRunPromptPanel>
     if (oldWidget.stepId != widget.stepId) {
       _isEditing = false;
       _isFavorite = false;
+      _hasCopied = false;
       _editedContent = null;
       _selectedVariant = PromptVariantType.beginner;
       _editController.clear();
@@ -67,6 +70,7 @@ class _WorkflowRunPromptPanelState extends ConsumerState<WorkflowRunPromptPanel>
     if (!context.mounted) {
       return;
     }
+    setState(() => _hasCopied = true);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('プロンプトをコピーしました')),
     );
@@ -133,6 +137,39 @@ class _WorkflowRunPromptPanelState extends ConsumerState<WorkflowRunPromptPanel>
     }
   }
 
+  String _recommendationLabel(PromptVariantType type) {
+    final score = WorkflowRunUiMockData.recommendationScore(type);
+    return 'おすすめ度 ${'★' * score}${'☆' * (5 - score)}';
+  }
+
+  Widget _buildStatusBadges({
+    required bool hasCopied,
+    required bool isEdited,
+    required String recommendationLabel,
+  }) {
+    return Wrap(
+      spacing: AppSpacing.s8,
+      runSpacing: AppSpacing.s8,
+      children: [
+        if (hasCopied)
+          _PromptStatusBadge(
+            label: 'コピー済み',
+            icon: Icons.check_rounded,
+          ),
+        if (isEdited)
+          _PromptStatusBadge(
+            label: '編集済み',
+            icon: Icons.edit_outlined,
+          ),
+        _PromptStatusBadge(
+          label: recommendationLabel,
+          icon: Icons.star_outline_rounded,
+          muted: true,
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final variantsAsync = ref.watch(promptVariantsProvider(widget.stepId));
@@ -152,6 +189,9 @@ class _WorkflowRunPromptPanelState extends ConsumerState<WorkflowRunPromptPanel>
         content: widget.fallbackContent,
         isEditing: _isEditing,
         isFavorite: _isFavorite,
+        hasCopied: _hasCopied,
+        isEdited: _editedContent != null,
+        recommendationLabel: _recommendationLabel(_selectedVariant),
         editController: _editController,
         editedContent: _editedContent,
         onCopy: (content) => _copy(context, content),
@@ -171,6 +211,7 @@ class _WorkflowRunPromptPanelState extends ConsumerState<WorkflowRunPromptPanel>
         final baseContent =
             selectedVariant?.content ?? widget.fallbackContent ?? '';
         final displayContent = _editedContent ?? baseContent;
+        final isEdited = _editedContent != null;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,6 +233,12 @@ class _WorkflowRunPromptPanelState extends ConsumerState<WorkflowRunPromptPanel>
                 ),
               ],
             ),
+            const SizedBox(height: AppSpacing.s8),
+            _buildStatusBadges(
+              hasCopied: _hasCopied,
+              isEdited: isEdited,
+              recommendationLabel: _recommendationLabel(_selectedVariant),
+            ),
             const SizedBox(height: AppSpacing.s12),
             SegmentedButton<PromptVariantType>(
               segments: [
@@ -207,6 +254,7 @@ class _WorkflowRunPromptPanelState extends ConsumerState<WorkflowRunPromptPanel>
                   _selectedVariant = values.first;
                   _editedContent = null;
                   _isEditing = false;
+                  _hasCopied = false;
                 });
               },
               showSelectedIcon: false,
@@ -310,6 +358,9 @@ class _FallbackPromptPanel extends StatelessWidget {
     required this.content,
     required this.isEditing,
     required this.isFavorite,
+    required this.hasCopied,
+    required this.isEdited,
+    required this.recommendationLabel,
     required this.editController,
     required this.editedContent,
     required this.onCopy,
@@ -320,6 +371,9 @@ class _FallbackPromptPanel extends StatelessWidget {
   final String? content;
   final bool isEditing;
   final bool isFavorite;
+  final bool hasCopied;
+  final bool isEdited;
+  final String recommendationLabel;
   final TextEditingController editController;
   final String? editedContent;
   final ValueChanged<String> onCopy;
@@ -348,6 +402,28 @@ class _FallbackPromptPanel extends StatelessWidget {
               style: AppTypography.labelMedium.copyWith(
                 color: AppColors.textSecondary,
               ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.s8),
+        Wrap(
+          spacing: AppSpacing.s8,
+          runSpacing: AppSpacing.s8,
+          children: [
+            if (hasCopied)
+              _PromptStatusBadge(
+                label: 'コピー済み',
+                icon: Icons.check_rounded,
+              ),
+            if (isEdited)
+              _PromptStatusBadge(
+                label: '編集済み',
+                icon: Icons.edit_outlined,
+              ),
+            _PromptStatusBadge(
+              label: recommendationLabel,
+              icon: Icons.star_outline_rounded,
+              muted: true,
             ),
           ],
         ),
@@ -413,6 +489,55 @@ class _FallbackPromptPanel extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+class _PromptStatusBadge extends StatelessWidget {
+  const _PromptStatusBadge({
+    required this.label,
+    required this.icon,
+    this.muted = false,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool muted;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.s8,
+        vertical: AppSpacing.s4,
+      ),
+      decoration: BoxDecoration(
+        color: muted ? AppColors.surface : AppColors.primarySoft,
+        borderRadius: AppRadius.pill,
+        border: Border.all(
+          color: muted
+              ? AppColors.border
+              : AppColors.primary.withValues(alpha: 0.25),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 14,
+            color: muted ? AppColors.textSecondary : AppColors.primary,
+          ),
+          const SizedBox(width: AppSpacing.s4),
+          Text(
+            label,
+            style: AppTypography.labelMedium.copyWith(
+              color: muted ? AppColors.textSecondary : AppColors.charcoal,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

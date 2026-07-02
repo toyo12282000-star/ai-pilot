@@ -4,25 +4,23 @@ import 'package:go_router/go_router.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
-import 'package:ai_pilot/design_system/typography.dart';
 import 'package:ai_pilot/features/advisor/domain/entities/advisor_suggestion.dart';
+import 'package:ai_pilot/features/advisor/presentation/controllers/advisor_chat_controller.dart';
 import 'package:ai_pilot/features/advisor/presentation/providers/advisor_history_providers.dart';
 import 'package:ai_pilot/features/advisor/presentation/providers/advisor_providers.dart';
-import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_empty_section.dart';
-import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_hero_section.dart';
-import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_input_section.dart';
-import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_loading_section.dart';
+import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_chat_header.dart';
+import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_chat_input_bar.dart';
+import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_chat_timeline.dart';
 import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_recent_history_section.dart';
-import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_suggestion_card.dart';
+import 'package:ai_pilot/features/advisor/presentation/widgets/advisor_typing_indicator.dart';
 import 'package:ai_pilot/features/recommendation/presentation/providers/recommendation_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
 import 'package:ai_pilot/shared/providers/authenticated_user_provider.dart';
-import 'package:ai_pilot/shared/widgets/fade_slide_in.dart';
 
-/// 提案中の最低表示時間（体験用・短め）。
-const _minimumSuggestDuration = Duration(milliseconds: 450);
+/// 提案中の最低表示時間（Typing 体験用）。
+const _minimumSuggestDuration = Duration(milliseconds: 550);
 
-/// AI Advisor 画面（Repository 経由で Edge Function / Mock 推薦）。
+/// AI Advisor v1 — 会話形式の相談体験。
 class AdvisorPage extends ConsumerStatefulWidget {
   const AdvisorPage({super.key});
 
@@ -31,28 +29,50 @@ class AdvisorPage extends ConsumerStatefulWidget {
 }
 
 class _AdvisorPageState extends ConsumerState<AdvisorPage> {
-  final _queryController = TextEditingController();
-  bool _isSubmitting = false;
-  List<AdvisorSuggestion>? _suggestions;
-  bool _hasSubmitted = false;
+  final _inputController = TextEditingController();
+  final _scrollController = ScrollController();
+  final _chat = AdvisorChatController();
+  bool _showAllSuggestions = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _chat.initialize();
+  }
 
   @override
   void dispose() {
-    _queryController.dispose();
+    _inputController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
-  Future<void> _submit() async {
-    final query = _queryController.text.trim();
-    if (query.isEmpty || _isSubmitting) {
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) {
+        return;
+      }
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  void _notifyChange() {
+    if (mounted) {
+      setState(_scrollToBottom);
+    }
+  }
+
+  Future<void> _fetchSuggestions(String query) async {
+    if (query.isEmpty) {
       return;
     }
 
-    setState(() {
-      _isSubmitting = true;
-      _hasSubmitted = true;
-      _suggestions = null;
-    });
+    _chat.setSubmitting(true);
+    _notifyChange();
 
     try {
       final minimumDelay = Future<void>.delayed(_minimumSuggestDuration);
@@ -81,7 +101,6 @@ class _AdvisorPageState extends ConsumerState<AdvisorPage> {
       final resolvedCategories = ref.read(categoriesProvider).valueOrNull ?? [];
 
       final service = ref.read(advisorServiceProvider);
-      // Edge Function 失敗時のフォールバックは AdvisorService 内で処理する。
       final suggestions = await service.suggest(
         query: query,
         workflows: resolvedWorkflows,
@@ -92,15 +111,20 @@ class _AdvisorPageState extends ConsumerState<AdvisorPage> {
         return;
       }
 
-      setState(() {
-        _suggestions = suggestions;
-      });
+      _chat.setSuggestions(suggestions);
+      _showAllSuggestions = false;
 
-      await _saveHistoryIfAuthenticated(query, suggestions);
-    } finally {
-      if (mounted) {
-        setState(() => _isSubmitting = false);
+      if (suggestions.isEmpty) {
+        _chat.showEmptyResultRetry();
+      } else {
+        await _saveHistoryIfAuthenticated(query, suggestions);
       }
+    } catch (_) {
+      if (mounted) {
+        _chat.setError('推薦の取得に失敗しました。もう一度お試しください。');
+      }
+    } finally {
+      _notifyChange();
     }
   }
 
@@ -129,107 +153,136 @@ class _AdvisorPageState extends ConsumerState<AdvisorPage> {
     }
   }
 
+  void _handleQuickReply(String reply) {
+    _chat.selectQuickReply(reply);
+
+    if (_chat.isCompleted) {
+      _notifyChange();
+      _fetchSuggestions(_chat.buildQuery());
+      return;
+    }
+
+    _notifyChange();
+  }
+
+  void _handleSend() {
+    final query = _chat.submitText(_inputController.text);
+    _inputController.clear();
+    _notifyChange();
+
+    if (query != null) {
+      _fetchSuggestions(query);
+    }
+  }
+
+  void _handleExampleSelected(String example) {
+    _inputController.text = example;
+    _handleSend();
+  }
+
+  void _handleHistorySelected(String query) {
+    final resolved = _chat.startFromHistoryQuery(query);
+    _inputController.clear();
+    _notifyChange();
+    _fetchSuggestions(resolved);
+  }
+
+  void _handleRetry() {
+    _chat.resetConversation();
+    _showAllSuggestions = false;
+    _inputController.clear();
+    _notifyChange();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final suggestions = _chat.suggestions;
+
     return Scaffold(
       backgroundColor: AppColors.background,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text('AIに相談する'),
         backgroundColor: AppColors.background,
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
+        actions: [
+          if (_chat.conversationActive)
+            TextButton(
+              onPressed: _chat.isSubmitting ? null : _handleRetry,
+              child: const Text('最初から'),
+            ),
+        ],
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.only(bottom: AppSpacing.s32),
-          children: [
-            const FadeSlideIn(
-              index: 0,
-              child: AdvisorHeroSection(),
-            ),
-            FadeSlideIn(
-              index: 1,
-              child: Padding(
-                padding: AppSpacing.pageHorizontal,
-                child: AdvisorInputSection(
-                  controller: _queryController,
-                  onSubmit: _submit,
-                  isLoading: _isSubmitting,
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView(
+              controller: _scrollController,
+              padding: const EdgeInsets.only(bottom: AppSpacing.s16),
+              children: [
+                const AdvisorChatHeader(),
+                AdvisorRecentHistorySection(
+                  queryController: _inputController,
+                  onHistorySelected: _handleHistorySelected,
+                  isLoading: _chat.isSubmitting,
                 ),
-              ),
-            ),
-            FadeSlideIn(
-              index: 2,
-              child: AdvisorRecentHistorySection(
-                queryController: _queryController,
-                onHistorySelected: (query) {
-                  _queryController.text = query;
-                  _submit();
-                },
-                isLoading: _isSubmitting,
-              ),
-            ),
-            if (_hasSubmitted && _isSubmitting)
-              const FadeSlideIn(
-                index: 3,
-                child: AdvisorLoadingSection(),
-              ),
-            if (_hasSubmitted && !_isSubmitting && _suggestions != null) ...[
-              if (_suggestions!.isEmpty)
-                FadeSlideIn(
-                  index: 3,
-                  child: AdvisorEmptySection(
-                    controller: _queryController,
-                    isLoading: _isSubmitting,
-                    onExampleSelected: (_) {},
-                  ),
-                )
-              else ...[
-                FadeSlideIn(
-                  index: 3,
-                  child: Padding(
-                    padding: AppSpacing.pageHorizontal.copyWith(
-                      top: AppSpacing.s8,
-                    ),
-                    child: Text(
-                      'おすすめWorkflow',
-                      style: AppTypography.titleMedium.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
+                AdvisorChatTimeline(
+                  messages: _chat.messages,
+                  onQuickReply: _handleQuickReply,
+                  interactionEnabled: !_chat.isSubmitting,
                 ),
-                for (var index = 0; index < _suggestions!.length; index++)
-                  FadeSlideIn(
-                    index: 4 + index,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.s16,
-                        AppSpacing.s12,
-                        AppSpacing.s16,
-                        0,
-                      ),
-                      child: AdvisorSuggestionCard(
-                        suggestion: _suggestions![index],
-                        rank: index + 1,
-                        onOpenWorkflow: () {
-                          context.push(
-                            '/workflows/${_suggestions![index].workflow.id}',
-                          );
-                        },
-                        onStartWorkflow: () {
-                          context.push(
-                            '/workflows/${_suggestions![index].workflow.id}/run',
-                          );
-                        },
-                      ),
-                    ),
+                if (_chat.isSubmitting) ...[
+                  const SizedBox(height: AppSpacing.s12),
+                  const AdvisorTypingIndicator(),
+                ],
+                if (_chat.errorMessage != null)
+                  AdvisorChatErrorBanner(
+                    message: _chat.errorMessage!,
+                    onRetry: () {
+                      final query = _chat.buildQuery();
+                      if (query.isNotEmpty) {
+                        _fetchSuggestions(query);
+                      } else {
+                        _handleRetry();
+                      }
+                    },
+                  ),
+                if (suggestions != null && suggestions.isEmpty)
+                  AdvisorChatEmptyResult(
+                    onRetry: _handleRetry,
+                    onGoHome: () => context.go('/'),
+                  ),
+                if (suggestions != null && suggestions.isNotEmpty)
+                  AdvisorRecommendationResultSection(
+                    suggestions: suggestions,
+                    showAllRanks: _showAllSuggestions,
+                    onOpenWorkflow: (suggestion) {
+                      context.push('/workflows/${suggestion.workflow.id}');
+                    },
+                    onStartWorkflow: (suggestion) {
+                      context.push(
+                        '/workflows/${suggestion.workflow.id}/run',
+                      );
+                    },
+                    onShowMore: suggestions.length > 1 && !_showAllSuggestions
+                        ? () {
+                            setState(() => _showAllSuggestions = true);
+                            _scrollToBottom();
+                          }
+                        : null,
                   ),
               ],
-            ],
-          ],
-        ),
+            ),
+          ),
+          AdvisorChatInputBar(
+            controller: _inputController,
+            onSend: _handleSend,
+            onExampleSelected: _handleExampleSelected,
+            enabled: !_chat.isSubmitting,
+          ),
+        ],
       ),
     );
   }

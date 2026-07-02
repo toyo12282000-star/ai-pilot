@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
+import 'package:ai_pilot/design_system/responsive.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
+import 'package:ai_pilot/shared/widgets/app_back_button.dart';
+import 'package:ai_pilot/shared/widgets/bottom_action_bar.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow_step.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/showcase_providers.dart';
@@ -55,12 +58,12 @@ class WorkflowDetailPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.background,
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
+        leading: const AppBackButton(),
       ),
       body: workflowAsync.when(
         loading: () => const _WorkflowDetailSkeleton(),
@@ -96,17 +99,17 @@ class _WorkflowDetailSkeleton extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.s16,
-        kToolbarHeight + AppSpacing.s8,
+        AppSpacing.s8,
         AppSpacing.s16,
         AppSpacing.s16,
       ),
-      children: const [
+      children: [
         SkeletonWorkflowDetailHero(),
-        SizedBox(height: AppSpacing.s48),
+        SizedBox(height: AppResponsiveSpacing.section(context)),
         SkeletonWorkflowDetailGallery(),
-        SizedBox(height: AppSpacing.s48),
+        SizedBox(height: AppResponsiveSpacing.section(context)),
         SkeletonAiToolCards(),
-        SizedBox(height: AppSpacing.s48),
+        SizedBox(height: AppResponsiveSpacing.section(context)),
         SkeletonWorkflowDetailSteps(),
       ],
     );
@@ -143,9 +146,9 @@ class _WorkflowDetailBody extends ConsumerWidget {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.fromLTRB(
                 0,
-                kToolbarHeight + AppSpacing.s8,
+                AppSpacing.s8,
                 0,
-                AppSpacing.s32,
+                BottomActionBar.contentBottomInset(context) + AppSpacing.s16,
               ),
               children: [
                 WorkflowDetailLayout.constrain(
@@ -169,7 +172,7 @@ class _WorkflowDetailBody extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: AppSpacing.s24),
+                SizedBox(height: AppResponsiveSpacing.cardGap(context)),
                 WorkflowDetailLayout.constrain(
                   context: context,
                   child: FadeSlideIn(
@@ -177,7 +180,7 @@ class _WorkflowDetailBody extends ConsumerWidget {
                     child: WorkflowProductStatsPanel(workflowId: workflowId),
                   ),
                 ),
-                const SizedBox(height: AppSpacing.s48),
+                SizedBox(height: AppResponsiveSpacing.section(context)),
                 WorkflowDetailLayout.constrain(
                   context: context,
                   child: FadeSlideIn(
@@ -187,7 +190,7 @@ class _WorkflowDetailBody extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: AppSpacing.s48),
+                SizedBox(height: AppResponsiveSpacing.section(context)),
                 WorkflowDetailLayout.constrain(
                   context: context,
                   child: FadeSlideIn(
@@ -197,7 +200,7 @@ class _WorkflowDetailBody extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: AppSpacing.s48),
+                SizedBox(height: AppResponsiveSpacing.section(context)),
                 WorkflowDetailLayout.constrain(
                   context: context,
                   child: FadeSlideIn(
@@ -207,7 +210,7 @@ class _WorkflowDetailBody extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: AppSpacing.s48),
+                SizedBox(height: AppResponsiveSpacing.section(context)),
                 WorkflowDetailLayout.constrain(
                   context: context,
                   child: FadeSlideIn(
@@ -218,7 +221,7 @@ class _WorkflowDetailBody extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: AppSpacing.s48),
+                SizedBox(height: AppResponsiveSpacing.section(context)),
                 WorkflowDetailLayout.constrain(
                   context: context,
                   child: Column(
@@ -240,7 +243,7 @@ class _WorkflowDetailBody extends ConsumerWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.s48),
+                SizedBox(height: AppResponsiveSpacing.section(context)),
                 WorkflowDetailLayout.constrain(
                   context: context,
                   child: Column(
@@ -258,7 +261,7 @@ class _WorkflowDetailBody extends ConsumerWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.s48),
+                SizedBox(height: AppResponsiveSpacing.section(context)),
                 WorkflowDetailLayout.constrain(
                   context: context,
                   child: Column(
@@ -285,7 +288,7 @@ class _WorkflowDetailBody extends ConsumerWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.s48),
+                SizedBox(height: AppResponsiveSpacing.section(context)),
                 WorkflowDetailLayout.constrain(
                   context: context,
                   child: FadeSlideIn(

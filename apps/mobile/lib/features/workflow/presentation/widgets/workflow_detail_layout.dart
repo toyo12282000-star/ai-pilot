@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:ai_pilot/design_system/responsive.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 
 /// Workflow 詳細画面の最大コンテンツ幅。
@@ -7,7 +8,7 @@ abstract final class WorkflowDetailLayout {
   static const double maxWidth = 720;
 
   static EdgeInsets horizontalPadding(BuildContext context) {
-    return AppSpacing.pageHorizontal;
+    return AppResponsiveSpacing.pagePadding(context);
   }
 
   static Widget constrain({
@@ -46,22 +47,19 @@ class WorkflowDetailSectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.3,
-              ),
+          style: AppResponsiveTypography.beforeAfterTitle(context),
         ),
         if (subtitle != null) ...[
           const SizedBox(height: AppSpacing.s8),
           Text(
             subtitle!,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.62),
-                  height: 1.5,
-                ),
+            style: AppResponsiveTypography.body(context).copyWith(
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.62),
+              height: 1.5,
+            ),
           ),
         ],
       ],

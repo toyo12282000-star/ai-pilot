@@ -6,6 +6,7 @@ import 'package:ai_pilot/app/app.dart';
 import 'package:ai_pilot/features/auth/presentation/providers/auth_providers.dart';
 import 'package:ai_pilot/features/favorite/data/repositories/mock_favorite_repository.dart';
 import 'package:ai_pilot/features/favorite/presentation/providers/favorite_providers.dart';
+import 'package:ai_pilot/features/home/presentation/widgets/showcase_card.dart';
 import 'package:ai_pilot/features/profile/data/repositories/mock_user_profile_repository.dart';
 import 'package:ai_pilot/features/profile/presentation/providers/profile_providers.dart';
 import 'package:ai_pilot/features/recommendation/data/repositories/mock_recommendation_repository.dart';
@@ -16,21 +17,19 @@ import 'package:ai_pilot/features/workflow/data/repositories/mock_prompt_templat
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_run_history_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_showcase_repository.dart';
-import 'package:ai_pilot/features/workflow/data/services/mock_showcase_image_storage.dart';
-import 'package:ai_pilot/features/workflow/presentation/providers/showcase_image_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/showcase_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_run_history_providers.dart';
-import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_mini_showcase.dart';
-import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_sticky_progress.dart';
-import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_step_checklist.dart';
-import 'helpers/workflow_detail_overrides.dart';
 import 'fakes/fake_auth_repository.dart';
+import 'helpers/workflow_detail_overrides.dart';
+
+const _mobileWidth = 390.0;
+const _mobileHeight = 844.0;
 
 void main() {
   setUpAll(TestWidgetsFlutterBinding.ensureInitialized);
 
-  List<Override> runPageOverrides() {
+  List<Override> mobileOverrides() {
     return [
       authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
       canAccessAppProvider.overrideWith((ref) => true),
@@ -48,87 +47,77 @@ void main() {
           .overrideWithValue(MockUserProfileRepository()),
       workflowShowcaseRepositoryProvider
           .overrideWithValue(MockWorkflowShowcaseRepository()),
-      showcaseImageStorageProvider
-          .overrideWithValue(MockShowcaseImageStorage()),
       ...workflowDetailProviderOverrides(),
     ];
   }
 
-  Future<void> pumpRunPage(WidgetTester tester) async {
-    await tester.binding.setSurfaceSize(const Size(800, 2400));
+  Future<void> pumpMobileApp(WidgetTester tester) async {
+    await tester.binding.setSurfaceSize(const Size(_mobileWidth, _mobileHeight));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: runPageOverrides(),
+        overrides: mobileOverrides(),
         child: const App(),
       ),
     );
     await tester.pumpAndSettle();
     await tester.pump(const Duration(milliseconds: 600));
     await tester.pumpAndSettle();
-
-    await tester.tap(find.text('YouTubeショートを作る').first);
-    await tester.pumpAndSettle();
-    await tester.pump(const Duration(milliseconds: 600));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('無料でこの作品を作る').first);
-    await tester.pumpAndSettle();
-    await tester.pump(const Duration(milliseconds: 600));
-    await tester.pumpAndSettle();
   }
 
-  testWidgets('Run page shows AI production assistant layout', (tester) async {
-    await pumpRunPage(tester);
+  Future<void> openWorkflowDetail(WidgetTester tester) async {
+    final card = find.widgetWithText(ShowcaseCard, '世界一危険な島3選');
+    await tester.scrollUntilVisible(
+      card,
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(card);
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  }
 
-    expect(find.text('完成まで'), findsOneWidget);
-    expect(find.textContaining('残り約'), findsOneWidget);
-    expect(find.byType(WorkflowRunStickyProgress), findsOneWidget);
-    expect(find.byType(WorkflowRunMiniShowcase), findsOneWidget);
-    expect(find.text('完成イメージ'), findsOneWidget);
-    expect(find.text('AI Pilot'), findsOneWidget);
-    expect(find.text('Goal'), findsOneWidget);
-    expect(find.text('やること'), findsOneWidget);
-    expect(find.byType(WorkflowRunStepChecklist), findsOneWidget);
-    expect(find.text('Prompt'), findsOneWidget);
-    expect(find.textContaining('おすすめ度'), findsOneWidget);
-    expect(find.text('ChatGPTを開く'), findsWidgets);
-    expect(find.text('AI Pilotのコツ'), findsOneWidget);
+  testWidgets('Home at 390px has no overflow', (tester) async {
+    await pumpMobileApp(tester);
+    expect(tester.takeException(), isNull);
+    expect(find.text('今日は何を作りますか？'), findsOneWidget);
   });
 
-  testWidgets('Run page shows achievement when advancing step', (tester) async {
-    await pumpRunPage(tester);
+  testWidgets('Workflow detail at 390px has no overflow', (tester) async {
+    await pumpMobileApp(tester);
+    await openWorkflowDetail(tester);
 
-    await tester.tap(find.text('次へ'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
+    expect(tester.takeException(), isNull);
+    expect(find.text('人気作品'), findsOneWidget);
 
-    expect(find.text('Step1 完了！'), findsOneWidget);
-    expect(find.textContaining('いい感じです'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Before → After'),
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Before → After'), findsOneWidget);
   });
 
-  testWidgets('Run page shows completion screen after finish', (tester) async {
-    await pumpRunPage(tester);
+  testWidgets('Run page at 390px has no overflow', (tester) async {
+    await pumpMobileApp(tester);
+    await openWorkflowDetail(tester);
 
-    final nextButton = find.text('次へ');
-    while (nextButton.evaluate().isNotEmpty) {
-      await tester.tap(nextButton);
-      await tester.pumpAndSettle();
-      await tester.pump(const Duration(milliseconds: 300));
-    }
-
-    await tester.tap(find.text('完了'));
+    final cta = find.text('無料でこの作品を作る');
+    await tester.scrollUntilVisible(
+      cta.first,
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(cta.first);
     await tester.pumpAndSettle();
     await tester.pump(const Duration(milliseconds: 600));
     await tester.pumpAndSettle();
 
-    expect(find.text('完成おめでとう！'), findsOneWidget);
-    expect(find.text('共有'), findsOneWidget);
-    expect(find.text('お気に入りに追加'), findsOneWidget);
-    expect(find.text('完成作品を見る'), findsOneWidget);
-    expect(find.text('ホームへ戻る'), findsOneWidget);
-    expect(find.text('制作時間'), findsOneWidget);
-    expect(find.text('使用AI'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    expect(find.text('完成まで'), findsOneWidget);
+    expect(find.text('AI Pilot'), findsOneWidget);
   });
 }

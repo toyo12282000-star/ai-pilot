@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:ai_pilot/design_system/breakpoints.dart';
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/radius.dart';
+import 'package:ai_pilot/design_system/responsive.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow_showcase.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/showcase_image_providers.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/showcase_image_placeholder.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/showcase_network_image.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_showcase_lightbox.dart';
 import 'package:ai_pilot/shared/widgets/hover_scale_surface.dart';
@@ -30,8 +33,12 @@ class WorkflowShowcaseGallery extends ConsumerWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        final crossAxisCount = width >= 900 ? 3 : (width >= 560 ? 2 : 1);
-        const spacing = AppSpacing.s16;
+        final crossAxisCount = width >= AppBreakpoints.desktopMin
+            ? 3
+            : width >= AppBreakpoints.tabletMin
+                ? 2
+                : 1;
+        final spacing = context.isMobile ? AppSpacing.s12 : AppSpacing.s16;
         final tileWidth =
             (width - spacing * (crossAxisCount - 1)) / crossAxisCount;
 
@@ -90,6 +97,9 @@ class _GalleryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = context.isMobile;
+    final imageAspect = compact ? 16 / 9 : 16 / 10;
+
     return HoverScaleSurface(
       onTap: onTap,
       padding: EdgeInsets.zero,
@@ -98,10 +108,10 @@ class _GalleryTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AspectRatio(
-            aspectRatio: 16 / 10,
+            aspectRatio: imageAspect,
             child: ClipRRect(
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(AppRadius.r16),
+                top: Radius.circular(AppRadius.r20),
               ),
               child: Stack(
                 fit: StackFit.expand,
@@ -110,21 +120,22 @@ class _GalleryTile extends StatelessWidget {
                     imageUrl: previewUrl,
                     fit: BoxFit.cover,
                     memCacheWidth: 720,
+                    placeholder: ShowcaseImagePlaceholder(compact: compact),
                   ),
                   Positioned(
-                    right: AppSpacing.s12,
-                    bottom: AppSpacing.s12,
+                    right: compact ? AppSpacing.s8 : AppSpacing.s12,
+                    bottom: compact ? AppSpacing.s8 : AppSpacing.s12,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.92),
                         borderRadius: AppRadius.pill,
                         border: Border.all(color: AppColors.border),
                       ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(AppSpacing.s8),
+                      child: Padding(
+                        padding: EdgeInsets.all(compact ? AppSpacing.s4 : AppSpacing.s8),
                         child: Icon(
                           Icons.zoom_out_map_rounded,
-                          size: 16,
+                          size: compact ? 14 : 16,
                           color: AppColors.textSecondary,
                         ),
                       ),
@@ -135,7 +146,7 @@ class _GalleryTile extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(AppSpacing.s16),
+            padding: EdgeInsets.all(compact ? AppSpacing.s12 : AppSpacing.s16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -154,10 +165,11 @@ class _GalleryTile extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: AppTypography.titleSmall.copyWith(
-                    height: 1.35,
+                    height: 1.3,
+                    fontSize: compact ? 13 : 14,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.s8),
+                const SizedBox(height: AppSpacing.s4),
                 Text(
                   _metaLabel(showcase),
                   style: AppTypography.caption,

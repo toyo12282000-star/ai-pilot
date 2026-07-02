@@ -14,7 +14,6 @@ import 'package:ai_pilot/features/workflow/data/repositories/mock_ai_tool_reposi
 import 'package:ai_pilot/features/workflow/data/repositories/mock_category_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_prompt_template_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_repository.dart';
-import 'package:ai_pilot/features/home/presentation/widgets/home_hero_section.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/showcase_card.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_run_history_repository.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_workflow_showcase_repository.dart';
@@ -65,7 +64,7 @@ void main() {
 
     expect(find.text('今日は何を作りますか？'), findsOneWidget);
     expect(
-      find.text(HomeHeroSection.subtitle),
+      find.textContaining('完成作品から選ぶだけで'),
       findsOneWidget,
     );
     expect(find.text('人気の完成作品'), findsOneWidget);

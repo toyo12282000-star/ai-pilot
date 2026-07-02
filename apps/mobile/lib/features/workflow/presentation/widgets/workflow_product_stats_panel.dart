@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/radius.dart';
+import 'package:ai_pilot/design_system/responsive.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
 import 'package:ai_pilot/features/workflow/presentation/mock/workflow_product_page_mock_data.dart';
@@ -18,6 +19,23 @@ class WorkflowProductStatsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final stats = productStatsForWorkflow(workflowId);
+    final isMobile = context.isMobile;
+    final items = [
+      _StatItem(label: '保存数', value: _formatCount(stats.saveCount)),
+      _StatItem(label: '使用者', value: '${_formatCount(stats.userCount)}人'),
+      _StatItem(label: '制作時間', value: '${stats.estimatedMinutes}分'),
+      _StatItem(label: '難易度', value: stats.difficultyLabel),
+      _StatItem(
+        label: '料金',
+        value: stats.pricingLabel,
+        highlight: true,
+      ),
+      if (isMobile)
+        _StatItem(
+          label: 'カテゴリ',
+          value: stats.category,
+        ),
+    ];
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -26,7 +44,9 @@ class WorkflowProductStatsPanel extends StatelessWidget {
         border: Border.all(color: AppColors.border),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.s16),
+        padding: EdgeInsets.all(
+          isMobile ? AppSpacing.s12 : AppSpacing.s16,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -42,64 +62,43 @@ class WorkflowProductStatsPanel extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.s12,
-                    vertical: AppSpacing.s4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primarySoft,
-                    borderRadius: AppRadius.pill,
-                    border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.22),
+                if (!isMobile)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.s12,
+                      vertical: AppSpacing.s4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primarySoft,
+                      borderRadius: AppRadius.pill,
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.22),
+                      ),
+                    ),
+                    child: Text(
+                      stats.category,
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                  child: Text(
-                    stats.category,
-                    style: AppTypography.labelSmall.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
               ],
             ),
-            const SizedBox(height: AppSpacing.s16),
+            SizedBox(height: isMobile ? AppSpacing.s12 : AppSpacing.s16),
             LayoutBuilder(
               builder: (context, constraints) {
-                final twoColumns = constraints.maxWidth >= 480;
-                final items = [
-                  _StatItem(
-                    label: '保存数',
-                    value: _formatCount(stats.saveCount),
-                  ),
-                  _StatItem(
-                    label: '使用者',
-                    value: '${_formatCount(stats.userCount)}人',
-                  ),
-                  _StatItem(
-                    label: '制作時間',
-                    value: '${stats.estimatedMinutes}分',
-                  ),
-                  _StatItem(
-                    label: '難易度',
-                    value: stats.difficultyLabel,
-                  ),
-                  _StatItem(
-                    label: '料金',
-                    value: stats.pricingLabel,
-                    highlight: true,
-                  ),
-                ];
+                final useTwoColumns = isMobile || constraints.maxWidth >= 480;
+                final gap = isMobile ? AppSpacing.s8 : AppSpacing.s12;
 
-                if (twoColumns) {
+                if (useTwoColumns) {
                   return Wrap(
-                    spacing: AppSpacing.s12,
-                    runSpacing: AppSpacing.s12,
+                    spacing: gap,
+                    runSpacing: gap,
                     children: [
                       for (final item in items)
                         SizedBox(
-                          width: (constraints.maxWidth - AppSpacing.s12) / 2,
+                          width: (constraints.maxWidth - gap) / 2,
                           child: item,
                         ),
                     ],
@@ -109,7 +108,7 @@ class WorkflowProductStatsPanel extends StatelessWidget {
                 return Column(
                   children: [
                     for (var i = 0; i < items.length; i++) ...[
-                      if (i > 0) const SizedBox(height: AppSpacing.s12),
+                      if (i > 0) SizedBox(height: gap),
                       items[i],
                     ],
                   ],
@@ -150,7 +149,7 @@ class _StarRating extends StatelessWidget {
                 : (i == fullStars && hasHalf)
                     ? Icons.star_half_rounded
                     : Icons.star_outline_rounded,
-            size: 18,
+            size: 16,
             color: AppColors.primary,
           ),
       ],
@@ -171,6 +170,8 @@ class _StatItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = context.isMobile;
+
     return DecoratedBox(
       decoration: BoxDecoration(
         color: AppColors.surfaceMuted,
@@ -178,9 +179,9 @@ class _StatItem extends StatelessWidget {
         border: Border.all(color: AppColors.border),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(
+        padding: EdgeInsets.symmetric(
           horizontal: AppSpacing.s12,
-          vertical: AppSpacing.s12,
+          vertical: compact ? AppSpacing.s8 : AppSpacing.s12,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,9 +193,12 @@ class _StatItem extends StatelessWidget {
             const SizedBox(height: AppSpacing.s4),
             Text(
               value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: AppTypography.titleSmall.copyWith(
                 color: highlight ? AppColors.primary : AppColors.textPrimary,
                 fontWeight: FontWeight.w700,
+                fontSize: compact ? 13 : 14,
               ),
             ),
           ],

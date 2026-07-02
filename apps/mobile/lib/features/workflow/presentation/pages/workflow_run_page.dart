@@ -1,24 +1,32 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
+import 'package:ai_pilot/design_system/responsive.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/shared/providers/authenticated_user_provider.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/ai_tool.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/prompt_template.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow_step.dart';
+import 'package:ai_pilot/features/workflow/presentation/mock/workflow_run_ui_mock_data.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_run_history_providers.dart';
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_run_providers.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_achievement.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_ai_companion.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_ai_tool_cta.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_companion_mock_data.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_completion_screen.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_controls.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_current_step_panel.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_hint_card.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_mini_showcase.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_prompt_panel.dart';
+import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_step_checklist.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_sticky_progress.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_run_upcoming_steps.dart';
 import 'package:ai_pilot/shared/widgets/empty_view.dart';
@@ -26,7 +34,7 @@ import 'package:ai_pilot/shared/widgets/error_view.dart';
 import 'package:ai_pilot/shared/widgets/fade_slide_in.dart';
 import 'package:ai_pilot/shared/widgets/skeleton_card.dart';
 
-/// ワークフロー実行画面（Sprint 14.1 · AI Companion UI）。
+/// ワークフロー実行画面（Sprint 15.1 · AI 制作アシスタント UI）。
 class WorkflowRunPage extends ConsumerWidget {
   const WorkflowRunPage({
     super.key,
@@ -107,6 +115,10 @@ class _WorkflowRunBody extends ConsumerStatefulWidget {
 class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
   bool _historyStarted = false;
   bool _showCompletion = false;
+  bool _showAchievement = false;
+  WorkflowRunAchievementCopy? _achievementCopy;
+  Timer? _achievementTimer;
+  late final DateTime _runStartedAt = DateTime.now();
 
   @override
   void initState() {
@@ -114,6 +126,12 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _startWorkflowHistory();
     });
+  }
+
+  @override
+  void dispose() {
+    _achievementTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _startWorkflowHistory() async {
@@ -200,6 +218,30 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
     ref.invalidate(promptTemplatesProvider);
   }
 
+  void _showStepAchievement(int completedStepIndex) {
+    _achievementTimer?.cancel();
+    setState(() {
+      _achievementCopy = WorkflowRunUiMockData.achievementFor(
+        completedStepIndex: completedStepIndex,
+        totalSteps: widget.steps.length,
+      );
+      _showAchievement = true;
+    });
+
+    _achievementTimer = Timer(const Duration(milliseconds: 2600), () {
+      if (mounted) {
+        setState(() => _showAchievement = false);
+      }
+    });
+  }
+
+  void _hideAchievement() {
+    _achievementTimer?.cancel();
+    if (_showAchievement) {
+      setState(() => _showAchievement = false);
+    }
+  }
+
   AITool? _resolveAiTool(
     WorkflowStep step,
     Map<String, AITool> toolsById,
@@ -222,6 +264,23 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
     return templatesById[promptTemplateId]?.content;
   }
 
+  List<String> _collectAiToolNames(Map<String, AITool> toolsById) {
+    final names = <String>[];
+    final seen = <String>{};
+    for (final step in widget.steps) {
+      final tool = _resolveAiTool(step, toolsById);
+      if (tool != null && seen.add(tool.id)) {
+        names.add(tool.name);
+      }
+    }
+    return names;
+  }
+
+  int _elapsedMinutes() {
+    final elapsed = DateTime.now().difference(_runStartedAt).inMinutes;
+    return elapsed < 1 ? 1 : elapsed;
+  }
+
   void _mockAction(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
@@ -231,11 +290,17 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
   @override
   Widget build(BuildContext context) {
     if (_showCompletion) {
+      final aiTools = ref.read(aiToolsProvider).valueOrNull ?? [];
+      final toolsById = {for (final tool in aiTools) tool.id: tool};
+
       return WorkflowRunCompletionScreen(
+        workflowId: widget.workflow.id,
         workflowTitle: widget.workflow.title,
-        onSave: () => _mockAction('作品を保存しました（Mock）'),
+        elapsedMinutes: _elapsedMinutes(),
+        aiToolNames: _collectAiToolNames(toolsById),
+        onShare: () => _mockAction('共有しました（Mock）'),
+        onAddFavorite: () => _mockAction('お気に入りに追加しました（Mock）'),
         onViewOutcome: () => _mockAction('完成作品ギャラリーを表示します（Mock）'),
-        onCreateAnother: () => context.go('/'),
         onGoHome: () => context.go('/'),
       );
     }
@@ -251,6 +316,12 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
       currentStep,
       stepIndex,
     );
+    final remainingMinutes = WorkflowRunUiMockData.remainingMinutes(
+      totalEstimatedMinutes: widget.workflow.estimatedMinutes,
+      currentStepIndex: stepIndex,
+      totalSteps: widget.steps.length,
+    );
+    final hintMessage = WorkflowRunUiMockData.hintFor(currentStep, stepIndex);
 
     return aiToolsAsync.when(
       loading: () => ListView(
@@ -300,24 +371,41 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
           final currentAiTool = _resolveAiTool(currentStep, toolsById);
           final fallbackPrompt =
               _resolvePromptContent(currentStep, templatesById);
+          final checklistItems = WorkflowRunUiMockData.checklistFor(
+            currentStep,
+            aiToolName: currentAiTool?.name,
+          );
 
           return Column(
             children: [
               WorkflowRunStickyProgress(
                 currentStepIndex: stepIndex,
                 totalSteps: widget.steps.length,
+                remainingMinutes: remainingMinutes,
               ),
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.s16,
-                    AppSpacing.s24,
-                    AppSpacing.s16,
+                  padding: EdgeInsets.fromLTRB(
+                    AppResponsiveSpacing.pageHorizontal(context),
+                    AppResponsiveSpacing.cardGap(context),
+                    AppResponsiveSpacing.pageHorizontal(context),
                     AppSpacing.s16,
                   ),
                   children: [
                     FadeSlideIn(
                       index: 0,
+                      child: WorkflowRunMiniShowcase(workflow: widget.workflow),
+                    ),
+                    if (_achievementCopy != null) ...[
+                      const SizedBox(height: AppSpacing.s12),
+                      WorkflowRunAchievement(
+                        copy: _achievementCopy!,
+                        visible: _showAchievement,
+                      ),
+                    ],
+                    const SizedBox(height: AppSpacing.s16),
+                    FadeSlideIn(
+                      index: 1,
                       key: ValueKey('companion-${currentStep.id}'),
                       child: WorkflowRunAiCompanion(
                         messages: companionMessages,
@@ -325,18 +413,19 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
                     ),
                     const SizedBox(height: AppSpacing.s24),
                     FadeSlideIn(
-                      index: 1,
+                      index: 2,
                       key: ValueKey('step-${currentStep.id}'),
                       child: WorkflowRunCurrentStepPanel(step: currentStep),
                     ),
-                    const SizedBox(height: AppSpacing.s24),
+                    const SizedBox(height: AppSpacing.s16),
                     FadeSlideIn(
-                      index: 2,
-                      child: WorkflowRunAiToolCta(aiTool: currentAiTool),
+                      index: 3,
+                      key: ValueKey('checklist-${currentStep.id}'),
+                      child: WorkflowRunStepChecklist(items: checklistItems),
                     ),
                     const SizedBox(height: AppSpacing.s24),
                     FadeSlideIn(
-                      index: 3,
+                      index: 4,
                       key: ValueKey('prompt-${currentStep.id}'),
                       child: WorkflowRunPromptPanel(
                         stepId: currentStep.id,
@@ -345,7 +434,18 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
                     ),
                     const SizedBox(height: AppSpacing.s24),
                     FadeSlideIn(
-                      index: 4,
+                      index: 5,
+                      child: WorkflowRunAiToolCta(aiTool: currentAiTool),
+                    ),
+                    const SizedBox(height: AppSpacing.s24),
+                    FadeSlideIn(
+                      index: 6,
+                      key: ValueKey('hint-${currentStep.id}'),
+                      child: WorkflowRunHintCard(message: hintMessage),
+                    ),
+                    const SizedBox(height: AppSpacing.s24),
+                    FadeSlideIn(
+                      index: 7,
                       child: WorkflowRunUpcomingSteps(
                         steps: widget.steps,
                         currentStepIndex: stepIndex,
@@ -359,12 +459,14 @@ class _WorkflowRunBodyState extends ConsumerState<_WorkflowRunBody> {
                 canGoNext: stepIndex < lastIndex,
                 isLastStep: stepIndex >= lastIndex,
                 onPrevious: () {
+                  _hideAchievement();
                   runNotifier.previous();
                   _updateProgress(
                     ref.read(workflowRunStepIndexProvider(widget.workflow.id)),
                   );
                 },
                 onNext: () {
+                  _showStepAchievement(stepIndex);
                   runNotifier.next(lastIndex);
                   _updateProgress(
                     ref.read(workflowRunStepIndexProvider(widget.workflow.id)),

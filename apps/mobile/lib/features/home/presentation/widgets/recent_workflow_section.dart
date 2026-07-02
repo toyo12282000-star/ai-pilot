@@ -83,7 +83,7 @@ class RecentWorkflowSection extends ConsumerWidget {
                 },
               ),
             ),
-            const SizedBox(height: HomeContentLayout.sectionSpacing),
+            SizedBox(height: HomeContentLayout.sectionSpacing(context)),
           ],
         );
       },

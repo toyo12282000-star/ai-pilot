@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 
-import 'package:ai_pilot/design_system/spacing.dart';
+import 'package:ai_pilot/design_system/breakpoints.dart';
+import 'package:ai_pilot/design_system/responsive.dart';
 
 /// ホーム画面の PC 向け最大コンテンツ幅。
 abstract final class HomeContentLayout {
   static const double maxWidth = 1200;
 
-  static const double sectionSpacing = AppSpacing.section;
+  /// @deprecated Use [AppBreakpoints.tabletMin].
+  static const double tabletBreakpoint = AppBreakpoints.tabletMin;
 
-  /// タブレット以上で Workflow を2列表示するブレークポイント。
-  static const double tabletBreakpoint = 768;
+  static const double desktopBreakpoint = AppBreakpoints.desktopMin;
 
   static EdgeInsets horizontalPadding(BuildContext context) {
-    return AppSpacing.pageHorizontal;
+    return AppResponsiveSpacing.pagePadding(context);
   }
+
+  static double sectionSpacing(BuildContext context) =>
+      AppResponsiveSpacing.section(context);
 
   /// Hero / 完成作品セクションなど横幅を揃えるラッパー。
   static Widget constrain({

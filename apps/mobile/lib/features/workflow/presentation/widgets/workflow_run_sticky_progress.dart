@@ -11,10 +11,12 @@ class WorkflowRunStickyProgress extends StatelessWidget {
     super.key,
     required this.currentStepIndex,
     required this.totalSteps,
+    this.remainingMinutes,
   });
 
   final int currentStepIndex;
   final int totalSteps;
+  final int? remainingMinutes;
 
   double get _completionRate {
     if (totalSteps <= 0) {
@@ -69,11 +71,25 @@ class WorkflowRunStickyProgress extends StatelessWidget {
               const SizedBox(height: AppSpacing.s12),
               _SegmentedProgressBar(filledRatio: rate),
               const SizedBox(height: AppSpacing.s8),
-              Text(
-                'Step$stepNumber / $totalSteps',
-                style: AppTypography.labelMedium.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+              Row(
+                children: [
+                  Text(
+                    'Step$stepNumber / $totalSteps',
+                    style: AppTypography.labelMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  if (remainingMinutes != null) ...[
+                    const Spacer(),
+                    Text(
+                      '残り約$remainingMinutes分',
+                      style: AppTypography.labelMedium.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ],
           ),

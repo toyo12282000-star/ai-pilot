@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/icons.dart';
+import 'package:ai_pilot/design_system/responsive.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/ai_tool.dart';
@@ -59,6 +60,7 @@ class WorkflowRunAiToolCta extends StatelessWidget {
   Widget build(BuildContext context) {
     final tool = aiTool;
     final label = tool != null ? '${tool.name}を開く' : 'AIツール未設定';
+    final height = context.isMobile ? 48.0 : 52.0;
 
     return SizedBox(
       width: double.infinity,
@@ -67,20 +69,26 @@ class WorkflowRunAiToolCta extends StatelessWidget {
         icon: Icon(
           Icons.open_in_new_rounded,
           size: AppIcons.sizeSm,
+          color: AppColors.surface,
         ),
         label: Text(
           label,
           style: AppTypography.labelLarge.copyWith(
             fontWeight: FontWeight.w700,
+            color: AppColors.surface,
+            fontSize: context.isMobile ? 15 : 16,
           ),
         ),
         style: FilledButton.styleFrom(
+          minimumSize: Size.fromHeight(height),
           padding: const EdgeInsets.symmetric(
-            vertical: AppSpacing.s16,
-            horizontal: AppSpacing.s24,
+            horizontal: AppSpacing.s16,
+            vertical: AppSpacing.s12,
           ),
-          backgroundColor: AppColors.charcoal,
+          backgroundColor: AppColors.primary,
           foregroundColor: AppColors.surface,
+          disabledBackgroundColor: AppColors.muted.withValues(alpha: 0.35),
+          disabledForegroundColor: AppColors.surface.withValues(alpha: 0.85),
         ),
       ),
     );

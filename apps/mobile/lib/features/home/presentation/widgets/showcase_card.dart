@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/radius.dart';
+import 'package:ai_pilot/design_system/responsive.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow_showcase.dart';
@@ -23,17 +24,28 @@ class ShowcaseCard extends StatelessWidget {
   final WorkflowShowcase showcase;
   final VoidCallback onTap;
 
-  static const double cardWidth = 340;
-  static const double imageHeight = cardWidth * 10 / 16;
-  static const double bodyExtent = 220;
+  static const double _desktopCardWidth = 340;
+  static const double _mobileCardWidth = 280;
+  static const double _bodyExtentDesktop = 220;
+  static const double _bodyExtentMobile = 188;
 
-  /// 横スクロール ListView の高さ目安。
-  static double get listExtent => imageHeight + bodyExtent;
+  static double cardWidth(BuildContext context) =>
+      context.isMobile ? _mobileCardWidth : _desktopCardWidth;
+
+  static double imageHeight(BuildContext context) =>
+      cardWidth(context) * (context.isMobile ? 9 / 16 : 10 / 16);
+
+  static double listExtent(BuildContext context) =>
+      imageHeight(context) +
+      (context.isMobile ? _bodyExtentMobile : _bodyExtentDesktop);
 
   @override
   Widget build(BuildContext context) {
+    final width = cardWidth(context);
+    final compact = context.isMobile;
+
     return SizedBox(
-      width: cardWidth,
+      width: width,
       child: HoverScaleSurface(
         onTap: onTap,
         borderRadius: AppRadius.card,
@@ -47,12 +59,15 @@ class ShowcaseCard extends StatelessWidget {
                 top: Radius.circular(AppRadius.r20),
               ),
               child: SizedBox(
-                height: imageHeight,
-                child: _ShowcasePreviewImage(showcase: showcase),
+                height: imageHeight(context),
+                child: _ShowcasePreviewImage(
+                  showcase: showcase,
+                  compact: compact,
+                ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(AppSpacing.s16),
+              padding: EdgeInsets.all(compact ? AppSpacing.s12 : AppSpacing.s16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -67,25 +82,26 @@ class ShowcaseCard extends StatelessWidget {
                       const Spacer(),
                       Icon(
                         Icons.bookmark_border_rounded,
-                        size: 20,
+                        size: compact ? 18 : 20,
                         color: AppColors.muted,
                       ),
                     ],
                   ),
                   if (showcase.category != null)
-                    const SizedBox(height: AppSpacing.s12),
+                    SizedBox(height: compact ? AppSpacing.s8 : AppSpacing.s12),
                   Text(
                     showcase.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: AppTypography.titleMedium.copyWith(
-                      letterSpacing: -0.15,
-                      height: 1.35,
+                      fontSize: compact ? 15 : 16,
+                      letterSpacing: -0.12,
+                      height: 1.3,
                     ),
                   ),
                   if (showcase.description != null &&
                       showcase.description!.isNotEmpty) ...[
-                    const SizedBox(height: AppSpacing.s8),
+                    const SizedBox(height: AppSpacing.s4),
                     Text(
                       showcase.description!,
                       maxLines: 1,
@@ -97,20 +113,24 @@ class ShowcaseCard extends StatelessWidget {
                   ],
                   const SizedBox(height: AppSpacing.s8),
                   _ShowcaseMetaRow(showcase: showcase),
-                  const SizedBox(height: AppSpacing.s12),
+                  SizedBox(height: compact ? AppSpacing.s8 : AppSpacing.s12),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: FilledButton(
                       onPressed: onTap,
                       style: FilledButton.styleFrom(
-                        minimumSize: const Size(0, 36),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.s12,
+                        minimumSize: Size(0, compact ? 34 : 36),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: compact ? AppSpacing.s12 : AppSpacing.s12,
                           vertical: AppSpacing.s4,
                         ),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.surface,
                         textStyle: AppTypography.labelLarge.copyWith(
                           fontWeight: FontWeight.w600,
+                          color: AppColors.surface,
+                          fontSize: compact ? 13 : 14,
                         ),
                       ),
                       child: Text(ShowcaseCtaCopy.cardLabel(showcase)),
@@ -127,9 +147,13 @@ class ShowcaseCard extends StatelessWidget {
 }
 
 class _ShowcasePreviewImage extends ConsumerWidget {
-  const _ShowcasePreviewImage({required this.showcase});
+  const _ShowcasePreviewImage({
+    required this.showcase,
+    required this.compact,
+  });
 
   final WorkflowShowcase showcase;
+  final bool compact;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -144,6 +168,7 @@ class _ShowcasePreviewImage extends ConsumerWidget {
         icon: showcase.previewVideoUrl != null
             ? Icons.play_circle_outline_rounded
             : Icons.auto_awesome_outlined,
+        compact: compact,
       ),
     );
   }

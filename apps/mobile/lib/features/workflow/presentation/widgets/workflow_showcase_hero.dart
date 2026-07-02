@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
 import 'package:ai_pilot/design_system/radius.dart';
+import 'package:ai_pilot/design_system/responsive.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/design_system/typography.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
@@ -34,20 +35,27 @@ class WorkflowShowcaseHero extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final resolver = ref.watch(showcaseImageResolverProvider);
+    final isMobile = context.isMobile;
     final title = showcase?.title ?? workflow.title;
     final category = showcase?.category;
     final imageUrl = resolver.resolveHeroUrl(
       showcase,
       workflowId: workflowId,
     );
+    final heroAspect = compact
+        ? 21 / 9
+        : isMobile
+            ? 4 / 3
+            : 16 / 9;
+    final placeholderIconSize = isMobile ? 28.0 : 44.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ClipRRect(
-          borderRadius: AppRadius.hero,
+          borderRadius: isMobile ? AppRadius.xLarge : AppRadius.hero,
           child: AspectRatio(
-            aspectRatio: compact ? 21 / 9 : 16 / 9,
+            aspectRatio: heroAspect,
             child: Stack(
               fit: StackFit.expand,
               children: [
@@ -55,9 +63,10 @@ class WorkflowShowcaseHero extends ConsumerWidget {
                   imageUrl: imageUrl,
                   fit: BoxFit.cover,
                   memCacheWidth: 1440,
-                  placeholder: const ShowcaseImagePlaceholder(
+                  placeholder: ShowcaseImagePlaceholder(
                     icon: Icons.auto_awesome_rounded,
-                    iconSize: 56,
+                    iconSize: placeholderIconSize,
+                    compact: isMobile,
                   ),
                 ),
                 DecoratedBox(
@@ -67,7 +76,7 @@ class WorkflowShowcaseHero extends ConsumerWidget {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        AppColors.charcoal.withValues(alpha: 0.62),
+                        AppColors.charcoal.withValues(alpha: 0.55),
                       ],
                     ),
                   ),
@@ -75,7 +84,7 @@ class WorkflowShowcaseHero extends ConsumerWidget {
                 if (category != null)
                   Positioned(
                     left: AppSpacing.s16,
-                    bottom: AppSpacing.s16,
+                    bottom: AppSpacing.s12,
                     right: AppSpacing.s16,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,10 +101,9 @@ class WorkflowShowcaseHero extends ConsumerWidget {
                           title,
                           maxLines: compact ? 1 : 2,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTypography.headlineSmall.copyWith(
+                          style: AppResponsiveTypography.detailHeadline(context)
+                              .copyWith(
                             color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.35,
                             height: 1.2,
                           ),
                         ),
@@ -107,7 +115,7 @@ class WorkflowShowcaseHero extends ConsumerWidget {
           ),
         ),
         if (!compact) ...[
-          const SizedBox(height: AppSpacing.s24),
+          SizedBox(height: AppResponsiveSpacing.cardGap(context)),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -117,15 +125,12 @@ class WorkflowShowcaseHero extends ConsumerWidget {
                   children: [
                     Text(
                       title,
-                      style: AppTypography.headlineSmall.copyWith(
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.35,
-                      ),
+                      style: AppResponsiveTypography.detailHeadline(context),
                     ),
                     const SizedBox(height: AppSpacing.s8),
                     Text(
                       ShowcaseCtaCopy.heroSubtitle(showcase),
-                      style: AppTypography.captionMedium.copyWith(
+                      style: AppResponsiveTypography.caption(context).copyWith(
                         color: AppColors.textSecondary,
                       ),
                     ),
@@ -135,7 +140,7 @@ class WorkflowShowcaseHero extends ConsumerWidget {
               WorkflowFavoriteButton(workflowId: workflowId),
             ],
           ),
-          const SizedBox(height: AppSpacing.s24),
+          SizedBox(height: AppResponsiveSpacing.cardGap(context)),
           WorkflowProductCta(onPressed: onStart),
         ],
       ],

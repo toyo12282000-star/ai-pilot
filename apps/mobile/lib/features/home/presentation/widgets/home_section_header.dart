@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:ai_pilot/design_system/colors.dart';
+import 'package:ai_pilot/design_system/responsive.dart';
 import 'package:ai_pilot/design_system/spacing.dart';
-import 'package:ai_pilot/design_system/typography.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/home_content_layout.dart';
 
 /// ホーム画面のセクション見出し。
@@ -23,7 +23,7 @@ class HomeSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final header = Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.s16),
+      padding: const EdgeInsets.only(bottom: AppSpacing.s12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.baseline,
         textBaseline: TextBaseline.alphabetic,
@@ -31,13 +31,13 @@ class HomeSectionHeader extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: AppTypography.sectionTitle,
+              style: AppResponsiveTypography.sectionTitle(context),
             ),
           ),
           if (trailing != null)
             Text(
               trailing!,
-              style: AppTypography.caption.copyWith(
+              style: AppResponsiveTypography.caption(context).copyWith(
                 color: AppColors.muted,
               ),
             ),
