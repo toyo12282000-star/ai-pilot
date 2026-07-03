@@ -15,8 +15,11 @@ import 'package:ai_pilot/features/home/presentation/widgets/home_content_layout.
 import 'package:ai_pilot/features/home/presentation/widgets/home_hero_section.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/home_section_header.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/favorite_workflow_section.dart';
+import 'package:ai_pilot/features/home/presentation/widgets/home_feedback_section.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/recent_workflow_section.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/workflow_card.dart';
+import 'package:ai_pilot/features/onboarding/presentation/providers/onboarding_providers.dart';
+import 'package:ai_pilot/features/onboarding/presentation/widgets/home_welcome_card.dart';
 import 'package:ai_pilot/features/recommendation/domain/entities/recommendation.dart';
 import 'package:ai_pilot/features/recommendation/presentation/providers/recommendation_providers.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
@@ -41,6 +44,8 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _showcaseSectionKey = GlobalKey();
   String? _selectedCategoryId;
   Recommendation? _selectedRecommendation;
   String _searchQuery = '';
@@ -51,6 +56,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   void dispose() {
     _debounceTimer?.cancel();
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -233,6 +239,29 @@ class _HomePageState extends ConsumerState<HomePage> {
       searchAsync: searchAsync,
     );
     final filteredWorkflows = _filterWorkflows(resolved.workflows);
+    final showWelcomeHint =
+        ref.watch(showHomeWelcomeProvider).valueOrNull ?? false;
+
+    void scrollToShowcases() {
+      final targetContext = _showcaseSectionKey.currentContext;
+      if (targetContext != null) {
+        Scrollable.ensureVisible(
+          targetContext,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOut,
+          alignment: 0.05,
+        );
+      }
+    }
+
+    Future<void> openPopularWorkflow() async {
+      final popular =
+          await ref.read(popularHomeWorkflowsProvider.future);
+      if (!context.mounted || popular.isEmpty) {
+        return;
+      }
+      context.push('/workflows/${popular.first.id}');
+    }
 
     if (categoriesAsync.isLoading && !categoriesAsync.hasValue) {
       return const Scaffold(
@@ -296,6 +325,9 @@ class _HomePageState extends ConsumerState<HomePage> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: _HomeBody(
+          scrollController: _scrollController,
+          showcaseSectionKey: _showcaseSectionKey,
+          showFirstTimeHint: showWelcomeHint,
           searchController: _searchController,
           searchQuery: _searchQuery,
           showRecommendations: _showRecommendations,
@@ -326,6 +358,8 @@ class _HomePageState extends ConsumerState<HomePage> {
           onRefresh: _refresh,
           onRetry: _retry,
           onAdvisorTap: () => context.push('/advisor'),
+          onBrowseShowcases: scrollToShowcases,
+          onStartPopularWorkflow: openPopularWorkflow,
         ),
       ),
     );
@@ -354,6 +388,9 @@ class _HomeLoadingSkeleton extends StatelessWidget {
 
 class _HomeBody extends StatelessWidget {
   const _HomeBody({
+    required this.scrollController,
+    required this.showcaseSectionKey,
+    required this.showFirstTimeHint,
     required this.searchController,
     required this.searchQuery,
     required this.showRecommendations,
@@ -374,8 +411,13 @@ class _HomeBody extends StatelessWidget {
     required this.onRefresh,
     required this.onRetry,
     required this.onAdvisorTap,
+    required this.onBrowseShowcases,
+    required this.onStartPopularWorkflow,
   });
 
+  final ScrollController scrollController;
+  final GlobalKey showcaseSectionKey;
+  final bool showFirstTimeHint;
   final TextEditingController searchController;
   final String searchQuery;
   final bool showRecommendations;
@@ -396,6 +438,8 @@ class _HomeBody extends StatelessWidget {
   final Future<void> Function() onRefresh;
   final VoidCallback onRetry;
   final VoidCallback onAdvisorTap;
+  final VoidCallback onBrowseShowcases;
+  final VoidCallback onStartPopularWorkflow;
 
   @override
   Widget build(BuildContext context) {
@@ -403,6 +447,7 @@ class _HomeBody extends StatelessWidget {
       color: AppColors.primary,
       onRefresh: onRefresh,
       child: ListView(
+        controller: scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.only(bottom: AppSpacing.s32),
         children: [
@@ -414,16 +459,28 @@ class _HomeBody extends StatelessWidget {
               onSearchClear: onSearchClear,
               showClearButton: searchQuery.isNotEmpty,
               onAdvisorTap: onAdvisorTap,
+              showFirstTimeHint: showFirstTimeHint,
+            ),
+          ),
+          FadeSlideIn(
+            index: 1,
+            child: HomeWelcomeCard(
+              onAdvisorTap: onAdvisorTap,
+              onBrowseShowcases: onBrowseShowcases,
+              onStartPopularWorkflow: onStartPopularWorkflow,
             ),
           ),
           if (showDiscoverySections)
-            const FadeSlideIn(
-              index: 1,
-              child: FeaturedShowcaseSection(),
+            FadeSlideIn(
+              index: 2,
+              child: KeyedSubtree(
+                key: showcaseSectionKey,
+                child: const FeaturedShowcaseSection(),
+              ),
             ),
           if (showCategorySection)
             FadeSlideIn(
-              index: showDiscoverySections ? 2 : 1,
+              index: showDiscoverySections ? 3 : 1,
               child: HomeCategorySection(
                 selectedCategoryId: selectedCategoryId,
                 onCategorySelected: onCategorySelected,
@@ -431,12 +488,15 @@ class _HomeBody extends StatelessWidget {
             ),
           if (showDiscoverySections)
             FadeSlideIn(
-              index: 3,
-              child: HomeAdvisorSection(onAdvisorTap: onAdvisorTap),
+              index: 4,
+              child: HomeAdvisorSection(
+                onAdvisorTap: onAdvisorTap,
+                showFirstTimeHint: showFirstTimeHint,
+              ),
             ),
           if (showRecommendations)
             FadeSlideIn(
-              index: showDiscoverySections ? 4 : 2,
+              index: showDiscoverySections ? 5 : 2,
               child: AiRecommendationSection(
                 selectedRecommendationId: selectedRecommendation?.id,
                 onRecommendationSelected: onRecommendationSelected,
@@ -444,12 +504,12 @@ class _HomeBody extends StatelessWidget {
             ),
           if (showDiscoverySections)
             const FadeSlideIn(
-              index: 5,
+              index: 6,
               child: RecentWorkflowSection(),
             ),
           if (showDiscoverySections)
             const FadeSlideIn(
-              index: 6,
+              index: 7,
               child: FavoriteWorkflowSection(),
             ),
           if (showSearchError)
@@ -477,7 +537,7 @@ class _HomeBody extends StatelessWidget {
             )
           else ...[
             FadeSlideIn(
-              index: showDiscoverySections ? 7 : 3,
+              index: showDiscoverySections ? 8 : 3,
               child: HomeContentLayout.constrain(
                 context: context,
                 child: HomeSectionHeader(
@@ -506,7 +566,7 @@ class _HomeBody extends StatelessWidget {
                         SizedBox(
                           width: cardWidth,
                           child: FadeSlideIn(
-                            index: (showDiscoverySections ? 8 : 4) + index,
+                            index: (showDiscoverySections ? 9 : 4) + index,
                             child: WorkflowCard(
                               workflow: workflows[index],
                               onTap: () => context.push(
@@ -521,6 +581,11 @@ class _HomeBody extends StatelessWidget {
               ),
             ),
           ],
+          if (showDiscoverySections)
+            const FadeSlideIn(
+              index: 10,
+              child: HomeFeedbackSection(),
+            ),
         ],
       ),
     );

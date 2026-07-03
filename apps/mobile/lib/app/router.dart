@@ -8,6 +8,7 @@ import 'package:ai_pilot/features/auth/presentation/pages/login_page.dart';
 import 'package:ai_pilot/features/auth/presentation/providers/auth_providers.dart';
 import 'package:ai_pilot/features/favorite/presentation/pages/favorites_page.dart';
 import 'package:ai_pilot/features/home/presentation/pages/home_page.dart';
+import 'package:ai_pilot/features/profile/presentation/pages/beta_feedback_page.dart';
 import 'package:ai_pilot/features/profile/presentation/pages/about_page.dart';
 import 'package:ai_pilot/features/profile/presentation/pages/privacy_policy_page.dart';
 import 'package:ai_pilot/features/profile/presentation/pages/settings_page.dart';
@@ -111,6 +112,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           final id = state.pathParameters['id']!;
           return AIToolDetailPage(aiToolId: id);
         },
+      ),
+      GoRoute(
+        path: '/beta-feedback',
+        builder: (context, state) => const BetaFeedbackPage(),
       ),
       GoRoute(
         path: '/about',

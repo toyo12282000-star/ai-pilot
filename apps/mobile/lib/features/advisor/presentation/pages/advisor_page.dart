@@ -232,6 +232,7 @@ class _AdvisorPageState extends ConsumerState<AdvisorPage> {
                 AdvisorRecentHistorySection(
                   queryController: _inputController,
                   onHistorySelected: _handleHistorySelected,
+                  onExampleSelected: _handleExampleSelected,
                   isLoading: _chat.isSubmitting,
                 ),
                 AdvisorChatTimeline(

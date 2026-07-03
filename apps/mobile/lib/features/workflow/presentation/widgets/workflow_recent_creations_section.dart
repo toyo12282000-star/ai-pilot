@@ -105,7 +105,7 @@ class _RecentCreationsEmptyCard extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.s8),
             Text(
-              '最初の1人になってみましょう',
+              '最初の1人として、下の手順から始めてみましょう',
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.muted,
               ),

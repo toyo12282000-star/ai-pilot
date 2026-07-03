@@ -11,6 +11,7 @@ import 'package:ai_pilot/features/favorite/presentation/providers/favorite_provi
 import 'package:ai_pilot/features/home/presentation/pages/home_page.dart';
 import 'package:ai_pilot/features/profile/data/repositories/mock_user_profile_repository.dart';
 import 'package:ai_pilot/features/profile/presentation/pages/about_page.dart';
+import 'package:ai_pilot/features/profile/presentation/pages/beta_feedback_page.dart';
 import 'package:ai_pilot/features/profile/presentation/pages/privacy_policy_page.dart';
 import 'package:ai_pilot/features/profile/presentation/pages/settings_page.dart';
 import 'package:ai_pilot/features/profile/presentation/pages/terms_page.dart';
@@ -94,6 +95,10 @@ GoRouter _buildShellRouter({String initialLocation = '/settings'}) {
             const Scaffold(body: Text('Login Page')),
       ),
       GoRoute(
+        path: '/beta-feedback',
+        builder: (context, state) => const BetaFeedbackPage(),
+      ),
+      GoRoute(
         path: '/about',
         builder: (context, state) => const AboutPage(),
       ),
@@ -109,7 +114,25 @@ GoRouter _buildShellRouter({String initialLocation = '/settings'}) {
   );
 }
 
+Future<void> _tapSettingsLink(WidgetTester tester, String label) async {
+  final target = find.text(label);
+  final settingsScrollable = find.descendant(
+    of: find.byType(SettingsPage),
+    matching: find.byType(Scrollable),
+  );
+  await tester.scrollUntilVisible(
+    target,
+    500,
+    scrollable: settingsScrollable,
+  );
+  await tester.tap(target);
+  await tester.pumpAndSettle();
+}
+
 Future<void> _openSettings(WidgetTester tester) async {
+  await tester.binding.setSurfaceSize(const Size(420, 920));
+  addTearDown(() => tester.binding.setSurfaceSize(null));
+
   final router = _buildShellRouter();
   await tester.pumpWidget(_buildGuestApp(router));
   await tester.pumpAndSettle();
@@ -122,6 +145,7 @@ void main() {
     await _openSettings(tester);
 
     expect(find.text('AI Pilotについて'), findsOneWidget);
+    expect(find.text('フィードバックを送る'), findsOneWidget);
     expect(find.text('利用規約'), findsOneWidget);
     expect(find.text('プライバシーポリシー'), findsOneWidget);
   });
@@ -161,11 +185,18 @@ void main() {
     expect(find.text('第三者への提供'), findsOneWidget);
   });
 
+  testWidgets('Settings navigates to beta feedback page', (tester) async {
+    await _openSettings(tester);
+
+    await _tapSettingsLink(tester, 'フィードバックを送る');
+
+    expect(find.text('不具合・改善要望を送る'), findsOneWidget);
+  });
+
   testWidgets('Settings navigates to about page', (tester) async {
     await _openSettings(tester);
 
-    await tester.tap(find.text('AI Pilotについて'));
-    await tester.pumpAndSettle();
+    await _tapSettingsLink(tester, 'AI Pilotについて');
 
     expect(find.text('AI Pilotとは'), findsOneWidget);
   });
@@ -173,8 +204,7 @@ void main() {
   testWidgets('Settings navigates to terms page', (tester) async {
     await _openSettings(tester);
 
-    await tester.tap(find.text('利用規約'));
-    await tester.pumpAndSettle();
+    await _tapSettingsLink(tester, '利用規約');
 
     expect(find.text('免責事項'), findsOneWidget);
   });
@@ -182,8 +212,7 @@ void main() {
   testWidgets('Settings navigates to privacy page', (tester) async {
     await _openSettings(tester);
 
-    await tester.tap(find.text('プライバシーポリシー'));
-    await tester.pumpAndSettle();
+    await _tapSettingsLink(tester, 'プライバシーポリシー');
 
     expect(find.textContaining('お問い合わせ'), findsWidgets);
   });

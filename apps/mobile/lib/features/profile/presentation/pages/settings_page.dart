@@ -109,6 +109,21 @@ class SettingsPage extends ConsumerWidget {
           FadeSlideIn(
             index: 2,
             child: SettingsSectionCard(
+              title: 'β版',
+              children: [
+                SettingsListTile(
+                  title: 'フィードバックを送る',
+                  subtitle: '不具合・要望・Workflowリクエスト',
+                  icon: Icons.feedback_outlined,
+                  showChevron: true,
+                  onTap: () => context.push('/beta-feedback'),
+                ),
+              ],
+            ),
+          ),
+          FadeSlideIn(
+            index: 3,
+            child: SettingsSectionCard(
               title: 'アプリ情報',
               children: [
                 SettingsListTile(
@@ -134,7 +149,7 @@ class SettingsPage extends ConsumerWidget {
             ),
           ),
           const FadeSlideIn(
-            index: 3,
+            index: 4,
             child: SettingsPreviewBadge(),
           ),
         ],

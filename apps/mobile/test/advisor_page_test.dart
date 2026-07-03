@@ -4,10 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:ai_pilot/features/advisor/data/repositories/mock_advisor_history_repository.dart';
+import 'package:ai_pilot/features/advisor/presentation/providers/advisor_history_providers.dart';
 import 'package:ai_pilot/features/advisor/data/repositories/mock_advisor_api_repository.dart';
 import 'package:ai_pilot/features/advisor/presentation/models/advisor_conversation_flow.dart';
 import 'package:ai_pilot/features/advisor/presentation/pages/advisor_page.dart';
-import 'package:ai_pilot/features/advisor/presentation/providers/advisor_history_providers.dart';
 import 'package:ai_pilot/features/advisor/presentation/providers/advisor_providers.dart';
 import 'package:ai_pilot/features/recommendation/data/repositories/mock_recommendation_repository.dart';
 import 'package:ai_pilot/features/recommendation/data/repositories/mock_recommendation_seed_data.dart';
@@ -138,10 +138,7 @@ void main() {
 
     expect(find.text('最近の相談'), findsOneWidget);
     expect(find.text('まだ相談履歴がありません'), findsOneWidget);
-    expect(
-      find.text('AI Pilot に作りたいものを相談してみましょう'),
-      findsOneWidget,
-    );
+    expect(find.text('YouTubeを始めたい'), findsWidgets);
   });
 
   testWidgets('Recent history tap triggers recommendation', (tester) async {

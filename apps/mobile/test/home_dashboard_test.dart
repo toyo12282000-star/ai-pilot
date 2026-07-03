@@ -91,7 +91,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('まだWorkflowを使っていません'), findsOneWidget);
+    expect(find.text('人気のWorkflowを見る'), findsOneWidget);
     expect(find.text('まだ保存したWorkflowがありません'), findsOneWidget);
+    expect(find.text('Workflowを探す'), findsOneWidget);
   });
 
   test('popularHomeWorkflowsProvider sorts by social proof score', () async {

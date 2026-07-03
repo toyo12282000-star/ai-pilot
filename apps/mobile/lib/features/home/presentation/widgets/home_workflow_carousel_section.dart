@@ -19,6 +19,8 @@ class HomeWorkflowCarouselSection extends StatelessWidget {
     required this.onWorkflowTap,
     required this.emptyTitle,
     required this.emptySubtitle,
+    this.emptyActionLabel,
+    this.onEmptyAction,
     this.isLoading = false,
   });
 
@@ -27,6 +29,8 @@ class HomeWorkflowCarouselSection extends StatelessWidget {
   final ValueChanged<Workflow> onWorkflowTap;
   final String emptyTitle;
   final String emptySubtitle;
+  final String? emptyActionLabel;
+  final VoidCallback? onEmptyAction;
   final bool isLoading;
 
   static const double _listHeight = RecommendedWorkflowCard.cardHeight;
@@ -54,6 +58,8 @@ class HomeWorkflowCarouselSection extends StatelessWidget {
             child: _HomeSectionEmptyCard(
               title: emptyTitle,
               subtitle: emptySubtitle,
+              actionLabel: emptyActionLabel,
+              onAction: onEmptyAction,
             ),
           )
         else
@@ -87,10 +93,14 @@ class _HomeSectionEmptyCard extends StatelessWidget {
   const _HomeSectionEmptyCard({
     required this.title,
     required this.subtitle,
+    this.actionLabel,
+    this.onAction,
   });
 
   final String title;
   final String subtitle;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -120,6 +130,10 @@ class _HomeSectionEmptyCard extends StatelessWidget {
               style: AppTypography.bodySmall.copyWith(color: AppColors.muted),
               textAlign: TextAlign.center,
             ),
+            if (actionLabel != null && onAction != null) ...[
+              const SizedBox(height: AppSpacing.s16),
+              TextButton(onPressed: onAction, child: Text(actionLabel!)),
+            ],
           ],
         ),
       ),

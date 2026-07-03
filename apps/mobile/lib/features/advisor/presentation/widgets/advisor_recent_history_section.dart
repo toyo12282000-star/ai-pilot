@@ -16,6 +16,7 @@ class AdvisorRecentHistorySection extends ConsumerWidget {
     super.key,
     required this.queryController,
     required this.onHistorySelected,
+    required this.onExampleSelected,
     required this.isLoading,
   });
 
@@ -23,6 +24,7 @@ class AdvisorRecentHistorySection extends ConsumerWidget {
 
   final TextEditingController queryController;
   final ValueChanged<String> onHistorySelected;
+  final ValueChanged<String> onExampleSelected;
   final bool isLoading;
 
   @override
@@ -52,7 +54,7 @@ class AdvisorRecentHistorySection extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.s12),
               if (histories.isEmpty)
-                const _AdvisorHistoryEmptyState()
+                _AdvisorHistoryEmptyState(onExampleSelected: onExampleSelected)
               else ...[
                 for (final history in histories.take(displayLimit)) ...[
                   _AdvisorHistoryCard(
@@ -85,7 +87,15 @@ class AdvisorRecentHistorySection extends ConsumerWidget {
 }
 
 class _AdvisorHistoryEmptyState extends StatelessWidget {
-  const _AdvisorHistoryEmptyState();
+  const _AdvisorHistoryEmptyState({required this.onExampleSelected});
+
+  final ValueChanged<String> onExampleSelected;
+
+  static const _exampleQueries = [
+    'YouTubeを始めたい',
+    'Instagram投稿を作りたい',
+    'ブログを書きたい',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -108,10 +118,30 @@ class _AdvisorHistoryEmptyState extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.s4),
           Text(
-            'AI Pilot に作りたいものを相談してみましょう',
+            '例文から選ぶか、作りたいものを入力して相談してみましょう',
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
+          ),
+          const SizedBox(height: AppSpacing.s12),
+          Wrap(
+            spacing: AppSpacing.s8,
+            runSpacing: AppSpacing.s8,
+            children: [
+              for (final example in _exampleQueries)
+                ActionChip(
+                  label: Text(
+                    example,
+                    style: AppTypography.labelMedium.copyWith(fontSize: 12),
+                  ),
+                  onPressed: () => onExampleSelected(example),
+                  backgroundColor: AppColors.background,
+                  side: const BorderSide(color: AppColors.outline),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: AppRadius.pill,
+                  ),
+                ),
+            ],
           ),
         ],
       ),

@@ -11,9 +11,11 @@ class HomeAdvisorSection extends StatelessWidget {
   const HomeAdvisorSection({
     super.key,
     required this.onAdvisorTap,
+    this.showFirstTimeHint = false,
   });
 
   final VoidCallback onAdvisorTap;
+  final bool showFirstTimeHint;
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +29,16 @@ class HomeAdvisorSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (showFirstTimeHint) ...[
+                  Text(
+                    'おすすめの次の一歩',
+                    style: AppTypography.labelMedium.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.s8),
+                ],
                 Text(
                   '何を作ればいいか迷っていますか？',
                   style: AppTypography.titleMedium.copyWith(

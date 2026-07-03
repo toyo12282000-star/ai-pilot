@@ -10,6 +10,14 @@ import 'package:ai_pilot/shared/providers/authenticated_user_provider.dart';
 class RecentWorkflowSection extends ConsumerWidget {
   const RecentWorkflowSection({super.key});
 
+  Future<void> _openPopularWorkflow(BuildContext context, WidgetRef ref) async {
+    final popular = await ref.read(popularHomeWorkflowsProvider.future);
+    if (!context.mounted || popular.isEmpty) {
+      return;
+    }
+    context.push('/workflows/${popular.first.id}');
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (!ref.watch(isAuthenticatedProvider)) {
@@ -32,7 +40,9 @@ class RecentWorkflowSection extends ConsumerWidget {
         title: '最近使った',
         workflows: workflows,
         emptyTitle: 'まだWorkflowを使っていません',
-        emptySubtitle: '気になる作品を開いてみましょう',
+        emptySubtitle: '人気の Workflow から、最初の1作品を試してみましょう',
+        emptyActionLabel: '人気のWorkflowを見る',
+        onEmptyAction: () => _openPopularWorkflow(context, ref),
         onWorkflowTap: (workflow) => context.push('/workflows/${workflow.id}'),
       ),
     );

@@ -10,6 +10,14 @@ import 'package:ai_pilot/shared/providers/authenticated_user_provider.dart';
 class FavoriteWorkflowSection extends ConsumerWidget {
   const FavoriteWorkflowSection({super.key});
 
+  Future<void> _openPopularWorkflow(BuildContext context, WidgetRef ref) async {
+    final popular = await ref.read(popularHomeWorkflowsProvider.future);
+    if (!context.mounted || popular.isEmpty) {
+      return;
+    }
+    context.push('/workflows/${popular.first.id}');
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (!ref.watch(isAuthenticatedProvider)) {
@@ -32,7 +40,9 @@ class FavoriteWorkflowSection extends ConsumerWidget {
         title: 'お気に入り',
         workflows: workflows,
         emptyTitle: 'まだ保存したWorkflowがありません',
-        emptySubtitle: '気になる作品を保存しておくと、ここに並びます',
+        emptySubtitle: '気になる作品を Workflow 詳細から保存できます',
+        emptyActionLabel: 'Workflowを探す',
+        onEmptyAction: () => _openPopularWorkflow(context, ref),
         onWorkflowTap: (workflow) => context.push('/workflows/${workflow.id}'),
       ),
     );

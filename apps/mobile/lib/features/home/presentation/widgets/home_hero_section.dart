@@ -18,6 +18,7 @@ class HomeHeroSection extends StatelessWidget {
     required this.onSearchClear,
     required this.showClearButton,
     required this.onAdvisorTap,
+    this.showFirstTimeHint = false,
   });
 
   final TextEditingController searchController;
@@ -25,6 +26,7 @@ class HomeHeroSection extends StatelessWidget {
   final VoidCallback onSearchClear;
   final bool showClearButton;
   final VoidCallback onAdvisorTap;
+  final bool showFirstTimeHint;
 
   static const double _controlHeight = 46;
 
@@ -74,6 +76,7 @@ class HomeHeroSection extends StatelessWidget {
                               onSearchClear: onSearchClear,
                               showClearButton: showClearButton,
                               onAdvisorTap: onAdvisorTap,
+                              showFirstTimeHint: showFirstTimeHint,
                               compact: false,
                             ),
                           ),
@@ -90,6 +93,7 @@ class HomeHeroSection extends StatelessWidget {
                         onSearchClear: onSearchClear,
                         showClearButton: showClearButton,
                         onAdvisorTap: onAdvisorTap,
+                        showFirstTimeHint: showFirstTimeHint,
                         compact: isMobile,
                       ),
               ),
@@ -108,6 +112,7 @@ class _HeroContent extends StatelessWidget {
     required this.onSearchClear,
     required this.showClearButton,
     required this.onAdvisorTap,
+    required this.showFirstTimeHint,
     required this.compact,
   });
 
@@ -116,6 +121,7 @@ class _HeroContent extends StatelessWidget {
   final VoidCallback onSearchClear;
   final bool showClearButton;
   final VoidCallback onAdvisorTap;
+  final bool showFirstTimeHint;
   final bool compact;
 
   @override
@@ -123,6 +129,16 @@ class _HeroContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (showFirstTimeHint) ...[
+          Text(
+            'まずはここから',
+            style: AppTypography.labelMedium.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: compact ? AppSpacing.s8 : AppSpacing.s12),
+        ],
         Text(
           '今日は何を作りますか？',
           maxLines: 2,
