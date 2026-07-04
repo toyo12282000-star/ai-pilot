@@ -21,12 +21,12 @@ class AdvisorChatHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'AIに相談する',
+            'Advisorに相談',
             style: AppResponsiveTypography.detailHeadline(context),
           ),
           const SizedBox(height: AppSpacing.s8),
           Text(
-            '作りたいものが曖昧でも大丈夫。会話しながら最適なWorkflowを見つけます。',
+            '2〜3問に答えるだけで、あなたに合うWorkflowを提案します',
             style: AppResponsiveTypography.body(context).copyWith(
               color: AppColors.textSecondary,
               height: 1.5,

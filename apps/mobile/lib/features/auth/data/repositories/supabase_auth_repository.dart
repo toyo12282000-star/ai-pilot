@@ -61,6 +61,10 @@ class SupabaseAuthRepository implements AuthRepository {
     if (user == null) {
       return null;
     }
-    return AuthUser(id: user.id, email: user.email);
+    return AuthUser(
+      id: user.id,
+      email: user.email,
+      userMetadata: user.userMetadata,
+    );
   }
 }

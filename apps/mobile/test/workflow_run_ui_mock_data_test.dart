@@ -31,13 +31,13 @@ void main() {
   });
 
   test('checklist includes ai tool name when provided', () {
-    final step = mockWorkflows.first.steps.first;
+    final step = mockWorkflows.first.steps[1];
     final items = WorkflowRunUiMockData.checklistFor(
       step,
       aiToolName: 'ChatGPT',
     );
 
-    expect(items.first, 'ChatGPTを開く');
+    expect(items[1], 'ChatGPTを開いた');
     expect(items, hasLength(4));
   });
 }

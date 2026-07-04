@@ -28,9 +28,10 @@ class UserProfileDto {
   final DateTime updatedAt;
 
   UserProfile toEntity({String? email}) {
+    final trimmed = displayName?.trim();
     return UserProfile(
       id: id,
-      displayName: displayName ?? 'ユーザー',
+      displayName: trimmed == null || trimmed.isEmpty ? null : trimmed,
       email: email,
       avatarUrl: avatarUrl,
       createdAt: createdAt,

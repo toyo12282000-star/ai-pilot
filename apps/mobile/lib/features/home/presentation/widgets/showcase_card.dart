@@ -250,7 +250,7 @@ class _ShowcaseMetaRow extends StatelessWidget {
 
   static int? _aiToolCountHint(String workflowId) {
     return switch (workflowId) {
-      'wf_youtube_short' => 4,
+      'wf_youtube_short' => 5,
       'wf_blog' => 3,
       'wf_sns' => 3,
       _ => null,

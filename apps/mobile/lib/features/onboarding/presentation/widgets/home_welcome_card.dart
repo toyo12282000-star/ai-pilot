@@ -29,8 +29,8 @@ class HomeWelcomeCard extends ConsumerWidget {
     ),
     (
       icon: Icons.auto_awesome_outlined,
-      title: 'AIに相談する',
-      subtitle: '作りたいものを伝えると、最適な Workflow を提案します',
+      title: 'Advisorに相談する',
+      subtitle: '2〜3問でおすすめWorkflowを提案',
     ),
     (
       icon: Icons.play_circle_outline_rounded,

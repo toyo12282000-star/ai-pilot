@@ -30,11 +30,11 @@ const _defaultBenefits = [
 
 const _benefitsByWorkflow = <String, List<String>>{
   'wf_youtube_short': [
-    'YouTubeへそのまま投稿できる',
-    '60秒以内で完成する',
-    'スマホだけでも作れる',
+    'YouTube Shorts / TikTokへそのまま投稿できる',
+    '16ステップで迷わず完成',
+    '35〜50秒の雑学ショート',
     'AI初心者でもOK',
-    '収益化にも使える',
+    '無料ツールだけで完成',
   ],
   'wf_sns': [
     'Instagramにそのまま投稿できる',
@@ -70,16 +70,16 @@ const _defaultBeforeAfter = [
 const _beforeAfterByWorkflow = <String, List<WorkflowBeforeAfterPair>>{
   'wf_youtube_short': [
     WorkflowBeforeAfterPair(
-      before: '企画が思いつかない',
-      after: '30秒で企画完成',
+      before: '1 Stepにやることが多すぎる',
+      after: '16 Stepで1つずつ進める',
     ),
     WorkflowBeforeAfterPair(
       before: '台本が書けない',
-      after: 'ChatGPTで3分',
+      after: 'ChatGPTで段階的に作成',
     ),
     WorkflowBeforeAfterPair(
-      before: '編集が難しい',
-      after: 'Vrewだけで完成',
+      before: 'CapCut編集が難しい',
+      after: '音声→素材→テロップの順で完成',
     ),
   ],
   'wf_sns': [

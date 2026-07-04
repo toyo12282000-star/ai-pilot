@@ -29,14 +29,14 @@ class AdvisorHeroSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'AIに相談する',
+              'Advisorに相談',
               style: AppTypography.headlineSmall.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: AppSpacing.s8),
             Text(
-              'やりたいことを入力すると、最適なWorkflowを3件提案します',
+              '2〜3問に答えるだけで、あなたに合うWorkflowを提案します',
               style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
               ),

@@ -9,10 +9,14 @@ final List<WorkflowOutcome> mockWorkflowOutcomes = [
   WorkflowOutcome(
     id: 'outcome_youtube_short',
     workflowId: 'wf_youtube_short',
-    title: '60秒のYouTubeショート動画',
-    description: '企画から台本、ナレーション、編集まで、投稿可能な縦型ショート動画1本が完成します',
+    title: '世界一危険な島3選ショート動画',
+    description:
+        '企画から台本、ナレーション、素材、CapCut編集まで、'
+        '35〜50秒の雑学ショート動画1本が完成します',
     outcomeType: OutcomeType.video,
-    expectedResult: '1080×1920の縦型ショート動画が1本完成し、YouTubeにそのままアップロードできる状態',
+    expectedResult:
+        '1080×1920の縦型ショート動画（35〜50秒）が1本完成し、'
+        'YouTube Shorts / TikTokにそのまま投稿できる状態',
     sortOrder: 0,
     createdAt: mockBaseDate,
     updatedAt: mockBaseDate,
@@ -46,7 +50,7 @@ final List<WorkflowOutcome> mockWorkflowOutcomes = [
 final List<WorkflowStepToolOption> mockWorkflowStepToolOptions = [
   WorkflowStepToolOption(
     id: 'step_tool_001',
-    workflowStepId: 'step_short_1',
+    workflowStepId: 'step_short_2',
     aiToolId: 'tool_chatgpt',
     isRecommended: true,
     recommendationReason: '企画案の壁打ち・アイデア出しに最適',
@@ -58,7 +62,7 @@ final List<WorkflowStepToolOption> mockWorkflowStepToolOptions = [
   ),
   WorkflowStepToolOption(
     id: 'step_tool_002',
-    workflowStepId: 'step_short_1',
+    workflowStepId: 'step_short_2',
     aiToolId: 'tool_claude',
     isRecommended: false,
     recommendationReason: 'より詳細な企画書が必要な場合',
@@ -70,7 +74,7 @@ final List<WorkflowStepToolOption> mockWorkflowStepToolOptions = [
   ),
   WorkflowStepToolOption(
     id: 'step_tool_003',
-    workflowStepId: 'step_short_1',
+    workflowStepId: 'step_short_2',
     aiToolId: 'tool_gemini',
     isRecommended: false,
     recommendationReason: 'SNSトレンドを意識した企画向け',
@@ -82,7 +86,7 @@ final List<WorkflowStepToolOption> mockWorkflowStepToolOptions = [
   ),
   WorkflowStepToolOption(
     id: 'step_tool_004',
-    workflowStepId: 'step_short_1',
+    workflowStepId: 'step_short_2',
     aiToolId: 'tool_perplexity',
     isRecommended: false,
     recommendationReason: '最新トレンド・競合調査に強い',
@@ -94,7 +98,7 @@ final List<WorkflowStepToolOption> mockWorkflowStepToolOptions = [
   ),
   WorkflowStepToolOption(
     id: 'step_tool_005',
-    workflowStepId: 'step_short_2',
+    workflowStepId: 'step_short_4',
     aiToolId: 'tool_claude',
     isRecommended: true,
     recommendationReason: '長文台本の一貫性・自然な文体に強い',
@@ -106,7 +110,7 @@ final List<WorkflowStepToolOption> mockWorkflowStepToolOptions = [
   ),
   WorkflowStepToolOption(
     id: 'step_tool_006',
-    workflowStepId: 'step_short_2',
+    workflowStepId: 'step_short_4',
     aiToolId: 'tool_chatgpt',
     isRecommended: false,
     recommendationReason: '素早い台本ドラフト向け',
@@ -118,7 +122,7 @@ final List<WorkflowStepToolOption> mockWorkflowStepToolOptions = [
   ),
   WorkflowStepToolOption(
     id: 'step_tool_007',
-    workflowStepId: 'step_short_2',
+    workflowStepId: 'step_short_4',
     aiToolId: 'tool_gemini',
     isRecommended: false,
     recommendationReason: '短い文案・フック生成向け',
@@ -130,7 +134,7 @@ final List<WorkflowStepToolOption> mockWorkflowStepToolOptions = [
   ),
   WorkflowStepToolOption(
     id: 'step_tool_008',
-    workflowStepId: 'step_short_2',
+    workflowStepId: 'step_short_4',
     aiToolId: 'tool_vrew',
     isRecommended: false,
     recommendationReason: '台本から直接字幕付き動画も可能',
@@ -142,7 +146,7 @@ final List<WorkflowStepToolOption> mockWorkflowStepToolOptions = [
   ),
   WorkflowStepToolOption(
     id: 'step_tool_009',
-    workflowStepId: 'step_short_3',
+    workflowStepId: 'step_short_8',
     aiToolId: 'tool_elevenlabs',
     isRecommended: true,
     recommendationReason: '高品質な音声合成・感情表現',
@@ -154,7 +158,7 @@ final List<WorkflowStepToolOption> mockWorkflowStepToolOptions = [
   ),
   WorkflowStepToolOption(
     id: 'step_tool_010',
-    workflowStepId: 'step_short_3',
+    workflowStepId: 'step_short_8',
     aiToolId: 'tool_voicevox',
     isRecommended: false,
     recommendationReason: '無料で自然な日本語ナレーション',
@@ -166,7 +170,7 @@ final List<WorkflowStepToolOption> mockWorkflowStepToolOptions = [
   ),
   WorkflowStepToolOption(
     id: 'step_tool_011',
-    workflowStepId: 'step_short_3',
+    workflowStepId: 'step_short_8',
     aiToolId: 'tool_vrew',
     isRecommended: false,
     recommendationReason: 'テキストから字幕付き動画を一括生成',
@@ -178,7 +182,7 @@ final List<WorkflowStepToolOption> mockWorkflowStepToolOptions = [
   ),
   WorkflowStepToolOption(
     id: 'step_tool_012',
-    workflowStepId: 'step_short_3',
+    workflowStepId: 'step_short_8',
     aiToolId: 'tool_chatgpt',
     isRecommended: false,
     recommendationReason: 'ナレーション原稿の読みやすさ調整',
@@ -190,7 +194,7 @@ final List<WorkflowStepToolOption> mockWorkflowStepToolOptions = [
   ),
   WorkflowStepToolOption(
     id: 'step_tool_013',
-    workflowStepId: 'step_short_4',
+    workflowStepId: 'step_short_13',
     aiToolId: 'tool_capcut',
     isRecommended: true,
     recommendationReason: 'ショート動画編集の定番・無料',
@@ -202,7 +206,7 @@ final List<WorkflowStepToolOption> mockWorkflowStepToolOptions = [
   ),
   WorkflowStepToolOption(
     id: 'step_tool_014',
-    workflowStepId: 'step_short_4',
+    workflowStepId: 'step_short_13',
     aiToolId: 'tool_vrew',
     isRecommended: false,
     recommendationReason: 'テキスト編集＝動画編集で時短',
@@ -214,7 +218,7 @@ final List<WorkflowStepToolOption> mockWorkflowStepToolOptions = [
   ),
   WorkflowStepToolOption(
     id: 'step_tool_015',
-    workflowStepId: 'step_short_4',
+    workflowStepId: 'step_short_14',
     aiToolId: 'tool_canva',
     isRecommended: false,
     recommendationReason: 'サムネイル・テロップ素材作成',
@@ -226,7 +230,7 @@ final List<WorkflowStepToolOption> mockWorkflowStepToolOptions = [
   ),
   WorkflowStepToolOption(
     id: 'step_tool_016',
-    workflowStepId: 'step_short_4',
+    workflowStepId: 'step_short_16',
     aiToolId: 'tool_ideogram',
     isRecommended: false,
     recommendationReason: 'AI生成サムネイル・B-roll素材',
@@ -435,21 +439,24 @@ final List<WorkflowStepToolOption> mockWorkflowStepToolOptions = [
 final List<PromptVariant> mockPromptVariants = [
   PromptVariant(
     id: 'variant_001',
-    workflowStepId: 'step_short_1',
-    promptTemplateId: 'prompt_short_idea',
-    title: '初心者向け企画プロンプト',
+    workflowStepId: 'step_short_2',
+    promptTemplateId: 'prompt_short_islands',
+    title: '初心者向け・島3つ提案',
     variantType: PromptVariantType.beginner,
-    content: 'テーマ「{{theme}}」について、YouTubeショート（60秒以内）の企画案を3つ提案してください。各案にタイトル・ターゲット視聴者・冒頭3秒のフック・構成概要（3パート）を含めてください。初心者でも作れる内容にしてください。',
-    expectedOutput: '3つの企画案（タイトル・ターゲット・フック・構成概要付き）',
-    usageTips: 'テーマは「ChatGPT 副業」のように具体化すると精度が上がります',
-    variables: ['theme'],
+    content:
+        '「世界一危険な島3選」のYouTubeショート向けに、'
+        '初心者でも素材が集めやすい危険な島を3つ提案してください。'
+        '各島: 島名 / 危険ポイント / 見た目のインパクト を1行ずつ。',
+    expectedOutput: '危険な島3つ（島名・危険ポイント・インパクト付き）',
+    usageTips: '見た目のインパクトがある島を1つ以上入れるとショート向き',
+    variables: const [],
     sortOrder: 0,
     createdAt: mockBaseDate,
     updatedAt: mockBaseDate,
   ),
   PromptVariant(
     id: 'variant_002',
-    workflowStepId: 'step_short_1',
+    workflowStepId: 'step_short_2',
     promptTemplateId: 'prompt_short_idea',
     title: '高品質企画プロンプト',
     variantType: PromptVariantType.highQuality,
@@ -463,7 +470,7 @@ final List<PromptVariant> mockPromptVariants = [
   ),
   PromptVariant(
     id: 'variant_003',
-    workflowStepId: 'step_short_1',
+    workflowStepId: 'step_short_2',
     title: '時短企画プロンプト',
     variantType: PromptVariantType.shortTime,
     content: 'テーマ「{{theme}}」のYouTubeショート企画を1つだけ、15分以内で撮影・編集できる内容で提案してください。スマホ1台・ナレーションのみ・B-roll不要の構成にしてください。',
@@ -476,7 +483,7 @@ final List<PromptVariant> mockPromptVariants = [
   ),
   PromptVariant(
     id: 'variant_004',
-    workflowStepId: 'step_short_1',
+    workflowStepId: 'step_short_2',
     title: 'バズ狙い企画プロンプト',
     variantType: PromptVariantType.viral,
     content: 'テーマ「{{theme}}」で、YouTubeショートのバズを狙った企画案を3つ提案してください。\n以下のバズ要素を必ず含めてください:\n- 冒頭1秒で止める「衝撃フック」\n- コメント欄を活性化する「問いかけ」\n- 保存・シェアしたくなる「リスト形式」または「Before/After」\n- トレンド音源・ハッシュタグ候補',
@@ -489,7 +496,7 @@ final List<PromptVariant> mockPromptVariants = [
   ),
   PromptVariant(
     id: 'variant_005',
-    workflowStepId: 'step_short_1',
+    workflowStepId: 'step_short_2',
     title: 'プロ品質企画プロンプト',
     variantType: PromptVariantType.professional,
     content: 'テーマ「{{theme}}」について、チャンネルブランディングを意識したYouTubeショート企画を2つ作成してください。\nチャンネル名: {{channel_name}}\nターゲット: {{target_audience}}\n\n各案にシリーズ化の可能性・他動画との連携・チャンネル登録につながるCTAを含めてください。',
@@ -502,21 +509,24 @@ final List<PromptVariant> mockPromptVariants = [
   ),
   PromptVariant(
     id: 'variant_006',
-    workflowStepId: 'step_short_2',
-    promptTemplateId: 'prompt_short_script',
+    workflowStepId: 'step_short_4',
+    promptTemplateId: 'prompt_short_script_danger',
     title: '初心者向け台本プロンプト',
     variantType: PromptVariantType.beginner,
-    content: '以下の企画案から、60秒以内のYouTubeショート台本を作成してください。\n\n企画: {{idea}}\n\n条件:\n- 話し言葉で自然な日本語\n- 1文20文字以内\n- 【0-3秒】【3-45秒】【45-60秒】の3パート構成\n- テロップ用キーワードを【】で明示',
-    expectedOutput: '60秒以内の台本（3パート構成・テロップ指示付き）',
+    content:
+        '以下の構成から、35〜50秒の雑学ショート台本を作成してください。\n\n'
+        '構成: {{structure}}\n\n'
+        '条件: 話し言葉 / 3位→2位→1位 / 冒頭フック / 保存CTA',
+    expectedOutput: '35〜50秒の台本（3位→2位→1位構成）',
     usageTips: '完成後、声に出して読み上げタイムを計測してください',
-    variables: ['idea'],
+    variables: ['structure'],
     sortOrder: 0,
     createdAt: mockBaseDate,
     updatedAt: mockBaseDate,
   ),
   PromptVariant(
     id: 'variant_007',
-    workflowStepId: 'step_short_2',
+    workflowStepId: 'step_short_4',
     promptTemplateId: 'prompt_short_script',
     title: '高品質台本プロンプト',
     variantType: PromptVariantType.highQuality,
@@ -530,7 +540,7 @@ final List<PromptVariant> mockPromptVariants = [
   ),
   PromptVariant(
     id: 'variant_008',
-    workflowStepId: 'step_short_2',
+    workflowStepId: 'step_short_4',
     title: '時短台本プロンプト',
     variantType: PromptVariantType.shortTime,
     content: '企画「{{idea}}」のYouTubeショート台本を、30秒以内・150文字以内で作成してください。\n構成: フック(3秒) → 本編1ポイント(20秒) → CTA(7秒)\n話し言葉、テロップ3箇所以内。',
@@ -543,7 +553,7 @@ final List<PromptVariant> mockPromptVariants = [
   ),
   PromptVariant(
     id: 'variant_009',
-    workflowStepId: 'step_short_2',
+    workflowStepId: 'step_short_4',
     title: 'バズ狙い台本プロンプト',
     variantType: PromptVariantType.viral,
     content: '企画「{{idea}}」のYouTubeショート台本を、拡散を意識して作成してください（60秒以内）。\n\n必須要素:\n- 冒頭「{{hook_style}}」型のフック\n- 視聴者への問いかけを2回\n- 「保存して後で見返して」のCTA\n- コメント欄で議論したくなる意見または選択肢\n- テロップは大きく短いキーワードのみ',
@@ -556,7 +566,7 @@ final List<PromptVariant> mockPromptVariants = [
   ),
   PromptVariant(
     id: 'variant_010',
-    workflowStepId: 'step_short_2',
+    workflowStepId: 'step_short_4',
     title: 'プロ品質台本プロンプト',
     variantType: PromptVariantType.professional,
     content: '企画「{{idea}}」のYouTubeショート台本を、{{brand_tone}}のトーンで作成してください（60秒以内）。\n\n要件:\n- 専門用語は初出時に簡潔な説明を添える\n- データや数字を1つ以上引用\n- 信頼感のある落ち着いた語り口\n- チャンネルブランド「{{channel_name}}」に合ったCTA',
@@ -569,12 +579,16 @@ final List<PromptVariant> mockPromptVariants = [
   ),
   PromptVariant(
     id: 'variant_011',
-    workflowStepId: 'step_short_3',
+    workflowStepId: 'step_short_6',
+    promptTemplateId: 'prompt_short_narration_format',
     title: '初心者向けナレーション原稿',
     variantType: PromptVariantType.beginner,
-    content: '以下の台本から、ElevenLabs / VOICEVOX 用のナレーション原稿を作成してください。\n\n台本:\n{{script}}\n\n条件:\n- 読み上げやすいひらがな・カタカナ表記を併記\n- 句読点で適切な「間」を入れる\n- 難読漢字は読み仮名を添える',
+    content:
+        '以下の台本を、読み上げやすいナレーション原稿に整えてください。\n'
+        '読みやすさを優先し、ひらがな・カタカナ表記、句読点、間、必要に応じた読み仮名を調整してください。\n\n'
+        '台本: {{script}}',
     expectedOutput: '読み上げ用ナレーション原稿（読み仮名・間の指示付き）',
-    usageTips: 'VOICEVOXなら「四国めたん」、ElevenLabsなら落ち着いた声を選ぶ',
+    usageTips: '整えた原稿を使う読み上げツールに貼り付けて試してください',
     variables: ['script'],
     sortOrder: 0,
     createdAt: mockBaseDate,
@@ -582,7 +596,8 @@ final List<PromptVariant> mockPromptVariants = [
   ),
   PromptVariant(
     id: 'variant_012',
-    workflowStepId: 'step_short_3',
+    workflowStepId: 'step_short_6',
+    promptTemplateId: 'prompt_short_narration_format',
     title: '高品質ナレーション原稿',
     variantType: PromptVariantType.highQuality,
     content: '以下の台本から、感情表現を意識したナレーション原稿を作成してください。\n\n台本:\n{{script}}\n\n要件:\n- 強調箇所に【強調】マーク\n- 間（ポーズ）を（0.5秒）（1秒）で明示\n- トーン変化（通常→興奮→落ち着き）を3段階で指示\n- 数字・固有名詞の読み方を明記',
@@ -595,7 +610,8 @@ final List<PromptVariant> mockPromptVariants = [
   ),
   PromptVariant(
     id: 'variant_013',
-    workflowStepId: 'step_short_3',
+    workflowStepId: 'step_short_6',
+    promptTemplateId: 'prompt_short_narration_format',
     title: '時短ナレーション原稿',
     variantType: PromptVariantType.shortTime,
     content: '台本「{{script}}」を、VOICEVOXで一発生成できるよう整えてください。\n- 1文30文字以内\n- 句読点のみで間を制御\n- 読み仮名不要（常用漢字のみ使用）',
@@ -608,7 +624,8 @@ final List<PromptVariant> mockPromptVariants = [
   ),
   PromptVariant(
     id: 'variant_014',
-    workflowStepId: 'step_short_3',
+    workflowStepId: 'step_short_6',
+    promptTemplateId: 'prompt_short_narration_format',
     title: 'プロ品質ナレーション原稿',
     variantType: PromptVariantType.professional,
     content: '台本「{{script}}」を、{{voice_style}}の声質向けにナレーション原稿を最適化してください。\n\n要件:\n- ビジネス系: 落ち着いたトーン、ゆっくりめ\n- エンタメ系: テンポよく、強調多め\n- 語尾のバリエーション（です/ます/だ/である）を統一\n- 1文の長さを25文字以内に調整',
@@ -621,7 +638,8 @@ final List<PromptVariant> mockPromptVariants = [
   ),
   PromptVariant(
     id: 'variant_015',
-    workflowStepId: 'step_short_3',
+    workflowStepId: 'step_short_6',
+    promptTemplateId: 'prompt_short_narration_format',
     title: 'バズ向けナレーション原稿',
     variantType: PromptVariantType.viral,
     content: '台本「{{script}}」を、YouTubeショートのバズを意識したナレーション原稿に変換してください。\n\n要件:\n- 冒頭3秒は速めのテンポ＋強調\n- 「え、マジ？」「知ってた？」等の口語を自然に\n- 重要キーワード前に0.3秒の間\n- エンディングはゆっくり「保存してね」',
@@ -634,20 +652,24 @@ final List<PromptVariant> mockPromptVariants = [
   ),
   PromptVariant(
     id: 'variant_016',
-    workflowStepId: 'step_short_4',
-    title: '初心者向け編集手順',
+    workflowStepId: 'step_short_10',
+    promptTemplateId: 'prompt_short_assets',
+    title: '初心者向け素材リスト',
     variantType: PromptVariantType.beginner,
-    content: '以下の素材リストから、CapCutでの編集手順を初心者向けにステップ形式で作成してください。\n\n素材:\n{{assets}}\n\n各ステップに: 操作名 / 所要時間 / 注意点 を含めてください。',
-    expectedOutput: 'CapCut編集手順（ステップ形式・所要時間付き）',
-    usageTips: 'CapCutの「自動字幕」機能で台本と照合すると効率的',
-    variables: ['assets'],
+    content:
+        '以下の台本とテロップから、各シーンで必要な画像 / 映像素材のリストを作成してください。'
+        '自分で集める / AIで作る、どちらでもOKです。\n\n'
+        '台本: {{script}}\nテロップ: {{telops}}',
+    expectedOutput: 'シーン別素材リスト',
+    usageTips: '1島1枚でも進められます。後から差し替え可能',
+    variables: ['script', 'telops'],
     sortOrder: 0,
     createdAt: mockBaseDate,
     updatedAt: mockBaseDate,
   ),
   PromptVariant(
     id: 'variant_017',
-    workflowStepId: 'step_short_4',
+    workflowStepId: 'step_short_10',
     title: '高品質編集手順',
     variantType: PromptVariantType.highQuality,
     content: '素材「{{assets}}」を使い、視聴維持率を意識したCapCut編集手順を作成してください。\n\n要件:\n- 15秒ごとのカット・ズーム・B-roll指示\n- テロップのフォント・色・サイズ指定\n- BGM音量（ナレーションの20%以下）\n- エンドカード（3秒）のデザイン指示\n- 1080×1920 / 60fps / MP4書き出し設定',
@@ -660,7 +682,7 @@ final List<PromptVariant> mockPromptVariants = [
   ),
   PromptVariant(
     id: 'variant_018',
-    workflowStepId: 'step_short_4',
+    workflowStepId: 'step_short_10',
     title: '時短編集手順',
     variantType: PromptVariantType.shortTime,
     content: '素材「{{assets}}」をCapCutで15分以内に仕上げる最短手順を5ステップで作成してください。\n- テンプレート活用\n- 自動字幕のみ\n- エフェクト最小限\n- 1080×1920書き出し',
@@ -673,7 +695,7 @@ final List<PromptVariant> mockPromptVariants = [
   ),
   PromptVariant(
     id: 'variant_019',
-    workflowStepId: 'step_short_4',
+    workflowStepId: 'step_short_10',
     title: 'バズ向け編集手順',
     variantType: PromptVariantType.viral,
     content: '素材「{{assets}}」でバズを狙うCapCut編集手順を作成してください。\n\n必須:\n- 冒頭1秒: ズームイン＋効果音\n- 3秒ごとに画面切り替え\n- テロップは画面中央・大きく・白文字黒縁\n- トレンド音源の挿入タイミング\n- ループ再生を意識したエンディング',
@@ -686,7 +708,7 @@ final List<PromptVariant> mockPromptVariants = [
   ),
   PromptVariant(
     id: 'variant_020',
-    workflowStepId: 'step_short_4',
+    workflowStepId: 'step_short_10',
     title: 'プロ品質編集手順',
     variantType: PromptVariantType.professional,
     content: '素材「{{assets}}」を、{{brand_color}}をブランドカラーにしたプロ品質のCapCut編集手順を作成してください。\n\n要件:\n- 統一フォント（{{font_name}}）\n- ロゴウォーターマーク配置\n- カラーグレーディング（明るさ+5、彩度+10）\n- サムネイル用ベストフレームの指定',

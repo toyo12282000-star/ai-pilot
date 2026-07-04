@@ -9,7 +9,7 @@ import 'package:ai_pilot/design_system/typography.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/home_content_layout.dart';
 import 'package:ai_pilot/features/workflow/presentation/widgets/workflow_search_bar.dart';
 
-/// ホーム上部の Hero セクション（Warm White / Beige · 検索 + AI相談）。
+/// ホーム上部の Hero セクション（Warm White / Beige · 検索 + Advisor 相談）。
 class HomeHeroSection extends StatelessWidget {
   const HomeHeroSection({
     super.key,
@@ -166,6 +166,14 @@ class _HeroContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.s12),
+        Text(
+          '2〜3問で、あなたに合うWorkflowを提案します',
+          style: AppTypography.bodySmall.copyWith(
+            color: AppColors.textSecondary,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: AppSpacing.s8),
         SizedBox(
           height: HomeHeroSection._controlHeight,
           width: double.infinity,
@@ -176,7 +184,7 @@ class _HeroContent extends StatelessWidget {
               size: 18,
               color: AppColors.primary,
             ),
-            label: const Text('AIに相談する'),
+            label: const Text('Advisorに相談する'),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.charcoal,
               side: const BorderSide(color: AppColors.primary),

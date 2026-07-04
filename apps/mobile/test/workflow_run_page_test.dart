@@ -61,7 +61,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 600));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('YouTubeショートを作る').first);
+    await tester.tap(find.text('世界一危険な島3選').first);
     await tester.pumpAndSettle();
     await tester.pump(const Duration(milliseconds: 600));
     await tester.pumpAndSettle();
@@ -84,10 +84,14 @@ void main() {
     expect(find.text('Goal'), findsOneWidget);
     expect(find.text('やること'), findsOneWidget);
     expect(find.byType(WorkflowRunStepChecklist), findsOneWidget);
+    expect(find.text('AI Pilotのコツ'), findsOneWidget);
+
+    await tester.tap(find.text('次へ'));
+    await tester.pumpAndSettle();
+
     expect(find.text('Prompt'), findsOneWidget);
     expect(find.textContaining('おすすめ度'), findsOneWidget);
     expect(find.text('ChatGPTを開く'), findsWidgets);
-    expect(find.text('AI Pilotのコツ'), findsOneWidget);
   });
 
   testWidgets('Run page shows achievement when advancing step', (tester) async {

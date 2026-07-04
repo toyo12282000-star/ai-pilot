@@ -1,4 +1,6 @@
 import 'package:ai_pilot/features/favorite/domain/entities/favorite.dart';
+import 'package:ai_pilot/features/profile/data/repositories/mock_profile_store.dart';
+import 'package:ai_pilot/features/profile/domain/services/user_display_name_resolver.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_seed_data.dart';
 import 'package:ai_pilot/features/workflow/data/repositories/mock_social_proof_seed_data.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow_run_history.dart';
@@ -21,7 +23,11 @@ class MockSocialProofDataStore {
 /// Mock Social Proof 表示名を解決する。
 String resolveMockSocialProofDisplayName(String userId) {
   if (userId == mockCurrentUser.id) {
-    return mockCurrentUser.displayName;
+    final profile = MockProfileStore.instance.current;
+    return UserDisplayNameResolver.resolve(
+      profileDisplayName: profile.displayName,
+      email: profile.email,
+    );
   }
   return mockSocialProofDisplayNames[userId] ?? 'ユーザー';
 }

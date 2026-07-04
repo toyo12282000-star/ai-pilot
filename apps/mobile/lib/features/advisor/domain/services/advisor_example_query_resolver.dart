@@ -18,7 +18,7 @@ class AdvisorExampleQueryResolver {
   ];
 
   static const Map<String, List<String>> _workflowTitlesByQuery = {
-    'YouTubeを始めたい': ['YouTubeショートを作る'],
+    'YouTubeを始めたい': ['世界一危険な島3選'],
     '副業を始めたい': ['SNS投稿を作る', 'ブログ記事を書く'],
     'AIを学びたい': ['調査レポートを作る', 'Flutterアプリを作る'],
     'ブログを書きたい': ['ブログ記事を書く'],

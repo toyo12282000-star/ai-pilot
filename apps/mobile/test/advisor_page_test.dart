@@ -129,16 +129,15 @@ void main() {
     expect(find.text('最近の相談'), findsOneWidget);
     expect(find.text('YouTubeを始めたい'), findsWidgets);
     expect(find.text('YouTube'), findsWidgets);
-    expect(find.text('YouTubeショートを作る'), findsOneWidget);
+    expect(find.text('世界一危険な島3選'), findsOneWidget);
   });
 
   testWidgets('Authenticated user with no history sees empty state',
       (tester) async {
     await pumpAdvisorPage(tester, buildRouter(), userId: 'user-2');
 
-    expect(find.text('最近の相談'), findsOneWidget);
     expect(find.text('まだ相談履歴がありません'), findsOneWidget);
-    expect(find.text('YouTubeを始めたい'), findsWidgets);
+    expect(find.textContaining('Advisorに相談すると'), findsOneWidget);
   });
 
   testWidgets('Recent history tap triggers recommendation', (tester) async {
@@ -150,14 +149,14 @@ void main() {
     await tester.pump(const Duration(milliseconds: 700));
     await tester.pumpAndSettle(const Duration(seconds: 2));
 
-    expect(find.text('YouTubeショートを作る'), findsOneWidget);
+    expect(find.text('世界一危険な島3選'), findsOneWidget);
     expect(find.text('このWorkflowを始める'), findsOneWidget);
   });
 
   testWidgets('Recent history delete removes item', (tester) async {
     await pumpAdvisorPage(tester, buildRouter(), userId: 'user-1');
 
-    expect(find.text('YouTubeショートを作る'), findsOneWidget);
+    expect(find.text('世界一危険な島3選'), findsOneWidget);
 
     await tester.tap(find.byTooltip('削除').first);
     await tester.pumpAndSettle(const Duration(milliseconds: 400));
@@ -191,7 +190,7 @@ void main() {
     await tester.pumpAndSettle(const Duration(seconds: 2));
 
     expect(find.text('おすすめWorkflow'), findsOneWidget);
-    expect(find.text('YouTubeショートを作る'), findsOneWidget);
+    expect(find.text('世界一危険な島3選'), findsOneWidget);
     expect(find.text('このWorkflowを始める'), findsOneWidget);
     if (find.text('他の候補を見る').evaluate().isNotEmpty) {
       expect(find.text('他の候補を見る'), findsOneWidget);
@@ -206,7 +205,7 @@ void main() {
     await tester.pump();
     await tester.pumpAndSettle(const Duration(seconds: 2));
 
-    expect(find.text('YouTubeショートを作る'), findsOneWidget);
+    expect(find.text('世界一危険な島3選'), findsOneWidget);
   });
 
   testWidgets('Advisor page shows empty state with home action', (tester) async {

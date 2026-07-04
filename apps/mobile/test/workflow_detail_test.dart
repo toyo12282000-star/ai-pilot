@@ -58,7 +58,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 600));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('YouTubeショートを作る').first);
+    await tester.tap(find.text('世界一危険な島3選').first);
     await tester.pumpAndSettle();
     await tester.pump(const Duration(milliseconds: 600));
     await tester.pumpAndSettle();
@@ -83,6 +83,7 @@ void main() {
       400,
       scrollable: scrollable,
     );
+    await tester.pumpAndSettle();
     await tester.pump(const Duration(milliseconds: 600));
     await tester.pumpAndSettle();
     expect(find.text('ステップ'), findsOneWidget);
@@ -99,12 +100,12 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
-      find.text('企画を考える'),
+      find.text('紹介する3つの島を決める'),
       400,
       scrollable: scrollable,
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('企画を考える').first);
+    await tester.tap(find.text('紹介する3つの島を決める').first);
     await tester.pumpAndSettle();
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pumpAndSettle();
@@ -163,7 +164,7 @@ void main() {
       expect(stats, isNotNull);
       expect(stats!.saveCount, 9);
       expect(stats.userCount, 4);
-      expect(stats.estimatedMinutes, 45);
+      expect(stats.estimatedMinutes, 78);
     });
 
     test('workflowRecentCreationsProvider returns seeded creations', () async {

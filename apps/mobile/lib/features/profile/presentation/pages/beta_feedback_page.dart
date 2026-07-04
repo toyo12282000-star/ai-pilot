@@ -25,7 +25,7 @@ class BetaFeedbackPage extends StatelessWidget {
     ProfileDocumentSection(
       heading: 'できること',
       paragraphs: [
-        '完成作品（Showcase）の閲覧、AI への相談と Workflow 提案、'
+        '完成作品（Showcase）の閲覧、Advisor への相談と Workflow 提案、'
         'ステップごとの Run 体験、お気に入り保存（ログイン時）など。',
       ],
     ),

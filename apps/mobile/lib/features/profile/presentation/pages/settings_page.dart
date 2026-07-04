@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import 'package:ai_pilot/design_system/spacing.dart';
 import 'package:ai_pilot/features/auth/presentation/providers/auth_providers.dart';
-import 'package:ai_pilot/features/profile/domain/entities/user_profile.dart';
 import 'package:ai_pilot/features/profile/presentation/providers/profile_providers.dart';
+import 'package:ai_pilot/features/profile/presentation/widgets/edit_display_name_sheet.dart';
 import 'package:ai_pilot/features/profile/presentation/widgets/settings_hero_section.dart';
 import 'package:ai_pilot/shared/navigation/login_navigation.dart';
 import 'package:ai_pilot/shared/providers/authenticated_user_provider.dart';
@@ -33,45 +33,20 @@ class SettingsPage extends ConsumerWidget {
     context.go('/login');
   }
 
-  ({String title, String subtitle}) _heroContent({
-    required bool isAuthenticated,
-    required String? email,
-    required AsyncValue<UserProfile?> profileAsync,
-  }) {
-    if (!isAuthenticated) {
-      return (
-        title: 'ゲスト利用中',
-        subtitle: 'ログインすると、お気に入りや実行履歴を保存できます',
-      );
-    }
-
-    final profile = profileAsync.valueOrNull;
-    final displayName = profile?.displayName;
-    if (displayName != null && displayName.isNotEmpty) {
-      return (
-        title: displayName,
-        subtitle: email ?? 'AI Pilot アカウント',
-      );
-    }
-
-    return (
-      title: email ?? 'アカウント',
-      subtitle: 'AI Pilot アカウント',
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isAuthenticated = ref.watch(isAuthenticatedProvider);
     final currentUser = ref.watch(currentUserProvider);
+    final resolvedDisplayName = ref.watch(resolvedCurrentUserDisplayNameProvider);
     final profileAsync = isAuthenticated
         ? ref.watch(currentUserProfileProvider)
-        : const AsyncValue<UserProfile?>.data(null);
-    final hero = _heroContent(
-      isAuthenticated: isAuthenticated,
-      email: currentUser?.email,
-      profileAsync: profileAsync,
-    );
+        : const AsyncValue.data(null);
+    final storedDisplayName = profileAsync.valueOrNull?.displayName ?? '';
+
+    final heroTitle = isAuthenticated ? resolvedDisplayName : 'ゲスト利用中';
+    final heroSubtitle = isAuthenticated
+        ? (currentUser?.email ?? 'AI Pilot アカウント')
+        : 'ログインすると、お気に入りや実行履歴を保存できます';
 
     return SafeArea(
       child: ListView(
@@ -80,8 +55,8 @@ class SettingsPage extends ConsumerWidget {
           FadeSlideIn(
             index: 0,
             child: SettingsHeroSection(
-              title: hero.title,
-              subtitle: hero.subtitle,
+              title: heroTitle,
+              subtitle: heroSubtitle,
               isGuest: !isAuthenticated,
             ),
           ),
@@ -90,6 +65,19 @@ class SettingsPage extends ConsumerWidget {
             child: SettingsSectionCard(
               title: 'アカウント',
               children: [
+                if (isAuthenticated)
+                  SettingsListTile(
+                    title: '表示名',
+                    subtitle: '作品の作成履歴や共有名として表示されます',
+                    trailing: resolvedDisplayName,
+                    showChevron: true,
+                    icon: Icons.badge_outlined,
+                    onTap: () => showEditDisplayNameSheet(
+                      context: context,
+                      ref: ref,
+                      initialValue: storedDisplayName,
+                    ),
+                  ),
                 if (isAuthenticated)
                   SettingsActionTile(
                     label: 'ログアウト',

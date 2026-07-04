@@ -1,7 +1,7 @@
 /// β版配布向けの定数（フィードバック導線など）。
 abstract final class BetaConfig {
   /// フィードバック受付メールアドレス（β配布時に差し替え）。
-  static const feedbackEmail = 'feedback@aipilot.app';
+  static const feedbackEmail = 'toyo12282000@gmail.com';
 
   static const feedbackSubject = 'AI Pilot β版フィードバック';
 

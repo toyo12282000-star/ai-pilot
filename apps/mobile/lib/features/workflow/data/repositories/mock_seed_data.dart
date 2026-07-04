@@ -5,6 +5,7 @@ import 'package:ai_pilot/features/workflow/domain/entities/workflow.dart';
 import 'package:ai_pilot/features/workflow/domain/entities/workflow_step.dart';
 import 'package:ai_pilot/features/favorite/domain/entities/favorite.dart';
 import 'package:ai_pilot/features/profile/domain/entities/user_profile.dart';
+import 'package:ai_pilot/features/workflow/data/repositories/mock_youtube_short_workflow_seed.dart';
 
 /// Mock Repository 共通の擬似ネットワーク遅延。
 const Duration mockNetworkDelay = Duration(milliseconds: 300);
@@ -263,7 +264,7 @@ final List<PromptTemplate> mockPromptTemplates = [
   PromptTemplate(
     id: 'prompt_video_narration',
     title: 'ナレーション原稿',
-    content: '以下の台本から、ElevenLabs 用のナレーション原稿を作成してください。\n{{script}}',
+    content: '以下の台本を、読み上げやすいナレーション原稿に整えてください。\n{{script}}',
     recommendedAiToolId: 'tool_elevenlabs',
     variableNames: ['script'],
     tags: ['動画', '音声'],
@@ -280,58 +281,12 @@ final List<PromptTemplate> mockPromptTemplates = [
     createdAt: mockBaseDate,
     updatedAt: mockBaseDate,
   ),
+  ...mockYoutubeShortPromptTemplates,
 ];
 
 /// Mock ワークフロー一覧。
 final List<Workflow> mockWorkflows = [
-  Workflow(
-    id: 'wf_youtube_short',
-    title: 'YouTubeショートを作る',
-    description: '企画から台本、ナレーション、編集までの一連の手順',
-    categoryId: 'cat_video',
-    estimatedMinutes: 45,
-    tags: ['YouTube', 'ショート', '動画'],
-    createdAt: mockBaseDate,
-    updatedAt: mockBaseDate,
-    steps: [
-      WorkflowStep(
-        id: 'step_short_1',
-        workflowId: 'wf_youtube_short',
-        order: 1,
-        title: '企画を考える',
-        instruction: 'テーマを決め、ChatGPT で企画案を生成してください。',
-        promptTemplateId: 'prompt_short_idea',
-        aiToolId: 'tool_chatgpt',
-      ),
-      WorkflowStep(
-        id: 'step_short_2',
-        workflowId: 'wf_youtube_short',
-        order: 2,
-        title: '台本を作成する',
-        instruction: '企画案をもとに Claude で台本を作成してください。',
-        promptTemplateId: 'prompt_short_script',
-        aiToolId: 'tool_claude',
-      ),
-      WorkflowStep(
-        id: 'step_short_3',
-        workflowId: 'wf_youtube_short',
-        order: 3,
-        title: 'ナレーションを生成する',
-        instruction: 'ElevenLabs でナレーション音声を生成してください。',
-        promptTemplateId: 'prompt_video_narration',
-        aiToolId: 'tool_elevenlabs',
-      ),
-      WorkflowStep(
-        id: 'step_short_4',
-        workflowId: 'wf_youtube_short',
-        order: 4,
-        title: '動画を編集する',
-        instruction: 'CapCut で素材を組み合わせて仕上げてください。',
-        promptTemplateId: 'prompt_video_edit',
-        aiToolId: 'tool_capcut',
-      ),
-    ],
-  ),
+  buildYoutubeShortWorkflow(),
   Workflow(
     id: 'wf_blog',
     title: 'ブログ記事を書く',

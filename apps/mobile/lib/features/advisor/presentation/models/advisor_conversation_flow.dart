@@ -21,7 +21,8 @@ class AdvisorFollowUpQuestion {
 
 /// Advisor 会話フロー定義と query 組み立て。
 abstract final class AdvisorConversationFlow {
-  static const initialGreeting = 'こんにちは。今日は何を作りたいですか？';
+  static const initialGreeting =
+      'こんにちは。今日は何を作りたいですか？ Advisorが合うWorkflowを一緒に探します。';
 
   static const initialQuickReplies = [
     'YouTube動画を作りたい',

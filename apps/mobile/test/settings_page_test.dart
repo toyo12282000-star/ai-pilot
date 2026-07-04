@@ -9,6 +9,7 @@ import 'package:ai_pilot/features/favorite/data/repositories/mock_favorite_repos
 import 'package:ai_pilot/features/favorite/presentation/pages/favorites_page.dart';
 import 'package:ai_pilot/features/favorite/presentation/providers/favorite_providers.dart';
 import 'package:ai_pilot/features/home/presentation/pages/home_page.dart';
+import 'package:ai_pilot/features/profile/data/repositories/mock_profile_store.dart';
 import 'package:ai_pilot/features/profile/data/repositories/mock_user_profile_repository.dart';
 import 'package:ai_pilot/features/profile/presentation/pages/about_page.dart';
 import 'package:ai_pilot/features/profile/presentation/pages/beta_feedback_page.dart';
@@ -27,6 +28,7 @@ import 'package:ai_pilot/features/workflow/presentation/providers/workflow_provi
 import 'package:ai_pilot/features/workflow/presentation/providers/workflow_run_history_providers.dart';
 import 'package:ai_pilot/shared/providers/authenticated_user_provider.dart';
 import 'package:ai_pilot/shared/providers/guest_mode_provider.dart';
+import 'fakes/authenticated_fake_auth_repository.dart';
 import 'fakes/fake_auth_repository.dart';
 
 Widget _buildGuestApp(GoRouter router) {
@@ -35,6 +37,32 @@ Widget _buildGuestApp(GoRouter router) {
       authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
       guestModeProvider.overrideWith((ref) => true),
       authenticatedUserIdProvider.overrideWith((ref) => null),
+      canAccessAppProvider.overrideWith((ref) => true),
+      userProfileRepositoryProvider
+          .overrideWithValue(MockUserProfileRepository()),
+      workflowRepositoryProvider.overrideWithValue(MockWorkflowRepository()),
+      categoryRepositoryProvider.overrideWithValue(MockCategoryRepository()),
+      aiToolRepositoryProvider.overrideWithValue(MockAIToolRepository()),
+      promptTemplateRepositoryProvider
+          .overrideWithValue(MockPromptTemplateRepository()),
+      recommendationRepositoryProvider
+          .overrideWithValue(MockRecommendationRepository()),
+      favoriteRepositoryProvider
+          .overrideWithValue(MockFavoriteRepository()),
+      workflowRunHistoryRepositoryProvider
+          .overrideWithValue(MockWorkflowRunHistoryRepository()),
+    ],
+    child: MaterialApp.router(routerConfig: router),
+  );
+}
+
+Widget _buildAuthenticatedApp(GoRouter router) {
+  return ProviderScope(
+    overrides: [
+      authRepositoryProvider
+          .overrideWithValue(AuthenticatedFakeAuthRepository()),
+      guestModeProvider.overrideWith((ref) => false),
+      authenticatedUserIdProvider.overrideWith((ref) => 'user-1'),
       canAccessAppProvider.overrideWith((ref) => true),
       userProfileRepositoryProvider
           .overrideWithValue(MockUserProfileRepository()),
@@ -138,8 +166,22 @@ Future<void> _openSettings(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> _openAuthenticatedSettings(WidgetTester tester) async {
+  MockProfileStore.instance.reset();
+  await tester.binding.setSurfaceSize(const Size(420, 920));
+  addTearDown(() => tester.binding.setSurfaceSize(null));
+
+  final router = _buildShellRouter();
+  await tester.pumpWidget(_buildAuthenticatedApp(router));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   setUpAll(TestWidgetsFlutterBinding.ensureInitialized);
+
+  setUp(() {
+    MockProfileStore.instance.reset();
+  });
 
   testWidgets('Settings shows app info links', (tester) async {
     await _openSettings(tester);
@@ -222,6 +264,28 @@ void main() {
 
     expect(find.text('ゲスト利用中'), findsOneWidget);
     expect(find.text('ログインする'), findsOneWidget);
+    expect(find.text('表示名'), findsNothing);
+  });
+
+  testWidgets('Authenticated settings shows display name and updates hero', (
+    tester,
+  ) async {
+    await _openAuthenticatedSettings(tester);
+
+    expect(find.text('AI Pilot ユーザー'), findsWidgets);
+    expect(find.text('表示名'), findsOneWidget);
+
+    await tester.tap(find.text('表示名'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('表示名を編集'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), '新しい表示名');
+    await tester.tap(find.text('保存'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('表示名を保存しました'), findsOneWidget);
+    expect(find.text('新しい表示名'), findsWidgets);
   });
 
   testWidgets('Settings tab exists in bottom navigation', (tester) async {

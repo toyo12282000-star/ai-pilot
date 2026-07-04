@@ -3,6 +3,7 @@ class AuthUser {
   const AuthUser({
     required this.id,
     this.email,
+    this.userMetadata,
   });
 
   /// ユーザー ID。
@@ -10,6 +11,9 @@ class AuthUser {
 
   /// メールアドレス。
   final String? email;
+
+  /// Supabase Auth の user metadata（表示名フォールバック用）。
+  final Map<String, dynamic>? userMetadata;
 }
 
 /// 認証状態の変更イベント。

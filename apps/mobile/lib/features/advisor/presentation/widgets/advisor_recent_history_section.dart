@@ -118,7 +118,8 @@ class _AdvisorHistoryEmptyState extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.s4),
           Text(
-            '例文から選ぶか、作りたいものを入力して相談してみましょう',
+            'Advisorに相談すると、ここに履歴が残ります。'
+            '何を作るか迷ったら、下の例文から試してみましょう',
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),

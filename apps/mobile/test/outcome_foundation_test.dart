@@ -112,7 +112,7 @@ void main() {
 
     test('fetchToolOptionsByStepId returns at least three options', () async {
       final repository = MockWorkflowStepToolOptionRepository();
-      final options = await repository.fetchToolOptionsByStepId('step_short_1');
+      final options = await repository.fetchToolOptionsByStepId('step_short_2');
 
       expect(options.length, greaterThanOrEqualTo(3));
       expect(options.any((option) => option.isRecommended), isTrue);
@@ -121,7 +121,7 @@ void main() {
     test('fetchPromptVariantsByStepId returns five variants for short step 1', () async {
       final repository = MockPromptVariantRepository();
       final variants = await repository.fetchPromptVariantsByStepId(
-        'step_short_1',
+        'step_short_2',
       );
 
       expect(variants.length, 5);
@@ -170,7 +170,7 @@ void main() {
       addTearDown(container.dispose);
 
       final variants = await container.read(
-        promptVariantsProvider('step_short_1').future,
+        promptVariantsProvider('step_short_2').future,
       );
 
       expect(variants, hasLength(5));

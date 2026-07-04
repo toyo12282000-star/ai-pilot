@@ -6,7 +6,7 @@
 ///
 /// ## 保持する値
 /// - [id]: 一意識別子
-/// - [displayName]: 表示名
+/// - [displayName]: DB に保存された表示名（未設定時は null）
 /// - [email]: メールアドレス
 /// - [avatarUrl]: アバター画像 URL
 /// - [createdAt]: 作成日時
@@ -18,9 +18,9 @@ class UserProfile {
   /// [id] をキーに [UserProfile] を生成する。
   UserProfile({
     required this.id,
-    required this.displayName,
     required this.createdAt,
     required this.updatedAt,
+    this.displayName,
     this.email,
     this.avatarUrl,
   });
@@ -28,8 +28,8 @@ class UserProfile {
   /// 一意識別子。
   final String id;
 
-  /// 表示名。
-  final String displayName;
+  /// DB に保存された表示名。未設定時は null。
+  final String? displayName;
 
   /// メールアドレス。
   final String? email;
@@ -46,7 +46,7 @@ class UserProfile {
   /// 指定フィールドのみ差し替えた新しいインスタンスを返す。
   UserProfile copyWith({
     String? id,
-    String? displayName,
+    Object? displayName = _sentinel,
     String? email,
     String? avatarUrl,
     DateTime? createdAt,
@@ -54,7 +54,9 @@ class UserProfile {
   }) {
     return UserProfile(
       id: id ?? this.id,
-      displayName: displayName ?? this.displayName,
+      displayName: displayName == _sentinel
+          ? this.displayName
+          : displayName as String?,
       email: email ?? this.email,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       createdAt: createdAt ?? this.createdAt,
@@ -62,3 +64,6 @@ class UserProfile {
     );
   }
 }
+
+const Object _sentinel = Object();
+

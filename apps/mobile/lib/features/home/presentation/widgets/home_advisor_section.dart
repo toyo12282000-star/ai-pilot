@@ -6,7 +6,7 @@ import 'package:ai_pilot/design_system/typography.dart';
 import 'package:ai_pilot/features/home/presentation/widgets/home_content_layout.dart';
 import 'package:ai_pilot/shared/widgets/hover_scale_surface.dart';
 
-/// 「AI相談」誘導カードセクション。
+/// 「Advisor 相談」誘導カードセクション。
 class HomeAdvisorSection extends StatelessWidget {
   const HomeAdvisorSection({
     super.key,
@@ -47,7 +47,7 @@ class HomeAdvisorSection extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.s8),
                 Text(
-                  '作りたいものを伝えるだけで、最適な Workflow を提案します。',
+                  '何を作るか迷ったら、Advisorが目的に合うWorkflowを案内します',
                   style: AppTypography.caption.copyWith(height: 1.5),
                 ),
                 const SizedBox(height: AppSpacing.s16),
@@ -58,7 +58,7 @@ class HomeAdvisorSection extends StatelessWidget {
                     size: 18,
                     color: AppColors.primary,
                   ),
-                  label: const Text('AIに相談する'),
+                  label: const Text('Advisorに相談する'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.charcoal,
                     side: const BorderSide(color: AppColors.primary),

@@ -208,7 +208,7 @@ class _AdvisorPageState extends ConsumerState<AdvisorPage> {
       backgroundColor: AppColors.background,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: const Text('AIに相談する'),
+        title: const Text('Advisorに相談'),
         backgroundColor: AppColors.background,
         elevation: 0,
         scrolledUnderElevation: 0,
